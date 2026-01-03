@@ -1,39 +1,55 @@
-{% extends 'hotel/base.html' %}
-
-{% block title %}Home - MyHotel{% endblock %}
-
-{% block content %}
-<!-- HERO SECTION -->
-<section class="hero">
-    <div class="overlay">
-        <h1>Hotel Management System</h1>
-        <p>Book your perfect stay online</p>
-        <a href="#" class="btn">Book Now</a>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Management System - Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .nav {
+            margin-bottom: 30px;
+            text-align: right;
+        }
+        .nav a {
+            margin-left: 15px;
+            color: #007bff;
+            text-decoration: none;
+        }
+        .nav a:hover {
+            text-decoration: underline;
+        }
+        .welcome-message {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+        <h1>Welcome to Hotel Management System</h1>
+        <p class="welcome-message">Hello, {{ user.username }}! You are logged in.</p>
+        <p>This is your dashboard. More features coming soon...</p>
     </div>
-</section>
-
-<!-- SERVICES -->
-<section class="services">
-    <h2>Our Services</h2>
-    <div class="service-box">
-        <div class="service">
-            <h3>Luxury Rooms</h3>
-            <p>Modern rooms with full comfort</p>
-        </div>
-        <div class="service">
-            <h3>Online Booking</h3>
-            <p>Easy and fast booking system</p>
-        </div>
-        <div class="service">
-            <h3>24/7 Support</h3>
-            <p>Always ready to help you</p>
-        </div>
-    </div>
-</section>
-
-<!-- FOOTER -->
-<footer>
-    <p>© 2025 Hotel Management System</p>
-</footer>
-
-{% endblock %}
+</body>
+</html>

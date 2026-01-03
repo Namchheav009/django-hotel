@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 def guest_home(request):
     if not request.user.is_authenticated:
         return redirect('login')
-    return render(request, 'hotel/home.html')
+    return render(request, 'hotel/html/home.html')
 
 def login_view(request):
     if request.method == "POST":
@@ -21,7 +21,7 @@ def login_view(request):
         else:
             messages.error(request, "Invalid username or password")
 
-    return render(request, 'hotel/login.html')
+    return render(request, 'hotel/html/login.html')
 def register_view(request):
     if request.method == "POST":
         username = request.POST['username']
@@ -46,4 +46,8 @@ def register_view(request):
         messages.success(request, "Account created successfully. Please login.")
         return redirect('login')
 
-    return render(request, 'hotel/register.html')
+    return render(request, 'hotel/html/register.html')
+def logout_view(request):
+    from django.contrib.auth import logout
+    logout(request)
+    return redirect('login')
