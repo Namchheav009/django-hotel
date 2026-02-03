@@ -1,0 +1,636 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}Browse Rooms - MyHotel{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root{
+        --primary: #00e5ff;
+        --dark-bg: rgba(10, 25, 47, 0.6);
+        --darker-bg: rgba(10, 25, 47, 0.9);
+        --border: rgba(0, 229, 255, 0.2);
+        --border-hover: rgba(0, 229, 255, 0.4);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --text-muted: rgba(255, 255, 255, 0.5);
+        --radius: 12px;
+        --shadow: 0 8px 25px rgba(0, 229, 255, 0.15);
+        --orange: #ff9500;
+    }
+
+    /* Page */
+    .rooms-page{
+        padding: 20px 0 40px;
+    }
+    
+    .page-header{
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid var(--border);
+    }
+    
+    .page-title{
+        font-weight: 900;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 0 0 10px;
+        font-size: 2.2rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .page-title i{
+        color: var(--primary);
+        font-size: 2rem;
+    }
+    
+    .page-subtitle{
+        color: var(--text-muted);
+        font-size: 1rem;
+        margin: 0;
+        letter-spacing: 0.5px;
+    }
+
+    /* Filter Bar */
+    .filter-wrap{
+        background: var(--dark-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 25px;
+        backdrop-filter: blur(10px);
+        margin-bottom: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .filter-grid{
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .filter-field label{
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .filter-field label i{
+        color: var(--primary);
+        margin-right: 6px;
+    }
+
+    .filter-field .form-control,
+    .filter-field .form-select{
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        padding: 12px 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        background: rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .filter-field .form-control:focus,
+    .filter-field .form-select:focus{
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(0, 229, 255, 0.25);
+        color: var(--text-primary);
+        outline: none;
+    }
+    
+    .filter-field .form-control::placeholder{
+        color: var(--text-muted);
+    }
+
+    /* Category chips */
+    .category-chips{ 
+        display: flex; 
+        gap: 10px; 
+        flex-wrap: wrap; 
+        margin-top: 8px; 
+    }
+    
+    .chip-toggle{
+        cursor: pointer;
+        user-select: none;
+        padding: 8px 16px;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        font-weight: 700;
+        font-size: 0.85rem;
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .chip-toggle:hover{
+        background: rgba(0, 229, 255, 0.1);
+        border-color: var(--border-hover);
+    }
+    
+    .chip-toggle input{ 
+        display: none; 
+    }
+    
+    .chip-toggle.checked{ 
+        background: rgba(0, 229, 255, 0.15);
+        border-color: var(--primary);
+        color: var(--primary);
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+    }
+
+    .filter-actions{
+        display: flex;
+        gap: 12px;
+        grid-column: 1 / -1;
+    }
+
+    .btn-filter{
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        height: 45px;
+        padding: 0 24px;
+        border-radius: 8px;
+        border: 2px solid var(--primary);
+        background: transparent;
+        color: var(--primary);
+        font-weight: 700;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-filter:hover{
+        background: var(--primary);
+        color: #0a192f;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4);
+    }
+
+    .btn-clear{
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        height: 45px;
+        padding: 0 20px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+    
+    .btn-clear:hover{
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+        color: var(--text-primary);
+    }
+
+    /* Cards */
+    .room-card{
+        background: var(--dark-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        height: 100%;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+    }
+    
+    .room-card:hover{
+        transform: translateY(-8px);
+        box-shadow: var(--shadow);
+        border-color: var(--border-hover);
+    }
+
+    .room-media{
+        position: relative;
+        height: 240px;
+        background: #000;
+        overflow: hidden;
+    }
+    
+    .room-media img{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    
+    .room-card:hover .room-media img{
+        transform: scale(1.1);
+    }
+
+    .room-badge{
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: rgba(10, 25, 47, 0.95);
+        border: 1px solid var(--primary);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        color: var(--primary);
+        backdrop-filter: blur(10px);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .room-body{
+        padding: 20px 20px 16px;
+    }
+
+    .room-top{
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 15px;
+        margin-bottom: 12px;
+    }
+
+    .room-name{
+        font-weight: 900;
+        color: var(--text-primary);
+        font-size: 1.15rem;
+        margin: 0;
+        line-height: 1.3;
+    }
+    
+    .room-number{
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: block;
+        margin-top: 4px;
+    }
+
+    .room-price{
+        font-weight: 900;
+        color: var(--primary);
+        white-space: nowrap;
+        font-size: 1.3rem;
+    }
+    
+    .room-price small{
+        color: var(--text-muted);
+        font-weight: 600;
+        font-size: 0.7rem;
+    }
+
+    .room-desc{
+        margin: 12px 0 16px;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        line-height: 1.6;
+        min-height: 48px;
+    }
+
+    .chips{
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin: 12px 0 0;
+    }
+    
+    .chip{
+        background: rgba(0, 229, 255, 0.1);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .chip i{ 
+        color: var(--primary);
+        font-size: 0.7rem;
+    }
+
+    .room-actions{
+        padding: 16px 20px 20px;
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-details{
+        flex: 1;
+        height: 42px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.05);
+        font-weight: 700;
+        color: var(--text-primary);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-details:hover{
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--border-hover);
+        transform: translateY(-2px);
+        color: var(--text-primary);
+    }
+
+    .btn-book{
+        flex: 1;
+        height: 42px;
+        border-radius: 8px;
+        border: 2px solid var(--primary);
+        background: transparent;
+        color: var(--primary);
+        font-weight: 700;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-book:hover{
+        background: var(--primary);
+        color: #0a192f;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4);
+    }
+
+    .btn-login{
+        flex: 1;
+        height: 42px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+        font-weight: 700;
+        color: var(--text-muted);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+    }
+    
+    .btn-login:hover{
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text-secondary);
+        border-color: var(--border-hover);
+    }
+
+    /* Alert */
+    .alert-info{
+        background: var(--dark-bg);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text-primary);
+        padding: 20px;
+        backdrop-filter: blur(10px);
+    }
+    
+    .alert-info i{
+        color: var(--primary);
+        margin-right: 10px;
+    }
+
+    /* Responsive */
+    @media (max-width: 992px){
+        .filter-grid{
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        
+        .page-title{
+            font-size: 1.8rem;
+        }
+    }
+    
+    @media (max-width: 576px){
+        .filter-grid{
+            grid-template-columns: 1fr;
+        }
+        
+        .filter-actions{
+            flex-direction: column;
+        }
+        
+        .page-title{
+            font-size: 1.5rem;
+        }
+        
+        .room-top{
+            flex-direction: column;
+            gap: 8px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rooms-page">
+
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-door-open"></i> Browse Our Rooms
+        </h1>
+        <p class="page-subtitle">Discover your perfect accommodation</p>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-wrap">
+        <form method="GET">
+            <div class="filter-grid">
+                <div class="filter-field">
+                    <label class="form-label"><i class="fas fa-calendar-check"></i> Check-in</label>
+                    <input type="date" name="check_in_date" class="form-control"
+                           value="{{ form.check_in_date.value|default_if_none:'' }}">
+                </div>
+
+                <div class="filter-field">
+                    <label class="form-label"><i class="fas fa-calendar-times"></i> Check-out</label>
+                    <input type="date" name="check_out_date" class="form-control"
+                           value="{{ form.check_out_date.value|default_if_none:'' }}">
+                </div>
+
+                <div class="filter-field">
+                    <label class="form-label"><i class="fas fa-users"></i> Guests</label>
+                    <input type="number" name="guests" min="1" class="form-control"
+                           placeholder="1" value="{{ request.GET.guests|default:'1' }}">
+                </div>
+
+                <div class="filter-field" style="grid-column: 1 / -1;">
+                    <label class="form-label"><i class="fas fa-tags"></i> Category</label>
+
+                    {% if categories %}
+                        <div class="category-chips">
+                            {% for c in categories %}
+                                {% with cid=c.id|stringformat:"s" %}
+                                <label class="chip-toggle {% if cid in selected_categories %}checked{% endif %}">
+                                    <input type="checkbox" name="category" value="{{ c.id }}" {% if cid in selected_categories %}checked{% endif %}>
+                                    {{ c.category_name }}
+                                </label>
+                                {% endwith %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <input type="text" name="category" class="form-control"
+                               placeholder="All Categories" value="{{ form.category.value|default_if_none:'' }}">
+                    {% endif %}
+                </div>
+
+                {% if form.max_price %}
+                <div class="filter-field">
+                    <label class="form-label"><i class="fas fa-dollar-sign"></i> Max Price / Night</label>
+                    <input type="number" name="max_price" class="form-control" step="0.01"
+                           placeholder="Any price" value="{{ form.max_price.value|default_if_none:'' }}">
+                </div>
+                {% endif %}
+
+                <div class="filter-actions">
+                    <button type="submit" class="btn-filter">
+                        <i class="fas fa-search"></i> Search Rooms
+                    </button>
+                    <a href="{% url 'room_list' %}" class="btn-clear">
+                        <i class="fas fa-redo"></i> Reset Filters
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function(){
+            document.querySelectorAll('.chip-toggle input').forEach(function(inp){
+                var label = inp.closest('.chip-toggle');
+                function update(){ 
+                    if(inp.checked) label.classList.add('checked'); 
+                    else label.classList.remove('checked'); 
+                }
+                update();
+                inp.addEventListener('change', update);
+            });
+        });
+    </script>
+
+    <!-- ROOM CARDS -->
+    {% if rooms %}
+        <div class="row g-4">
+            {% for room in rooms %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="room-card">
+
+                        <div class="room-media">
+                            {% if room.image %}
+                                <img src="{{ room.image.url }}" alt="Room {{ room.room_number }}">
+                            {% else %}
+                                <img src="{% static 'hotel/img/room-placeholder.jpg' %}" alt="Room image">
+                            {% endif %}
+                            <div class="room-badge">
+                                {{ room.category.category_name|default:"Room" }}
+                            </div>
+                        </div>
+
+                        <div class="room-body">
+                            <div class="room-top">
+                                <h5 class="room-name">
+                                    {{ room.category.category_name }}
+                                    <span class="room-number">Room {{ room.room_number }}</span>
+                                </h5>
+
+                                <div class="room-price">
+                                    ${{ room.category.base_price }}<small>/night</small>
+                                </div>
+                            </div>
+
+                            <div class="room-desc">
+                                {{ room.category.description|truncatechars:95 }}
+                            </div>
+
+                            <div class="chips">
+                                <span class="chip">
+                                    <i class="fas fa-user"></i>
+                                    {{ room.category.max_occupancy|default:"2" }} Guests
+                                </span>
+                                {% if room.floor %}
+                                    <span class="chip">
+                                        <i class="fas fa-layer-group"></i> 
+                                        Floor {{ room.floor }}
+                                    </span>
+                                {% endif %}
+                                <span class="chip">
+                                    <i class="fas fa-check-circle"></i> 
+                                    {{ room.status }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="room-actions">
+                            <a href="{% url 'room_detail' room.id %}" class="btn-details">
+                                Details
+                            </a>
+
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'book_room' room.id %}" class="btn-book">
+                                    Book Now
+                                </a>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn-login">
+                                    Login to Book
+                                </a>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            No rooms available matching your criteria. Please try different dates or category.
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

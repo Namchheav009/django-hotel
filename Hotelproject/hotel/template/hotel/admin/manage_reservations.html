@@ -1,0 +1,156 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block title %}Manage Reservations - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<div class="admin-content-title">
+    <h1><i class="fas fa-calendar"></i> Reservation Management</h1>
+</div>
+
+<div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReservationModal">New Reservation</button>
+</div>
+
+<!-- Filter Section -->
+<div class="admin-card" style="margin-bottom: 20px;">
+    <form method="GET" style="display: flex; gap: 10px;">
+        <select name="status" class="form-select" style="max-width: 200px;">
+            <option value="">All Statuses</option>
+            <option value="Pending" {% if request.GET.status == 'Pending' %}selected{% endif %}>Pending</option>
+            <option value="Confirmed" {% if request.GET.status == 'Confirmed' %}selected{% endif %}>Confirmed</option>
+            <option value="Checked In" {% if request.GET.status == 'Checked In' %}selected{% endif %}>Checked In</option>
+            <option value="Checked Out" {% if request.GET.status == 'Checked Out' %}selected{% endif %}>Checked Out</option>
+            <option value="Cancelled" {% if request.GET.status == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+</div>
+
+<!-- Reservations Table -->
+<div class="admin-card">
+    {% if reservations %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Reservation ID</th>
+                    <th>Guest</th>
+                    <th>Room</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Status</th>
+                    <th>Total Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                    <tr>
+                        <td>#{{ reservation.id }}</td>
+                        <td>{{ reservation.guest.user.get_full_name|default:reservation.guest.user.username }}</td>
+                        <td>{{ reservation.room.room_number }}</td>
+                        <td>{{ reservation.check_in_date }}</td>
+                        <td>{{ reservation.check_out_date }}</td>
+                        <td>
+                            {% if reservation.status == 'Pending' %}
+                                <span class="badge-pending">Pending</span>
+                            {% elif reservation.status == 'Confirmed' %}
+                                <span class="badge-confirmed">Confirmed</span>
+                            {% elif reservation.status == 'Checked In' %}
+                                <span class="badge-completed">Checked In</span>
+                            {% else %}
+                                <span class="badge-{{ reservation.status|lower }}">{{ reservation.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>${{ reservation.total_price }}</td>
+                        <td>
+                            <a href="{% url 'edit_reservation' reservation.id %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="{% url 'reservation_detail' reservation.id %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            <form method="POST" style="display: inline;" action="{% url 'update_reservation_status' reservation.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="reservation_id" value="{{ reservation.id }}">
+                                <select name="new_status" class="form-select form-select-sm" style="display: inline-block; width: auto; margin-right: 5px;">
+                                    <option value="">Update Status</option>
+                                    <option value="Confirmed">Confirm</option>
+                                    <option value="Checked In">Check In</option>
+                                    <option value="Checked Out">Check Out</option>
+                                    <option value="Cancelled">Cancel</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-warning">Update</button>
+                            </form>
+                            <form method="post" action="{% url 'delete_reservation' reservation.id %}" style="display:inline;margin-left:6px;">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-danger" onclick="return confirm('Delete reservation #{{ reservation.id }}?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="color: #7f8c8d; text-align: center; padding: 20px;">No reservations found.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+<!-- Add Reservation Modal -->
+<div class="modal fade" id="addReservationModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Reservation</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'add_reservation' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Guest</label>
+                        <select name="guest" class="form-select" required>
+                            <option value="">Select Guest</option>
+                            {% for g in guests %}
+                                <option value="{{ g.id }}">{{ g.user.get_full_name|default:g.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Room</label>
+                        <select name="room" class="form-select" required>
+                            <option value="">Select Room</option>
+                            {% for r in rooms %}
+                                <option value="{{ r.id }}">{{ r.room_number }} — {{ r.category.category_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Check-in</label>
+                        <input type="date" name="check_in_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Check-out</label>
+                        <input type="date" name="check_out_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Guests</label>
+                        <input type="number" name="number_of_guests" value="1" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            {% for key,label in status_choices %}
+                                <option value="{{ key }}">{{ key }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

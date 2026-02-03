@@ -1,0 +1,30 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block admin_content %}
+<h2>Manage Bookings</h2>
+<div class="admin-card" style="margin-top:12px;">
+  {% if bookings %}
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="text-align:left;color:var(--muted);font-weight:800;font-size:13px;">
+          <th style="padding:12px 8px;">User</th>
+          <th style="padding:12px 8px;">Room</th>
+          <th style="padding:12px 8px;">Date</th>
+          <th style="padding:12px 8px;">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+          <tr style="border-top:1px solid #f0f2f6;">
+            <td style="padding:12px 8px;">{{ b.user.get_full_name|default:b.user.username }}</td>
+            <td style="padding:12px 8px; color:var(--muted);">{{ b.room.room_number }}</td>
+            <td style="padding:12px 8px; color:var(--muted);">{{ b.booking_date|date:"M d, Y" }}</td>
+            <td style="padding:12px 8px;">{{ b.booking_status }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div style="padding:18px;color:var(--muted);">No bookings found.</div>
+  {% endif %}
+</div>
+{% endblock %}

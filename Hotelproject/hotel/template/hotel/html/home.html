@@ -1,55 +1,554 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Management System - Home</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .nav {
-            margin-bottom: 30px;
-            text-align: right;
-        }
-        .nav a {
-            margin-left: 15px;
-            color: #007bff;
-            text-decoration: none;
-        }
-        .nav a:hover {
-            text-decoration: underline;
-        }
-        .welcome-message {
-            color: #666;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="nav">
-            <a href="{% url 'logout' %}">Logout</a>
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}Home - MyHotel{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root{
+        --navy:#0b1220;
+        --navy-2:#0f1a33;
+        --line:rgba(255,255,255,.12);
+        --gold:#f4b63a;
+        --white:#fff;
+        --shadow: 0 18px 50px rgba(0,0,0,.25);
+        --radius: 18px;
+    }
+
+    /* Make sections wider even if base.html uses container */
+    .home-wrap .container{
+        max-width: 1200px;
+    }
+
+    /* ✅ FULL-WIDTH HERO even inside a container */
+    .hero{
+        position: relative;
+        width: 100vw;                         /* full width */
+        margin-left: calc(50% - 50vw);        /* break out of container */
+        margin-right: calc(50% - 50vw);
+        min-height: 80vh;
+        overflow: hidden;
+        background: #000;
+        box-shadow: var(--shadow);
+        margin-bottom: 70px;
+    }
+
+    /* background image ONLY */
+    .hero::before{
+        content:"";
+        position:absolute;
+        inset:0;
+        background:
+            linear-gradient(180deg, rgba(11,18,32,.25) 0%, rgba(11,18,32,.78) 65%, rgba(11,18,32,.90) 100%),
+            url("{% static 'hotel/img/hero.png' %}") center/cover no-repeat;
+        transform: scale(1.02);
+        filter: saturate(1.05);
+    }
+
+    .hero::after{
+        content:"";
+        position:absolute;
+        inset:0;
+        background: radial-gradient(circle at 20% 10%, rgba(255,255,255,.12), transparent 55%);
+        pointer-events:none;
+    }
+
+    .hero-content{
+        position: relative;
+        z-index: 2;
+        min-height: 80vh;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        padding: 90px 18px 70px;
+    }
+
+    .hero-inner{
+        max-width: 980px;
+    }
+
+    .hero-title{
+        font-size: clamp(2.2rem, 4.6vw, 4.4rem);
+        font-weight: 900;
+        margin: 0 0 14px;
+        color: var(--white);
+        line-height: 1.05;
+        text-shadow: 0 12px 30px rgba(0,0,0,.35);
+    }
+    .hero-title span{
+        color: var(--gold);
+        display: inline-block;
+    }
+
+    .hero-subtitle{
+        color: rgba(255,255,255,.80);
+        font-size: 1.08rem;
+        max-width: 780px;
+        margin: 0 auto 30px;
+        line-height: 1.7;
+    }
+
+    .hero-actions{
+        display:flex;
+        gap: 12px;
+        justify-content:center;
+        flex-wrap:wrap;
+        margin-top: 10px;
+    }
+
+    .btn-hero{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        gap: 10px;
+        padding: 12px 26px;
+        border-radius: 10px;
+        text-decoration:none;
+        font-weight: 800;
+        transition: .25s ease;
+        border: 1px solid transparent;
+        min-width: 170px;
+    }
+
+    .btn-gold-hero{
+        background: var(--gold);
+        color: #111;
+    }
+    .btn-gold-hero:hover{
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(244,182,58,.22);
+    }
+
+    .btn-primary-hero{
+        background: rgba(15, 26, 51, .72);
+        color: var(--white);
+        border-color: rgba(255,255,255,.24);
+        backdrop-filter: blur(10px);
+    }
+    .btn-primary-hero:hover{
+        transform: translateY(-2px);
+        border-color: rgba(255,255,255,.35);
+        box-shadow: 0 12px 30px rgba(0,0,0,.28);
+    }
+
+    /* Section titles */
+    .section{
+        padding: 0 0 70px;
+    }
+    .section-title{
+        text-align:center;
+        margin-bottom: 40px;
+    }
+    .section-title h2{
+        font-size: clamp(1.7rem, 2.6vw, 2.35rem);
+        font-weight: 900;
+        color: #0a1020;
+        margin: 0 0 8px;
+    }
+    .section-title p{
+        color: #5b6476;
+        margin:0;
+        font-size: 1rem;
+    }
+
+    /* Amenities */
+    .amenities{
+        background: #fff;
+        padding-top: 10px;
+    }
+    .amenity-card{
+        border-radius: var(--radius);
+        background: #fbfcff;
+        border: 1px solid #edf0f7;
+        padding: 26px 22px;
+        height: 100%;
+        transition: .25s ease;
+        text-align:center;
+    }
+    .amenity-card:hover{
+        transform: translateY(-4px);
+        box-shadow: 0 14px 40px rgba(15, 26, 51, .10);
+        border-color: #e3e9ff;
+    }
+    .amenity-icon{
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background: rgba(244,182,58,.18);
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        margin: 0 auto 16px;
+        border: 1px solid rgba(244,182,58,.35);
+        color: #cc8f12;
+        font-size: 1.3rem;
+    }
+    .amenity-card h5{
+        font-weight: 900;
+        color: #0a1020;
+        margin: 0 0 10px;
+    }
+    .amenity-card p{
+        margin:0;
+        color:#606a7e;
+        line-height:1.6;
+        font-size:.95rem;
+    }
+
+    /* Featured Rooms */
+    .rooms-wrap{
+        background: #f6f8fc;
+        padding: 70px 0;
+    }
+    .rooms-head{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap: 14px;
+        margin-bottom: 26px;
+    }
+    .rooms-head h3{
+        font-size: 2rem;
+        font-weight: 900;
+        margin:0 0 6px;
+        color:#0a1020;
+    }
+    .rooms-head p{
+        margin:0;
+        color:#5b6476;
+        max-width: 640px;
+    }
+    .btn-outline-darkish{
+        display:inline-flex;
+        gap: 10px;
+        align-items:center;
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid #dbe2f3;
+        text-decoration:none;
+        color:#0a1020;
+        background:#fff;
+        font-weight:900;
+        transition:.2s ease;
+        white-space: nowrap;
+    }
+    .btn-outline-darkish:hover{
+        transform: translateY(-2px);
+        box-shadow: 0 12px 24px rgba(10,16,32,.10);
+    }
+    .room-card{
+        background:#fff;
+        border-radius: var(--radius);
+        overflow:hidden;
+        border: 1px solid #e9edf7;
+        height: 100%;
+        transition: .25s ease;
+        box-shadow: 0 10px 24px rgba(10,16,32,.06);
+    }
+    .room-card:hover{
+        transform: translateY(-4px);
+        box-shadow: 0 20px 46px rgba(10,16,32,.12);
+    }
+    .room-media{
+        position:relative;
+        width: 100%;
+        height: 215px;
+        overflow:hidden;
+        background: #000;
+    }
+    .room-media img{
+        width:100%;
+        height:100%;
+        object-fit:cover;
+        transition: .35s ease;
+        transform: scale(1.02);
+    }
+    .room-card:hover .room-media img{
+        transform: scale(1.07);
+    }
+    .room-badge{
+        position:absolute;
+        top: 14px;
+        right: 14px;
+        background: rgba(255,255,255,.92);
+        color:#0a1020;
+        border-radius: 999px;
+        padding: 6px 12px;
+        font-weight: 900;
+        font-size: .8rem;
+        border: 1px solid rgba(10,16,32,.10);
+        backdrop-filter: blur(8px);
+    }
+    .room-body{ padding: 18px; }
+    .room-name{
+        font-weight: 900;
+        font-size: 1.15rem;
+        margin: 0 0 10px;
+        color:#0a1020;
+    }
+    .room-price{
+        font-weight: 900;
+        color: #ef8a00;
+        margin: 0;
+    }
+
+    /* Guest Experiences */
+    .experiences{
+        background: linear-gradient(180deg, #0b1220 0%, #0a1020 100%);
+        padding: 70px 0;
+    }
+    .experiences .section-title h2{ color:#fff; }
+    .experiences .section-title p{ color: rgba(255,255,255,.70); }
+
+    .review-card{
+        background: rgba(255,255,255,.07);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 22px;
+        height: 100%;
+        transition: .25s ease;
+    }
+    .review-card:hover{
+        transform: translateY(-4px);
+        box-shadow: 0 18px 40px rgba(0,0,0,.25);
+        border-color: rgba(255,255,255,.16);
+    }
+    .stars{ color: var(--gold); margin-bottom: 10px; }
+    .review-text{
+        color: rgba(255,255,255,.82);
+        font-style: italic;
+        line-height: 1.75;
+        margin: 0 0 18px;
+    }
+    .reviewer strong{ color:#fff; }
+    .reviewer span{ color: rgba(255,255,255,.55); font-size:.85rem; }
+
+    /* Orange CTA */
+    .cta{
+        background: var(--gold);
+        padding: 70px 0;
+        text-align:center;
+    }
+    .cta h2{
+        margin: 0 0 10px;
+        font-weight: 900;
+        color:#101010;
+    }
+    .cta p{
+        margin: 0 0 22px;
+        color: rgba(0,0,0,.70);
+        font-weight: 600;
+    }
+    .cta-btn{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        padding: 12px 22px;
+        border-radius: 10px;
+        text-decoration:none;
+        background: #0a1020;
+        color: #fff;
+        font-weight: 900;
+        transition: .25s ease;
+    }
+    .cta-btn:hover{
+        transform: translateY(-2px);
+        filter: brightness(1.05);
+    }
+
+    @media (max-width: 768px){
+        .hero{ min-height: 70vh; }
+        .hero-content{ min-height: 70vh; padding: 70px 16px 56px; }
+        .rooms-head{ flex-direction: column; align-items: flex-start; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="home-wrap">
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-inner">
+                <h1 class="hero-title">
+                    Experience Luxury <br>
+                    <span>Like Never Before</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Discover a sanctuary of elegance and comfort in the heart of the city.
+                    Unforgettable moments await at MyHotel.
+                </p>
+                <div class="hero-actions">
+                    <a class="btn-hero btn-gold-hero" href="{% url 'room_list' %}">
+                        Book Your Stay <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a class="btn-hero btn-primary-hero" href="#featured-rooms">
+                        Learn More <i class="fas fa-chevron-down"></i>
+                    </a>
+                </div>
+            </div>
         </div>
-        <h1>Welcome to Hotel Management System</h1>
-        <p class="welcome-message">Hello, {{ user.username }}! You are logged in.</p>
-        <p>This is your dashboard. More features coming soon...</p>
-    </div>
-</body>
-</html>
+    </section>
+
+    <!-- AMENITIES -->
+    <section class="section amenities">
+        <div class="container">
+            <div class="section-title">
+                <h2>World-Class Amenities</h2>
+                <p>We provide everything you need for a comfortable and memorable stay.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="amenity-card">
+                        <div class="amenity-icon"><i class="fas fa-wifi"></i></div>
+                        <h5>High-Speed Wi-Fi</h5>
+                        <p>Stay connected with complimentary fiber-optic internet access throughout the hotel.</p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="amenity-card">
+                        <div class="amenity-icon"><i class="fas fa-utensils"></i></div>
+                        <h5>Fine Dining</h5>
+                        <p>Savor exquisite culinary creations at our award-winning restaurant.</p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="amenity-card">
+                        <div class="amenity-icon"><i class="fas fa-mug-hot"></i></div>
+                        <h5>Premium Coffee</h5>
+                        <p>Start your day right with artisan coffee served fresh in our lounge.</p>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="amenity-card">
+                        <div class="amenity-icon"><i class="fas fa-car"></i></div>
+                        <h5>Valet Parking</h5>
+                        <p>Hassle-free parking service available 24/7 for all our guests.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURED ROOMS -->
+    <section id="featured-rooms" class="rooms-wrap">
+        <div class="container">
+            <div class="rooms-head">
+                <div>
+                    <h3>Featured Rooms</h3>
+                    <p>Choose from our selection of elegantly appointed rooms and suites.</p>
+                </div>
+                <a class="btn-outline-darkish" href="{% url 'room_list' %}">
+                    View All Rooms <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="row g-4">
+                {% for room in featured_rooms %}
+                    <div class="col-12 col-md-6 col-lg-4">
+                        <div class="room-card">
+                            <div class="room-media">
+                                {% if room.image %}
+                                    <img src="{{ room.image.url }}" alt="Room {{ room.room_number }}">
+                                {% else %}
+                                    <img src="{% static 'hotel/img/room-placeholder.jpg' %}" alt="Room image">
+                                {% endif %}
+                                <div class="room-badge">
+                                    {{ room.category.category_name|default:"Suite" }}
+                                </div>
+                            </div>
+                            <div class="room-body">
+                                <h4 class="room-name">
+                                    Room {{ room.room_number }} — {{ room.category.category_name }}
+                                </h4>
+                                <div class="room-price">
+                                    ${{ room.category.base_price }} <small>/night</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12">
+                        <div class="room-card" style="padding:22px;text-align:center;">
+                            <strong>No featured rooms available right now.</strong>
+                            <div style="color:#6a7387;margin-top:6px;">Please check again later.</div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- GUEST EXPERIENCES -->
+    <section class="experiences">
+        <div class="container">
+            <div class="section-title">
+                <h2>Guest Experiences</h2>
+                <p>Don’t just take our word for it. Here’s what our guests have to say.</p>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-12 col-md-4">
+                    <div class="review-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="review-text">
+                            “The attention to detail is unmatched. From seamless check-in to immaculate room service,
+                            everything was perfect.”
+                        </p>
+                        <div class="reviewer">
+                            <strong>Sarah Johnson</strong>
+                            <span>Business Traveler</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="review-card">
+                        <div class="stars">★★★★★</div>
+                        <p class="review-text">
+                            “Our kids loved the pool and the family room was spacious enough for all of us.
+                            Truly a home away from home.”
+                        </p>
+                        <div class="reviewer">
+                            <strong>Michael Chen</strong>
+                            <span>Family Vacation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4">
+                    <div class="review-card">
+                        <div class="stars">★★★★☆</div>
+                        <p class="review-text">
+                            “The spa treatments were divine and the location is perfect for exploring the city.
+                            We will definitely return!”
+                        </p>
+                        <div class="reviewer">
+                            <strong>Emma Wilson</strong>
+                            <span>Weekend Getaway</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ORANGE CTA -->
+    <section class="cta">
+        <div class="container">
+            <h2>Ready for an Unforgettable Stay?</h2>
+            <p>Book directly through our website for the best rates and exclusive perks.</p>
+            <a class="cta-btn" href="{% url 'room_list' %}">
+                Check Availability <i class="fas fa-arrow-right" style="margin-left:10px;"></i>
+            </a>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

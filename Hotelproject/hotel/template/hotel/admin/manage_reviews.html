@@ -1,0 +1,91 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block admin_content %}
+<h2>Manage Reviews & Ratings</h2>
+<div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReviewModal">New Review</button>
+</div>
+<div class="admin-card" style="margin-top:12px;">
+  {% if reviews %}
+    <div style="display:grid;gap:12px;">
+      {% for r in reviews %}
+        <div style="padding:12px;border-radius:10px;border:1px solid #eef2f7;background:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;position:relative;">
+          <div>
+            <div style="font-weight:900;">{{ r.user.get_full_name|default:r.user.username }} — {{ r.room.room_number }}</div>
+            <div style="color:var(--muted); margin-top:6px;">{{ r.review|truncatechars:140 }}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:900;">{{ r.rating }}/5</div>
+            <div style="color:var(--muted); font-size:12px;">{{ r.created_at|date:"M d, Y" }}</div>
+          </div>
+          <div style="position:absolute;top:8px;right:8px;display:flex;gap:6px;">
+            <a class="btn btn-sm btn-warning" href="{% url 'edit_review' r.id %}">Edit</a>
+            <form method="post" action="{% url 'delete_review' r.id %}">
+              {% csrf_token %}
+              <button class="btn btn-sm btn-danger">Delete</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div style="padding:18px;color:var(--muted);">No reviews found.</div>
+  {% endif %}
+</div>
+{% endblock %}
+
+
+<!-- Add Review Modal -->
+<div class="modal fade" id="addReviewModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Add Review</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{% url 'add_review' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">User</label>
+            <select name="user" class="form-select" required>
+              <option value="">Select User</option>
+              {% for u in users %}
+                <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Room</label>
+            <select name="room" class="form-select" required>
+              <option value="">Select Room</option>
+              {% for rm in rooms %}
+                <option value="{{ rm.id }}">{{ rm.room_number }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Reservation (optional)</label>
+            <select name="reservation" class="form-select">
+              <option value="">None</option>
+              {% for res in reservations %}
+                <option value="{{ res.id }}">#{{ res.id }} — {{ res.guest.user.username }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Rating</label>
+            <input type="number" name="rating" class="form-control" min="1" max="5" value="5" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Review</label>
+            <textarea name="review" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Add Review</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

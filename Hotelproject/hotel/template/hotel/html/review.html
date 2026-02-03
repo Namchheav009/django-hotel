@@ -1,0 +1,164 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}Reviews - MyHotel{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root{
+    --text:#0a1020;
+    --muted:#6a7387;
+    --line:#e9edf7;
+    --card:#fff;
+    --dark:#0b1220;
+    --gold:#f4b63a;
+    --radius:16px;
+    --shadow: 0 16px 40px rgba(10,16,32,.10);
+  }
+
+  .reviews-wrap{ padding: 18px 0 60px; }
+
+  .reviews-head{
+    display:flex; justify-content:space-between; align-items:flex-start; gap:16px;
+    margin: 10px 0 18px;
+  }
+
+  .reviews-head h1{ font-weight: 900; margin:0; color:var(--text); }
+  .reviews-head p{ margin:6px 0 0; color:var(--muted); }
+
+  .write-btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding: 10px 16px; border-radius: 10px;
+    background: var(--dark); color:#fff; text-decoration:none;
+    font-weight: 900;
+    box-shadow: 0 14px 30px rgba(11,18,32,.18);
+  }
+  .write-btn:hover{ transform: translateY(-2px); color:#fff; }
+
+  .rating-box{
+    display:flex; align-items:center; gap:16px;
+    margin: 10px 0 22px;
+  }
+  .rating-num{
+    font-size: 3rem; font-weight: 900; color: #f39b12; line-height: 1;
+  }
+  .rating-meta{ color:var(--muted); font-weight:700; }
+  .stars{ color: var(--gold); letter-spacing: 1px; font-size: 1.05rem; }
+
+  .review-card{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 18px;
+    box-shadow: 0 10px 24px rgba(10,16,32,.06);
+    height: 100%;
+  }
+
+  .review-top{
+    display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    margin-bottom: 10px;
+  }
+
+  .user{
+    display:flex; gap:12px; align-items:center;
+  }
+  .avatar{
+    width:40px; height:40px; border-radius:50%;
+    background:#f1f4fb; display:flex; align-items:center; justify-content:center;
+    border: 1px solid var(--line);
+    color:#5f6b83;
+  }
+  .user-name{ font-weight: 900; margin:0; color:var(--text); }
+  .user-sub{ margin:2px 0 0; color:var(--muted); font-size:.85rem; }
+
+  .date{ color:#8892aa; font-weight: 800; font-size:.85rem; }
+
+  .review-text{
+    color:#2d3851; line-height:1.7;
+    margin: 10px 0 0;
+  }
+
+  @media(max-width:768px){
+    .reviews-head{ flex-direction:column; }
+    .write-btn{ width: fit-content; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reviews-wrap container">
+
+  <div class="reviews-head">
+    <div>
+      <h1>Guest Reviews</h1>
+      <p>See what guests say about their stays.</p>
+
+      <div class="rating-box">
+        <div class="rating-num">{{ avg_rating|floatformat:1 }}</div>
+        <div>
+          <div class="stars">
+            {% comment %} simple star display based on avg {% endcomment %}
+            {% with r=avg_rating|floatformat:0 %}
+              {% for i in "12345" %}
+                {% if forloop.counter <= r|add:0 %}
+                  <i class="fas fa-star"></i>
+                {% else %}
+                  <i class="far fa-star"></i>
+                {% endif %}
+              {% endfor %}
+            {% endwith %}
+          </div>
+          <div class="rating-meta">Based on {{ total_reviews }} reviews</div>
+        </div>
+      </div>
+    </div>
+
+    {# ✅ Button should go to My Stays so user can pick stayed room #}
+    <a class="write-btn" href="{% url 'my_reservations' %}">
+      <i class="fas fa-plus"></i> Write a Review
+    </a>
+  </div>
+
+  {% if reviews %}
+    <div class="row g-4">
+      {% for rev in reviews %}
+        <div class="col-12 col-md-6">
+          <div class="review-card">
+            <div class="review-top">
+              <div class="user">
+                <div class="avatar"><i class="fas fa-user"></i></div>
+                <div>
+                  <p class="user-name">{{ rev.user.get_full_name|default:rev.user.username }}</p>
+                  <p class="user-sub">
+                    {{ rev.reservation.room.category.category_name|default:"Stay" }}
+                  </p>
+                </div>
+              </div>
+              <div class="date">
+                {{ rev.created_at|date:"M d, Y" }}
+              </div>
+            </div>
+
+            <div class="stars">
+                {% for i in "12345" %}
+                  {% if forloop.counter <= rev.rating %}
+                    <i class="fas fa-star"></i>
+                  {% else %}
+                    <i class="far fa-star"></i>
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              <p class="review-text">“{{ rev.review }}”</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      No reviews yet. Be the first to write one!
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block title %}Add User - Admin Panel{% endblock %}
+{% block admin_content %}
+<div class="admin-content-title"><h1>Add User</h1></div>
+<div class="admin-card">
+    <form method="post">
+        {% csrf_token %}
+        <label>Username</label><br><input name="username" required><br>
+        <label>Email</label><br><input name="email" type="email"><br>
+        <label>Password</label><br><input name="password" type="password" required><br>
+        <label>Role</label><br>
+        <select name="role">
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+        </select><br>
+        <label><input type="checkbox" name="is_staff"> Staff</label>
+        <label><input type="checkbox" name="is_superuser"> Superuser</label><br><br>
+        <button type="submit" class="btn btn-primary">Create User</button>
+        <a href="{% url 'manage_users' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

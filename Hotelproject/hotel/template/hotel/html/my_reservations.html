@@ -1,0 +1,44 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}My Reservations - MyHotel{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="fas fa-calendar"></i> My Reservations</h1>
+
+{% if reservations %}
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Room</th>
+                    <th>Check-in</th>
+                    <th>Check-out</th>
+                    <th>Status</th>
+                    <th>Total Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reservation in reservations %}
+                    <tr>
+                        <td>{{ reservation.room.room_number }}</td>
+                        <td>{{ reservation.check_in_date }}</td>
+                        <td>{{ reservation.check_out_date }}</td>
+                        <td><span class="badge badge-warning">{{ reservation.status }}</span></td>
+                        <td>${{ reservation.total_price }}</td>
+                        <td>
+                            <a href="{% url 'reservation_detail' reservation.id %}" class="btn btn-sm btn-primary">Details</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> You don't have any reservations yet.
+        <a href="{% url 'room_list' %}" class="btn btn-sm btn-primary">Browse Rooms</a>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}{{ room.room_number }} Details - MyHotel{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Room Gallery -->
+    <div class="row mb-4">
+        <div class="col-lg-7">
+            <div id="roomGallery" class="carousel slide shadow-lg" data-bs-ride="carousel">
+                <div class="carousel-inner" style="border-radius: 8px; overflow: hidden; height: 400px;">
+                    <div class="carousel-item active">
+                        {% if room.image %}
+                            <img src="{{ room.image.url }}" class="d-block w-100" style="object-fit: cover; height: 100%;" alt="Room">
+                        {% else %}
+                            <img src="{% static 'hotel/images/default-room.jpg' %}" class="d-block w-100" style="object-fit: cover; height: 100%;" alt="Room">
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Room Info Card -->
+        <div class="col-lg-5">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="badge bg-primary">{{ room.category.category_name }}</span>
+                        <span class="badge bg-success">Room {{ room.room_number }}</span>
+                        <span class="badge bg-info">{{ room.status }}</span>
+                    </div>
+
+                    <h2 class="mb-2">${{ room.category.base_price|default:room.price }}<small class="fs-6 text-muted">/night</small></h2>
+
+                    <!-- Quick Info -->
+                    <div class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-users fa-2x text-primary me-3"></i>
+                                    <div>
+                                        <small class="text-muted">Max Guests</small>
+                                        <p class="mb-0"><strong>{{ room.max_occupancy }}</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-door-open fa-2x text-info me-3"></i>
+                                    <div>
+                                        <small class="text-muted">Floor</small>
+                                        <p class="mb-0"><strong>{{ room.floor }}</strong></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'book_room' room.id %}" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-calendar-check me-2"></i> Book Now
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-sign-in-alt me-2"></i> Login to Book
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Room Details -->
+    <div class="row mt-5">
+        <div class="col-lg-8">
+            <!-- Description -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h4 class="mb-3">About This Room</h4>
+                    <p>{{ room.description|default:"Beautiful room with all modern amenities to ensure your comfortable stay." }}</p>
+                </div>
+            </div>
+
+            <!-- Amenities -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <h4 class="mb-0"><i class="fas fa-check-circle text-success me-2"></i> Room Amenities</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="list-unstyled">
+                                {% for amenity in amenities_list %}
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i> {{ amenity }}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- House Rules -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-list me-2"></i> House Rules</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><strong>Check-in:</strong> 3:00 PM</li>
+                        <li class="mb-2"><strong>Check-out:</strong> 11:00 AM</li>
+                        <li class="mb-2"><strong>Smoking:</strong> Not allowed</li>
+                        <li class="mb-2"><strong>Pets:</strong> Not allowed</li>
+                        <li><strong>Cancellation:</strong> Free until 48 hours before arrival</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Contact Support -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'contact' %}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-envelope me-2"></i> Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div class="mt-5">
+        <a href="{% url 'room_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Rooms
+        </a>
+    </div>
+</div>
+
+<style>
+.carousel-control-prev,
+.carousel-control-next {
+    background-color: rgba(0,0,0,0.3);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+}
+</style>
+{% endblock %}

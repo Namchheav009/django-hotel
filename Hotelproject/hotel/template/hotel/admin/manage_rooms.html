@@ -1,0 +1,121 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block title %}Manage Rooms - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<div class="admin-content-title">
+    <h1><i class="fas fa-door-open"></i> Room Management</h1>
+</div>
+
+<div class="admin-card" style="margin-bottom: 20px;">
+    <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+        <i class="fas fa-plus"></i> Add New Room
+    </a>
+</div>
+
+<!-- Rooms Table -->
+<div class="admin-card">
+    {% if rooms %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Room Number</th>
+                    <th>Category</th>
+                    <th>Floor</th>
+                    <th>Status</th>
+                    <th>Occupancy</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for room in rooms %}
+                    <tr>
+                        <td><strong>{{ room.room_number }}</strong></td>
+                        <td>{{ room.category.category_name }}</td>
+                        <td>{{ room.floor }}</td>
+                        <td>
+                            {% if room.status == 'Available' %}
+                                <span class="badge-confirmed">Available</span>
+                            {% elif room.status == 'Booked' %}
+                                <span class="badge-pending">Booked</span>
+                            {% else %}
+                                <span class="badge-cancelled">{{ room.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ room.max_occupancy }} persons</td>
+                        <td>${{ room.price|default:"N/A" }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning" onclick="editRoom({{ room.id }})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteRoom({{ room.id }})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p style="color: #7f8c8d; text-align: center; padding: 20px;">No rooms available.</p>
+    {% endif %}
+</div>
+
+<!-- Add Room Modal -->
+<div class="modal fade" id="addRoomModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Room</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addRoomForm" method="POST" action="{% url 'add_room' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="room_number" class="form-label">Room Number</label>
+                        <input type="text" class="form-control" id="room_number" name="room_number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category" required>
+                            <option value="">Select Category</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}">{{ cat.category_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="floor" class="form-label">Floor</label>
+                        <input type="number" class="form-control" id="floor" name="floor" value="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="max_occupancy" class="form-label">Max Occupancy</label>
+                        <input type="number" class="form-control" id="max_occupancy" name="max_occupancy" value="2" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="number" step="0.01" class="form-control" id="price" name="price" placeholder="Leave blank to use category price">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" form="addRoomForm" class="btn btn-primary">Add Room</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function editRoom(roomId) {
+        window.location.href = '/dashboard/rooms/' + roomId + '/edit/';
+    }
+    
+    function deleteRoom(roomId) {
+        if (confirm('Are you sure you want to delete this room?')) {
+            window.location.href = '/dashboard/rooms/' + roomId + '/delete/';
+        }
+    }
+</script>
+{% endblock %}

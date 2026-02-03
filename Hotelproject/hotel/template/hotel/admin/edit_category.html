@@ -1,0 +1,21 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block title %}Edit Category - Admin{% endblock %}
+
+{% block admin_content %}
+<div class="admin-content-title">
+  <h2>Edit Category</h2>
+</div>
+<div class="admin-card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label">Name</label>
+      <input class="form-control" name="category_name" value="{{ category.category_name }}" required>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Save</button>
+      <a class="btn btn-secondary" href="{% url 'manage_categories' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

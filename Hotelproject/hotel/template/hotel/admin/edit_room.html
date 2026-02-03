@@ -1,0 +1,70 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block title %}Edit Room - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<div class="admin-content-title">
+    <h1><i class="fas fa-door-open"></i> Edit Room {{ room.room_number }}</h1>
+</div>
+
+<div class="admin-card">
+    <form method="POST" action="">
+        {% csrf_token %}
+        
+        <div class="mb-3">
+            <label for="room_number" class="form-label">Room Number</label>
+            <input type="text" class="form-control" id="room_number" name="room_number" value="{{ room.room_number }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <select class="form-select" id="category" name="category" required>
+                <option value="">Select Category</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if cat.id == room.category.id %}selected{% endif %}>
+                        {{ cat.category_name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="floor" class="form-label">Floor</label>
+            <input type="number" class="form-control" id="floor" name="floor" value="{{ room.floor }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="max_occupancy" class="form-label">Max Occupancy</label>
+            <input type="number" class="form-control" id="max_occupancy" name="max_occupancy" value="{{ room.max_occupancy }}" required>
+        </div>
+        
+        <div class="mb-3">
+            <label for="price" class="form-label">Price</label>
+            <input type="number" step="0.01" class="form-control" id="price" name="price" value="{{ room.price|default:'' }}" placeholder="Leave blank for no price set">
+        </div>
+        
+        <div class="mb-3">
+            <label for="status" class="form-label">Status</label>
+            <select class="form-select" id="status" name="status" required>
+                <option value="Available" {% if room.status == 'Available' %}selected{% endif %}>Available</option>
+                <option value="Booked" {% if room.status == 'Booked' %}selected{% endif %}>Booked</option>
+                <option value="Maintenance" {% if room.status == 'Maintenance' %}selected{% endif %}>Maintenance</option>
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="amenities" class="form-label">Amenities (comma-separated)</label>
+            <textarea class="form-control" id="amenities" name="amenities" rows="3">{{ room.amenities }}</textarea>
+        </div>
+        
+        <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description" rows="4">{{ room.description }}</textarea>
+        </div>
+        
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'manage_rooms' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

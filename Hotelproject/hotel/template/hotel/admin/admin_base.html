@@ -1,0 +1,96 @@
+
+{% block content %}
+<div class="admin-container">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">GH</div>
+      <div class="brand-text">
+        <strong>Grand Hotel</strong>
+        <div class="brand-sub">Management System</div>
+      </div>
+    </div>
+
+    <nav class="nav-list">
+      <a href="{% url 'admin_dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"><i class="fas fa-chart-pie"></i> Dashboard</a>
+      <a href="{% url 'manage_rooms' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_rooms' %}active{% endif %}"><i class="fas fa-door-open"></i> Rooms</a>
+      <a href="{% url 'manage_reservations' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_reservations' %}active{% endif %}"><i class="fas fa-calendar-alt"></i> Reservations</a>
+      <a href="{% url 'manage_users' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_users' %}active{% endif %}"><i class="fas fa-users"></i> Guests</a>
+      <a href="{% url 'manage_categories' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_categories' %}active{% endif %}"><i class="fas fa-layer-group"></i> Category</a>
+      <a href="{% url 'manage_services' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_services' %}active{% endif %}"><i class="fas fa-concierge-bell"></i> Services</a>
+      <a href="{% url 'manage_bookings' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_bookings' %}active{% endif %}"><i class="fas fa-user-tie"></i> Booking</a>
+      <a href="{% url 'manage_reviews' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_reviews' %}active{% endif %}"><i class="fas fa-star"></i> Review & Rating</a>
+      <a href="{% url 'manage_contacts' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_contacts' %}active{% endif %}"><i class="fas fa-envelope"></i> Contact</a>
+      <a href="{% url 'admin_reports' %}" class="nav-item {% if request.resolver_match.url_name == 'admin_reports' %}active{% endif %}"><i class="fas fa-chart-line"></i> Reports</a>
+      <a href="/admin/" target="_blank" class="nav-item"><i class="fas fa-cog"></i> Django Admin</a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-mini">
+        <div class="avatar">{{ request.user.first_name|default:request.user.username|slice:":1" }}</div>
+        <div>
+          <div class="user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
+          <div class="user-role">Manager</div>
+        </div>
+      </div>
+      <a href="{% url 'logout' %}" class="logout">Logout</a>
+    </div>
+  </aside>
+
+  <main class="main-area">
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="main-inner">
+      {% block admin_content %}{% endblock %}
+    </div>
+  </main>
+</div>
+
+<style>
+  :root{
+    --sidebar:#0f2133;
+    --accent:#ffb74d;
+    --muted:#7b8794;
+    --card:#ffffff;
+    --bg:#f6f8fb;
+    --panel-shadow: 0 10px 30px rgba(11,18,32,.06);
+  }
+
+  .admin-container{ display:flex; min-height:100vh; background:var(--bg); }
+
+  /* Sidebar */
+  .sidebar{ width:260px; background:var(--sidebar); color:#fff; padding:22px; display:flex; flex-direction:column; box-shadow: 2px 0 10px rgba(2,6,23,.12); }
+  .brand{ display:flex; gap:12px; align-items:center; margin-bottom:18px; }
+  .brand-logo{ width:48px; height:48px; border-radius:10px; background:var(--accent); color:#091025; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:18px; }
+  .brand-text .brand-sub{ font-size:12px; color:rgba(255,255,255,.7); }
+
+  .nav-list{ display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .nav-item{ color:rgba(255,255,255,.85); text-decoration:none; padding:12px 14px; border-radius:10px; font-weight:800; display:flex; gap:12px; align-items:center; }
+  .nav-item i{ width:18px; text-align:center; }
+  .nav-item.active, .nav-item:hover{ background: rgba(255,255,255,.06); }
+
+  .sidebar-footer{ margin-top:auto; display:flex; flex-direction:column; gap:10px; }
+  .user-mini{ display:flex; gap:12px; align-items:center; }
+  .avatar{ width:40px; height:40px; border-radius:8px; background:#0b1220; display:flex; align-items:center; justify-content:center; font-weight:900; }
+  .user-name{ font-weight:900; }
+  .user-role{ font-size:12px; color:var(--muted); }
+  .logout{ display:inline-block; background:#ff5a5f; color:#fff; text-decoration:none; padding:8px 10px; border-radius:8px; text-align:center; font-weight:900; }
+
+  /* Main */
+  .main-area{ flex:1; padding:28px; }
+  .main-inner{ max-width:1200px; margin:0 auto; }
+
+  .messages .alert{ margin-bottom:12px; }
+
+  /* Small reusable card */
+  .admin-card{ background:var(--card); border-radius:12px; padding:18px; box-shadow:var(--panel-shadow); }
+
+  @media(max-width:900px){ .sidebar{ display:none; } .main-area{ padding:16px; } }
+</style>
+
+{% endblock %}

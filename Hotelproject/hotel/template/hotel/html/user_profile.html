@@ -1,0 +1,846 @@
+{% extends "hotel/html/base.html" %}
+{% load static %}
+
+{% block title %}My Profile - Hotel Booking{% endblock %}
+
+{% block extra_head %}
+<style>
+    :root {
+        --primary: #00e5ff;
+        --dark-bg: rgba(10, 25, 47, 0.6);
+        --darker-bg: rgba(10, 25, 47, 0.9);
+        --border: rgba(0, 229, 255, 0.2);
+        --border-hover: rgba(0, 229, 255, 0.4);
+        --text-primary: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.7);
+        --text-muted: rgba(255, 255, 255, 0.5);
+        --success: #4ade80;
+        --warning: #fbbf24;
+        --danger: #ff6b6b;
+        --info: #00e5ff;
+    }
+
+    .profile-container {
+        padding: 20px 0 40px;
+    }
+
+    /* Sidebar */
+    .sidebar-card {
+        background: var(--dark-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        position: sticky;
+        top: 100px;
+    }
+
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--primary) 0%, #0ea5e9 100%);
+        border: 3px solid var(--border);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0a192f;
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin: 0 auto 20px;
+        box-shadow: 0 8px 25px rgba(0, 229, 255, 0.3);
+    }
+
+    .profile-name {
+        color: var(--text-primary);
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .profile-member-since {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav {
+        margin: 25px 0;
+    }
+
+    .sidebar-nav .nav-link {
+        color: var(--text-secondary);
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-nav .nav-link i {
+        color: var(--primary);
+        font-size: 1rem;
+    }
+
+    .sidebar-nav .nav-link:hover {
+        color: var(--text-primary);
+        background: rgba(0, 229, 255, 0.1);
+        border-color: var(--border);
+        transform: translateX(5px);
+    }
+
+    .sidebar-nav .nav-link.active {
+        color: var(--primary);
+        background: rgba(0, 229, 255, 0.15);
+        border-color: var(--primary);
+        box-shadow: 0 0 15px rgba(0, 229, 255, 0.2);
+    }
+
+    .btn-logout {
+        width: 100%;
+        background: transparent;
+        border: 2px solid var(--danger);
+        color: var(--danger);
+        padding: 12px;
+        border-radius: 8px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-logout:hover {
+        background: var(--danger);
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    }
+
+    /* Content Cards */
+    .content-card {
+        background: var(--dark-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        margin-bottom: 25px;
+    }
+
+    .content-card-header {
+        background: rgba(0, 229, 255, 0.1);
+        border-bottom: 1px solid var(--border);
+        padding: 20px 25px;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .content-card-header h5 {
+        color: var(--text-primary);
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .content-card-body {
+        padding: 25px;
+    }
+
+    /* Info Display */
+    .info-row {
+        margin-bottom: 20px;
+    }
+
+    .info-label {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 5px;
+        font-weight: 700;
+    }
+
+    .info-value {
+        color: var(--text-primary);
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    /* Stats Cards */
+    .stat-card {
+        background: var(--dark-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 25px;
+        text-align: center;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .stat-card:hover {
+        border-color: var(--border-hover);
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 229, 255, 0.2);
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin-bottom: 10px;
+    }
+
+    .stat-number.primary {
+        color: var(--primary);
+    }
+
+    .stat-number.success {
+        color: var(--success);
+    }
+
+    .stat-number.warning {
+        color: var(--warning);
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+    }
+
+    /* Booking Items */
+    .booking-item {
+        background: rgba(0, 229, 255, 0.05);
+        border: 1px solid var(--border);
+        border-left: 4px solid var(--primary);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .booking-item:hover {
+        background: rgba(0, 229, 255, 0.1);
+        border-color: var(--border-hover);
+        transform: translateX(5px);
+        box-shadow: 0 4px 15px rgba(0, 229, 255, 0.15);
+    }
+
+    .booking-image {
+        width: 100%;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+    }
+
+    .booking-placeholder {
+        height: 120px;
+        background: rgba(0, 229, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .booking-title {
+        color: var(--text-primary);
+        font-weight: 700;
+        margin-bottom: 8px;
+        font-size: 1.05rem;
+    }
+
+    .booking-detail {
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .booking-detail i {
+        color: var(--primary);
+        width: 14px;
+    }
+
+    /* Badges */
+    .status-badge {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border: 1px solid;
+    }
+
+    .status-badge.confirmed {
+        background: rgba(74, 222, 128, 0.2);
+        border-color: var(--success);
+        color: var(--success);
+    }
+
+    .status-badge.checked-in {
+        background: rgba(0, 229, 255, 0.2);
+        border-color: var(--info);
+        color: var(--info);
+    }
+
+    .status-badge.checked-out {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--text-muted);
+        color: var(--text-muted);
+    }
+
+    .status-badge.pending {
+        background: rgba(251, 191, 36, 0.2);
+        border-color: var(--warning);
+        color: var(--warning);
+    }
+
+    /* Buttons */
+    .btn-edit {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit:hover {
+        background: var(--primary);
+        color: #0a192f;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
+    }
+
+    .btn-action {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .btn-action:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--border-hover);
+        color: var(--text-primary);
+    }
+
+    .btn-action.primary {
+        border: 2px solid var(--primary);
+        color: var(--primary);
+    }
+
+    .btn-action.primary:hover {
+        background: var(--primary);
+        color: #0a192f;
+    }
+
+    /* Reviews */
+    .review-item {
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .review-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .review-title {
+        color: var(--text-primary);
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .review-rating {
+        margin-bottom: 10px;
+    }
+
+    .review-rating i {
+        font-size: 0.9rem;
+        margin-right: 2px;
+    }
+
+    .review-rating i.filled {
+        color: var(--warning);
+    }
+
+    .review-rating i.empty {
+        color: var(--text-muted);
+    }
+
+    .review-date {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+        margin-left: 10px;
+    }
+
+    .review-text {
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        color: var(--text-muted);
+        font-size: 1rem;
+    }
+
+    .empty-state a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 700;
+    }
+
+    .empty-state a:hover {
+        text-decoration: underline;
+    }
+
+    /* Forms */
+    .form-label {
+        color: var(--text-primary);
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        border-radius: 8px;
+        padding: 12px 14px;
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 0.2rem rgba(0, 229, 255, 0.25);
+        color: var(--text-primary);
+    }
+
+    .form-control:disabled {
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--text-muted);
+    }
+
+    .form-text {
+        color: var(--text-muted);
+        font-size: 0.8rem;
+    }
+
+    /* Modal */
+    .modal-content {
+        background: var(--darker-bg);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        backdrop-filter: blur(20px);
+    }
+
+    .modal-header {
+        background: rgba(0, 229, 255, 0.1);
+        border-bottom: 1px solid var(--border);
+        padding: 20px 25px;
+    }
+
+    .modal-title {
+        color: var(--text-primary);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .modal-footer {
+        border-top: 1px solid var(--border);
+        padding: 20px 25px;
+    }
+
+    .btn-close {
+        filter: invert(1);
+        opacity: 0.7;
+    }
+
+    .btn-close:hover {
+        opacity: 1;
+    }
+
+    .btn-secondary {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.15);
+        border-color: var(--border-hover);
+        color: var(--text-primary);
+    }
+
+    .btn-primary {
+        background: transparent;
+        border: 2px solid var(--primary);
+        color: var(--primary);
+    }
+
+    .btn-primary:hover {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #0a192f;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .sidebar-card {
+            position: relative !important;
+            top: 0 !important;
+            margin-bottom: 30px;
+        }
+
+        .booking-item .row > div {
+            margin-bottom: 15px;
+        }
+
+        .stat-card {
+            margin-bottom: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <div class="col-lg-3">
+                <div class="sidebar-card">
+                    <div class="card-body" style="padding: 30px;">
+                        <div class="text-center mb-4">
+                            <div class="profile-avatar">
+                                {{ user.first_name|first|upper|default:user.username|first|upper }}
+                            </div>
+                            <h5 class="profile-name">{{ user.first_name }} {{ user.last_name }}</h5>
+                            <p class="profile-member-since">Member since {{ user.date_joined|date:"M Y" }}</p>
+                        </div>
+
+                        <nav class="sidebar-nav">
+                            <a class="nav-link active" href="#profile" data-bs-toggle="tab">
+                                <i class="fas fa-user"></i> My Profile
+                            </a>
+                            <a class="nav-link" href="#bookings" data-bs-toggle="tab">
+                                <i class="fas fa-calendar-check"></i> My Bookings
+                            </a>
+                            <a class="nav-link" href="#reviews" data-bs-toggle="tab">
+                                <i class="fas fa-star"></i> My Reviews
+                            </a>
+                            <a class="nav-link" href="#settings" data-bs-toggle="tab">
+                                <i class="fas fa-cog"></i> Settings
+                            </a>
+                        </nav>
+
+                        <hr style="border-color: var(--border); margin: 25px 0;">
+
+                        <a href="{% url 'logout' %}" class="btn-logout">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-9">
+                <div class="tab-content">
+                    <!-- Profile Tab -->
+                    <div class="tab-pane fade show active" id="profile">
+                        <div class="content-card">
+                            <div class="content-card-header">
+                                <h5>Personal Information</h5>
+                                <button class="btn-edit" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                            </div>
+                            <div class="content-card-body">
+                                <div class="row info-row">
+                                    <div class="col-md-6">
+                                        <div class="info-label">First Name</div>
+                                        <div class="info-value">{{ user.first_name|default:"Not set" }}</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-label">Last Name</div>
+                                        <div class="info-value">{{ user.last_name|default:"Not set" }}</div>
+                                    </div>
+                                </div>
+                                <div class="row info-row">
+                                    <div class="col-md-6">
+                                        <div class="info-label">Email</div>
+                                        <div class="info-value">{{ user.email }}</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="info-label">Phone</div>
+                                        <div class="info-value">{{ guest.phone|default:"Not provided" }}</div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="info-label">Address</div>
+                                        <div class="info-value">{{ guest.address|default:"Not provided" }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Stats -->
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number primary">{{ total_bookings }}</div>
+                                    <div class="stat-label">Total Bookings</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number success">{{ total_nights }}</div>
+                                    <div class="stat-label">Nights Stayed</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stat-card">
+                                    <div class="stat-number warning">{{ reviews_count }}</div>
+                                    <div class="stat-label">Reviews Given</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bookings Tab -->
+                    <div class="tab-pane fade" id="bookings">
+                        <div class="content-card">
+                            <div class="content-card-header">
+                                <h5>My Bookings</h5>
+                            </div>
+                            <div class="content-card-body">
+                                {% if bookings %}
+                                <div class="booking-list">
+                                    {% for booking in bookings %}
+                                    <div class="booking-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-md-2">
+                                                {% if booking.room.image %}
+                                                    <img src="{{ booking.room.image.url }}" alt="Room" class="booking-image">
+                                                {% else %}
+                                                    <div class="booking-placeholder">
+                                                        <i class="fas fa-image text-muted fa-2x"></i>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-md-4">
+                                                <h6 class="booking-title">{{ booking.room.room_number }} - {{ booking.room.category.category_name }}</h6>
+                                                <p class="booking-detail">
+                                                    <i class="fas fa-calendar"></i>
+                                                    {{ booking.check_in_date|date:"M d, Y" }} to {{ booking.check_out_date|date:"M d, Y" }}
+                                                </p>
+                                                <p class="booking-detail">
+                                                    <i class="fas fa-users"></i>
+                                                    {{ booking.number_of_guests }} guest{{ booking.number_of_guests|pluralize }}
+                                                </p>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div style="margin-bottom: 10px;">
+                                                    {% if booking.status == 'Confirmed' %}
+                                                        <span class="status-badge confirmed">Confirmed</span>
+                                                    {% elif booking.status == 'Checked In' %}
+                                                        <span class="status-badge checked-in">Checked In</span>
+                                                    {% elif booking.status == 'Checked Out' %}
+                                                        <span class="status-badge checked-out">Checked Out</span>
+                                                    {% else %}
+                                                        <span class="status-badge pending">{{ booking.status }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                <p class="booking-detail" style="margin-bottom: 0;">
+                                                    Total: <strong style="color: var(--primary);">${{ booking.total_price }}</strong>
+                                                </p>
+                                            </div>
+                                            <div class="col-md-3 text-end">
+                                                <a href="{% url 'reservation_detail' booking.id %}" class="btn-action" style="display: inline-block; margin-bottom: 8px;">
+                                                    <i class="fas fa-eye"></i> Details
+                                                </a>
+                                                {% if booking.status == 'Checked Out' %}
+                                                <a href="{% url 'rate_room' booking.room.id %}" class="btn-action primary" style="display: inline-block;">
+                                                    <i class="fas fa-star"></i> Review
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-inbox"></i>
+                                    <p>No bookings yet. <a href="{% url 'room_list' %}">Start booking now!</a></p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reviews Tab -->
+                    <div class="tab-pane fade" id="reviews">
+                        <div class="content-card">
+                            <div class="content-card-header">
+                                <h5>My Reviews & Ratings</h5>
+                            </div>
+                            <div class="content-card-body">
+                                {% if reviews %}
+                                <div class="reviews-list">
+                                    {% for review in reviews %}
+                                    <div class="review-item">
+                                        <h6 class="review-title">{{ review.room.room_number|default:review.service.name }}</h6>
+                                        <div class="review-rating">
+                                            {% for i in "12345" %}
+                                                <i class="fas fa-star {% if i|add:0 <= review.rating %}filled{% else %}empty{% endif %}"></i>
+                                            {% endfor %}
+                                            <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+                                        </div>
+                                        <p class="review-text">{{ review.review }}</p>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="empty-state">
+                                    <i class="fas fa-star"></i>
+                                    <p>You haven't written any reviews yet.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Settings Tab -->
+                    <div class="tab-pane fade" id="settings">
+                        <div class="content-card">
+                            <div class="content-card-header">
+                                <h5>Change Password</h5>
+                            </div>
+                            <div class="content-card-body">
+                                <form method="POST" action="{% url 'change_password' %}">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Current Password</label>
+                                        <input type="password" class="form-control" name="current_password" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">New Password</label>
+                                        <input type="password" class="form-control" name="new_password" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label">Confirm New Password</label>
+                                        <input type="password" class="form-control" name="confirm_password" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Update Password</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal fade" id="editProfileModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Profile</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'update_profile' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control" name="first_name" value="{{ user.first_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control" name="last_name" value="{{ user.last_name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                        <small class="form-text">Email cannot be changed</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-control" name="phone" value="{{ guest.phone|default:'' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control" name="address" value="{{ guest.address|default:'' }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

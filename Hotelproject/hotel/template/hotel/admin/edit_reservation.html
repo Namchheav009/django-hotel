@@ -1,0 +1,53 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block title %}Edit Reservation - Admin{% endblock %}
+
+{% block admin_content %}
+<div class="admin-content-title">
+  <h2>Edit Reservation #{{ reservation.id }}</h2>
+</div>
+<div class="admin-card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+      <label class="form-label">Guest</label>
+      <select name="guest" class="form-select">
+        {% for g in guests %}
+          <option value="{{ g.id }}" {% if g.id == reservation.guest.id %}selected{% endif %}>{{ g.user.get_full_name|default:g.user.username }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Room</label>
+      <select name="room" class="form-select">
+        {% for r in rooms %}
+          <option value="{{ r.id }}" {% if r.id == reservation.room.id %}selected{% endif %}>{{ r.room_number }} — {{ r.category.category_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Check-in</label>
+      <input type="date" name="check_in_date" class="form-control" value="{{ reservation.check_in_date }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Check-out</label>
+      <input type="date" name="check_out_date" class="form-control" value="{{ reservation.check_out_date }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Guests</label>
+      <input type="number" name="number_of_guests" class="form-control" value="{{ reservation.number_of_guests }}">
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Status</label>
+      <select name="status" class="form-select">
+        {% for key,label in status_choices %}
+          <option value="{{ key }}" {% if key == reservation.status %}selected{% endif %}>{{ key }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" type="submit">Save</button>
+      <a class="btn btn-secondary" href="{% url 'manage_reservations' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

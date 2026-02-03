@@ -1,0 +1,66 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block admin_content %}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+  <h2>Manage Categories</h2>
+  <button class="btn" style="padding:8px 12px;background:#0f2133;color:#fff;border-radius:8px;text-decoration:none;font-weight:800;" data-bs-toggle="modal" data-bs-target="#addCategoryModal">New Category</button>
+</div>
+
+<div class="admin-card">
+  {% if categories %}
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="text-align:left;color:var(--muted);font-weight:800;font-size:13px;">
+          <th style="padding:12px 8px;">Name</th>
+          <th style="padding:12px 8px;">Base Price</th>
+          <th style="padding:12px 8px;">Manager</th>
+          <th style="padding:12px 8px;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in categories %}
+          <tr style="border-top:1px solid #f0f2f6;">
+            <td style="padding:12px 8px;">{{ c.category_name }}</td>
+            <td style="padding:12px 8px;color:var(--muted);">N/A</td>
+            <td style="padding:12px 8px;color:var(--muted);">N/A</td>
+            <td style="padding:12px 8px;">
+              <a href="{% url 'edit_category' c.id %}" class="btn">Edit</a>
+              <form method="post" action="{% url 'delete_category' c.id %}" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this category?');">Delete</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      <!-- Add Category Modal -->
+      <div class="modal fade" id="addCategoryModal" tabindex="-1">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Add New Category</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'add_category' %}">
+              {% csrf_token %}
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label for="category_name" class="form-label">Category Name</label>
+                  <input type="text" class="form-control" id="category_name" name="category_name" required>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Add Category</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      </tbody>
+    </table>
+  {% else %}
+    <div style="padding:18px;color:var(--muted);">No categories found.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

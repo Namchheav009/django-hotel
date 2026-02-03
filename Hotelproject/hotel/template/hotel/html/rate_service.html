@@ -1,0 +1,175 @@
+{% extends 'hotel/html/base.html' %}
+{% block title %}Rate Service - MyHotel{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-success text-white p-4">
+                    <h2 class="mb-0"><i class="fas fa-star"></i> Rate This Service</h2>
+                </div>
+                
+                <div class="card-body p-4">
+                    <!-- Service Info -->
+                    <div class="alert alert-info mb-4">
+                        <h5 class="mb-2">Service Information</h5>
+                        <p class="mb-1"><strong>Service:</strong> {{ service_booking.service.name }}</p>
+                        <p class="mb-1"><strong>Date:</strong> {{ service_booking.scheduled_date }}</p>
+                        <p class="mb-0"><strong>Price:</strong> ${{ service_booking.total_price }}</p>
+                    </div>
+
+                    <form method="POST" id="serviceRatingForm">
+                        {% csrf_token %}
+                        
+                        <!-- Overall Rating -->
+                        <div class="form-group mb-4">
+                            <label class="form-label fw-bold mb-3">Overall Rating (Required)</label>
+                            <div class="rating-selector mb-3">
+                                <input type="hidden" name="rating" id="ratingInput" value="0">
+                                <div class="d-flex gap-3" id="starRating">
+                                    {% for i in "12345" %}
+                                        <span class="star-btn" data-value="{{ i }}" style="font-size: 2.5rem; color: #ddd; cursor: pointer; transition: all 0.2s;">
+                                            <i class="fas fa-star"></i>
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <small class="text-muted">Click on a star to rate</small>
+                        </div>
+
+                        <!-- Detailed Ratings -->
+                        <div class="card bg-light mb-4">
+                            <div class="card-body">
+                                <h5 class="card-title mb-4">Detailed Ratings</h5>
+                                
+                                <!-- Quality -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Service Quality</label>
+                                    <div class="rating-input d-flex gap-2">
+                                        <input type="hidden" name="quality" id="quality" value="5">
+                                        {% for i in "12345" %}
+                                            <button type="button" class="rating-btn" data-name="quality" data-value="{{ i }}" style="width: 45px; height: 45px; border-radius: 50%; background-color: #9b59b6; color: white; border: none; cursor: pointer;">{{ i }}</button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Timeliness -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Timeliness</label>
+                                    <div class="rating-input d-flex gap-2">
+                                        <input type="hidden" name="timeliness" id="timeliness" value="5">
+                                        {% for i in "12345" %}
+                                            <button type="button" class="rating-btn" data-name="timeliness" data-value="{{ i }}" style="width: 45px; height: 45px; border-radius: 50%; background-color: #e67e22; color: white; border: none; cursor: pointer;">{{ i }}</button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Value for Money -->
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Value for Money</label>
+                                    <div class="rating-input d-flex gap-2">
+                                        <input type="hidden" name="value_for_money" id="value_for_money" value="5">
+                                        {% for i in "12345" %}
+                                            <button type="button" class="rating-btn" data-name="value_for_money" data-value="{{ i }}" style="width: 45px; height: 45px; border-radius: 50%; background-color: #1abc9c; color: white; border: none; cursor: pointer;">{{ i }}</button>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review Text -->
+                        <div class="form-group mb-4">
+                            <label for="review" class="form-label fw-bold">Your Review (Optional)</label>
+                            <textarea name="review" id="review" rows="5" class="form-control" placeholder="Share your experience with this service..." maxlength="1000"></textarea>
+                            <small class="text-muted">Max 1000 characters</small>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check"></i> Submit Rating
+                            </button>
+                            <a href="{% url 'service' %}" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Overall rating stars
+    document.querySelectorAll('#starRating .star-btn').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = this.dataset.value;
+            document.getElementById('ratingInput').value = value;
+            
+            document.querySelectorAll('#starRating .star-btn').forEach((s, idx) => {
+                if (idx < value) {
+                    s.style.color = '#f39c12';
+                } else {
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+        
+        star.addEventListener('mouseover', function() {
+            const value = this.dataset.value;
+            document.querySelectorAll('#starRating .star-btn').forEach((s, idx) => {
+                if (idx < value) {
+                    s.style.color = '#f39c12';
+                } else {
+                    s.style.color = '#ddd';
+                }
+            });
+        });
+    });
+    
+    document.getElementById('starRating').addEventListener('mouseout', function() {
+        const currentValue = document.getElementById('ratingInput').value;
+        document.querySelectorAll('#starRating .star-btn').forEach((s, idx) => {
+            if (idx < currentValue) {
+                s.style.color = '#f39c12';
+            } else {
+                s.style.color = '#ddd';
+            }
+        });
+    });
+
+    // Detailed rating buttons
+    document.querySelectorAll('.rating-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const name = this.dataset.name;
+            const value = this.dataset.value;
+            document.getElementById(name).value = value;
+            
+            // Update button styles
+            this.parentElement.querySelectorAll('button').forEach((b, idx) => {
+                if (idx < value) {
+                    b.style.opacity = '1';
+                } else {
+                    b.style.opacity = '0.5';
+                }
+            });
+        });
+    });
+
+    // Initialize button opacity
+    document.querySelectorAll('.rating-input').forEach(group => {
+        const hidden = group.parentElement.querySelector('input[type="hidden"]');
+        const value = hidden.value;
+        group.querySelectorAll('button').forEach((btn, idx) => {
+            if (idx < value) {
+                btn.style.opacity = '1';
+            } else {
+                btn.style.opacity = '0.5';
+            }
+        });
+    });
+</script>
+{% endblock %}

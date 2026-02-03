@@ -1,0 +1,85 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}Reservation Details - MyHotel{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Reservation Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h5>Guest Information</h5>
+                        <p><strong>Name:</strong> {{ reservation.guest.user.get_full_name }}</p>
+                        <p><strong>Email:</strong> {{ reservation.guest.user.email }}</p>
+                        <p><strong>Phone:</strong> {{ reservation.guest.phone }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Reservation Status</h5>
+                        <p><strong>Status:</strong> <span class="badge badge-warning">{{ reservation.status }}</span></p>
+                        <p><strong>Booking Date:</strong> {{ reservation.booking_date }}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <h5>Room Information</h5>
+                        <p><strong>Room Number:</strong> {{ reservation.room.room_number }}</p>
+                        <p><strong>Category:</strong> {{ reservation.room.category.category_name }}</p>
+                        <p><strong>Floor:</strong> {{ reservation.room.floor }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5>Stay Duration</h5>
+                        <p><strong>Check-in:</strong> {{ reservation.check_in_date }}</p>
+                        <p><strong>Check-out:</strong> {{ reservation.check_out_date }}</p>
+                        <p><strong>Number of Guests:</strong> {{ reservation.number_of_guests }}</p>
+                    </div>
+                </div>
+                <hr>
+                <h5>Billing</h5>
+                <p><strong>Price per Night:</strong> ${{ reservation.room.category.base_price }}</p>
+                <p><strong>Total Price:</strong> ${{ reservation.total_price }}</p>
+                {% if reservation.special_requests %}
+                    <p><strong>Special Requests:</strong> {{ reservation.special_requests }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% if reservation.payment %}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5>Payment Information</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Amount:</strong> ${{ reservation.payment.amount }}</p>
+                    <p><strong>Method:</strong> {{ reservation.payment.payment_method }}</p>
+                    <p><strong>Status:</strong> <span class="badge badge-success">{{ reservation.payment.payment_status }}</span></p>
+                    <p><strong>Transaction ID:</strong> {{ reservation.payment.transaction_id }}</p>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Actions</h5>
+            </div>
+            <div class="card-body">
+                {% if reservation.status == 'Pending' %}
+                    <a href="{% url 'payment' reservation.id %}" class="btn btn-success" style="width:100%">Complete Payment</a>
+                {% endif %}
+                {% if reservation.status != 'Checked Out' and reservation.status != 'Cancelled' %}
+                    <form method="POST" action="{% url 'cancel_reservation' reservation.id %}" style="margin-top:10px">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger" style="width:100%" onclick="return confirm('Are you sure?')">Cancel Reservation</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<a href="{% url 'my_reservations' %}" class="btn btn-outline-secondary mt-3"><i class="fas fa-arrow-left"></i> Back to Reservations</a>
+{% endblock %}

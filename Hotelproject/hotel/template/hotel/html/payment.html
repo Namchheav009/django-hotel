@@ -1,0 +1,42 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}Payment - MyHotel{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>Complete Your Payment</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Select Payment Method</label>
+                        {{ form.payment_method }}
+                    </div>
+                    <button type="submit" class="btn btn-primary">Proceed with Payment</button>
+                    <a href="{% url 'reservation_detail' reservation.id %}" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Payment Summary</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Room:</strong> {{ reservation.room.room_number }}</p>
+                <p><strong>Check-in:</strong> {{ reservation.check_in_date }}</p>
+                <p><strong>Check-out:</strong> {{ reservation.check_out_date }}</p>
+                <hr>
+                <p><strong>Price/Night:</strong> ${{ reservation.room.category.base_price }}</p>
+                <p class="h5"><strong>Total Amount:</strong> <span class="text-success">${{ payment.amount }}</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

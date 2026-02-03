@@ -1,0 +1,45 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}Contact Us - MyHotel{% endblock %}
+
+{% block content %}
+<h1 class="page-title"><i class="fas fa-envelope"></i> Contact Us</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Send us a Message</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    {% for field in form %}
+                        <div class="mb-3">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% if field.errors %}
+                                <div class="text-danger"><small>{{ field.errors }}</small></div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>Contact Information</h5>
+            </div>
+            <div class="card-body">
+                <p><i class="fas fa-phone"></i> <strong>Phone:</strong> +1 (555) 123-4567</p>
+                <p><i class="fas fa-envelope"></i> <strong>Email:</strong> info@myhotel.com</p>
+                <p><i class="fas fa-map-marker-alt"></i> <strong>Address:</strong> 123 Hotel Street, City, State 12345</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

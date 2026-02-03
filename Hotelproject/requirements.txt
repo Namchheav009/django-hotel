@@ -1,0 +1,6 @@
+# Project dependencies
+djangorestframework
+django-filter
+
+# Optional: pin versions if needed, e.g.
+# Django>=4.2

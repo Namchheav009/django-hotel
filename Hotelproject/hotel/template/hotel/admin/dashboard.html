@@ -1,0 +1,73 @@
+{% extends 'hotel/admin/admin_base.html' %}
+
+{% block admin_content %}
+<div style="display:grid; grid-template-columns: 1fr 360px; gap:24px; align-items:start;">
+    <div>
+        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:18px;">
+            <div class="admin-card" style="display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:12px; color:var(--muted); font-weight:800;">Total Rooms</div>
+                <div style="font-size:22px; font-weight:900;">{{ total_rooms }}</div>
+            </div>
+
+            <div class="admin-card" style="display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:12px; color:var(--muted); font-weight:800;">Active Reservations</div>
+                <div style="font-size:22px; font-weight:900;">{{ active_reservations }}</div>
+            </div>
+
+            <div class="admin-card" style="display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:12px; color:var(--muted); font-weight:800;">Guests Today</div>
+                <div style="font-size:22px; font-weight:900;">{{ guests_today }}</div>
+            </div>
+
+            <div class="admin-card" style="display:flex; flex-direction:column; gap:8px;">
+                <div style="font-size:12px; color:var(--muted); font-weight:800;">Revenue (Today)</div>
+                <div style="font-size:22px; font-weight:900;">${{ revenue_today }}</div>
+            </div>
+        </div>
+
+        <div class="admin-card" style="margin-top:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <h3 style="margin:0;">Recent Reservations</h3>
+                <a href="{% url 'manage_reservations' %}" style="color:var(--muted); font-weight:800; text-decoration:none;">View All →</a>
+            </div>
+
+            {% if recent_reservations %}
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="text-align:left; color:var(--muted); font-weight:800; font-size:13px;">
+                            <th style="padding:12px 8px;">Guest</th>
+                            <th style="padding:12px 8px;">Room</th>
+                            <th style="padding:12px 8px;">Check-in</th>
+                            <th style="padding:12px 8px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in recent_reservations %}
+                            <tr style="border-top:1px solid #f0f2f6;">
+                                <td style="padding:12px 8px;"><strong>{{ reservation.guest.user.get_full_name|default:reservation.guest.user.username }}</strong></td>
+                                <td style="padding:12px 8px; color:var(--muted);">{{ reservation.room.category.category_name }} ({{ reservation.room.room_number }})</td>
+                                <td style="padding:12px 8px; color:var(--muted);">{{ reservation.check_in_date|date:"M d" }}</td>
+                                <td style="padding:12px 8px;"><span style="background:#e9f7ef; color:#1b7a3a; padding:6px 10px; border-radius:999px; font-weight:900;">{{ reservation.status }}</span></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div style="color:var(--muted); padding:18px; text-align:center;">No reservations yet.</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div>
+        <div class="admin-card">
+            <h4 style="margin:0 0 12px 0;">Today's Overview</h4>
+            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
+                <li style="display:flex; gap:10px; align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#ffb74d;margin-top:6px;"></div><div><strong>Room 304 Cleaning Required</strong><div style="color:var(--muted); font-size:13px;">Guest checked out at 10:00 AM</div></div></li>
+                <li style="display:flex; gap:10px; align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#5ad3ff;margin-top:6px;"></div><div><strong>New Booking Request</strong><div style="color:var(--muted); font-size:13px;">Family Suite for Dec 24-28</div></div></li>
+                <li style="display:flex; gap:10px; align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#7be3a8;margin-top:6px;"></div><div><strong>VIP Guest Arrival</strong><div style="color:var(--muted); font-size:13px;">Mr. Thompson arriving at 2:00 PM</div></div></li>
+            </ul>
+            <div style="margin-top:16px; text-align:center;"><a class="btn" href="#" style="padding:10px 14px; background:#fff; border-radius:10px; text-decoration:none; font-weight:800;">View Schedule</a></div>
+        </div>
+    </div>
+</div>
+{% endblock %}

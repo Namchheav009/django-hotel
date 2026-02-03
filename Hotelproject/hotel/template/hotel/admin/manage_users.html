@@ -1,0 +1,49 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block title %}Manage Users - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<div class="admin-content-title">
+    <h1><i class="fas fa-users-cog"></i> Manage Users</h1>
+    <div class="admin-actions" style="margin-left:auto;">
+        <a href="{% url 'add_user' %}" class="btn btn-sm btn-primary">Add User</a>
+    </div>
+</div>
+
+<div class="admin-card">
+    {% if users %}
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Staff</th>
+                    <th>Superuser</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in users %}
+                    <tr>
+                        <td>{{ u.username }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>{{ u.userprofile.role|default:'-' }}</td>
+                        <td>{{ u.is_staff }}</td>
+                        <td>{{ u.is_superuser }}</td>
+                        <td>
+                            <a href="{% url 'edit_user' u.id %}" class="btn btn-sm btn-primary">Edit</a>
+                            <form method="post" action="{% url 'delete_user' u.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete user {{ u.username }}?');">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No users found.</p>
+    {% endif %}
+</div>
+
+{% endblock %}
