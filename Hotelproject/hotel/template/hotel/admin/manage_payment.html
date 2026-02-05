@@ -70,9 +70,15 @@
   }
   .dot{ width:8px; height:8px; border-radius:50%; background:#94a3b8; }
   .b-pending .dot{ background:#f59e0b; }
-  .b-confirmed .dot{ background:#3b82f6; }
-  .b-cancelled .dot{ background:#ef4444; }
   .b-completed .dot{ background:#22c55e; }
+  .b-failed .dot{ background:#ef4444; }
+  .b-refunded .dot{ background:#8b5cf6; }
+
+  .amount{
+    font-weight:900;
+    color:#0a1020;
+    font-size:1.05rem;
+  }
 
   .empty{
     padding:22px;
@@ -83,14 +89,14 @@
 
 <div class="page-head">
   <div>
-    <h2>Manage Bookings</h2>
-    <p class="page-sub">View booking history and status.</p>
+    <h2>Manage Payments</h2>
+    <p class="page-sub">View and track all payment transactions.</p>
   </div>
 
   <div class="tools">
     <div class="search">
       <i class="fas fa-search muted"></i>
-      <input id="q" type="text" placeholder="Search user / room / confirmation..." onkeyup="filterRows()">
+      <input id="q" type="text" placeholder="Search guest / room / amount / transaction..." onkeyup="filterRows()">
     </div>
   </div>
 </div>
@@ -98,69 +104,90 @@
 <div class="cardx">
   <div class="cardx-top">
     <div class="muted">
-      Total: {{ bookings|length }}
+      Total: {{ payments|length }} Transactions
     </div>
   </div>
 
-  {% if bookings %}
+  {% if payments %}
     <div style="overflow:auto;">
-      <table id="bookTable">
+      <table id="paymentTable">
         <thead>
           <tr>
-            <th>User</th>
+            <th>Guest</th>
             <th>Room</th>
-            <th>Check-in</th>
-            <th>Check-out</th>
-            <th>Confirmation</th>
+            <th>Amount</th>
+            <th>Method</th>
             <th>Status</th>
-            <th>Date</th>
+            <th>Transaction ID</th>
+            <th>Payment Date</th>
           </tr>
         </thead>
 
         <tbody>
-        {% for b in bookings %}
+        {% for p in payments %}
           <tr>
-            <td>{{ b.user.get_full_name|default:b.user.username }}</td>
-            <td class="muted">{{ b.room.room_number }}</td>
-
-            <td class="muted">
-              {% if b.reservation %}{{ b.reservation.check_in_date }}{% else %}-{% endif %}
-            </td>
-            <td class="muted">
-              {% if b.reservation %}{{ b.reservation.check_out_date }}{% else %}-{% endif %}
-            </td>
-
-            <td class="muted">{{ b.confirmation_number|default:"-" }}</td>
-
             <td>
-              {% if b.booking_status == 'Pending' %}
-                <span class="badge b-pending"><span class="dot"></span> Pending</span>
-              {% elif b.booking_status == 'Confirmed' %}
-                <span class="badge b-confirmed"><span class="dot"></span> Confirmed</span>
-              {% elif b.booking_status == 'Cancelled' %}
-                <span class="badge b-cancelled"><span class="dot"></span> Cancelled</span>
-              {% elif b.booking_status == 'Completed' %}
-                <span class="badge b-completed"><span class="dot"></span> Completed</span>
+              {% if p.reservation and p.reservation.guest %}
+                {{ p.reservation.guest.user.get_full_name|default:p.reservation.guest.user.username }}
               {% else %}
-                <span class="badge"><span class="dot"></span> {{ b.booking_status }}</span>
+                <span class="muted">-</span>
+              {% endif %}
+            </td>
+            <td class="muted">
+              {% if p.reservation and p.reservation.room %}
+                {{ p.reservation.room.room_number }}
+              {% else %}
+                -
               {% endif %}
             </td>
 
-            <td class="muted">{{ b.booking_date|date:"M d, Y" }}</td>
+            <td class="amount">${{ p.amount }}</td>
+
+            <td class="muted">{{ p.payment_method|default:"-" }}</td>
+
+            <td>
+              {% if p.payment_status == 'Pending' %}
+                <span class="badge b-pending"><span class="dot"></span> Pending</span>
+              {% elif p.payment_status == 'Completed' %}
+                <span class="badge b-completed"><span class="dot"></span> Completed</span>
+              {% elif p.payment_status == 'Failed' %}
+                <span class="badge b-failed"><span class="dot"></span> Failed</span>
+              {% elif p.payment_status == 'Refunded' %}
+                <span class="badge b-refunded"><span class="dot"></span> Refunded</span>
+              {% else %}
+                <span class="badge"><span class="dot"></span> {{ p.payment_status }}</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if p.transaction_id %}
+                <code style="background:#eef3ff; border:1px solid #dbe6ff; padding:4px 8px; border-radius:6px; font-weight:700; color:#1f2a44;">{{ p.transaction_id }}</code>
+              {% else %}
+                <span class="muted">-</span>
+              {% endif %}
+            </td>
+
+            <td class="muted">
+              {% if p.payment_date %}
+                {{ p.payment_date|date:"M d, Y • H:i" }}
+              {% else %}
+                <span class="muted">-</span>
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
         </tbody>
       </table>
     </div>
   {% else %}
-    <div class="empty">No bookings found.</div>
+    <div class="empty">No payment transactions found.</div>
   {% endif %}
 </div>
 
 <script>
   function filterRows(){
     const q = (document.getElementById("q").value || "").toLowerCase();
-    const table = document.getElementById("bookTable");
+    const table = document.getElementById("paymentTable");
     if(!table) return;
 
     const rows = table.querySelectorAll("tbody tr");

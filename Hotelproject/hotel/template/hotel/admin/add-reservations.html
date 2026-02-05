@@ -1,0 +1,128 @@
+{% extends 'hotel/admin/admin_base.html' %}
+{% block title %}Add Reservation - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<div class="admin-content-title">
+  <h1><i class="fas fa-plus"></i> Create Reservation</h1>
+  <p style="color:var(--muted);margin-top:6px;">Create reservation for walk-in / offline guests (like user booking).</p>
+</div>
+
+<div class="admin-card" style="max-width: 980px;">
+  <form method="POST" action="{% url 'add_reservation' %}">
+    {% csrf_token %}
+
+    <!-- =========================
+         1) Choose Existing Guest OR Create Walk-in Guest
+         ========================= -->
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label" style="font-weight:900;">Existing Guest (Optional)</label>
+        <select name="guest" class="form-select">
+          <option value="">-- Select Guest (optional) --</option>
+          {% for g in guests %}
+            <option value="{{ g.id }}">
+              {{ g.user.get_full_name|default:g.user.username }} ({{ g.phone }})
+            </option>
+          {% endfor %}
+        </select>
+        <small class="text-muted">If guest is walk-in, leave empty and fill fields below.</small>
+      </div>
+
+      <div class="col-md-6 mb-3">
+        <label class="form-label" style="font-weight:900;">Booking Type</label>
+        <select name="booking_type" class="form-select">
+          <option value="offline" selected>Walk-in (Offline)</option>
+          <option value="online">Online (Admin created)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="admin-card" style="background:#fbfcff;border:1px solid #eef1f7;">
+      <h5 style="margin:0 0 12px;font-weight:900;">Walk-in Guest Details</h5>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Full Name</label>
+          <input type="text" name="offline_full_name" class="form-control" placeholder="e.g., Sok Dara">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Phone</label>
+          <input type="text" name="offline_phone" class="form-control" placeholder="e.g., 012345678">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Email (optional)</label>
+          <input type="email" name="offline_email" class="form-control" placeholder="e.g., dara@gmail.com">
+        </div>
+        <div class="col-md-6 mb-3">
+          <label class="form-label">Address (optional)</label>
+          <input type="text" name="offline_address" class="form-control" placeholder="Phnom Penh">
+        </div>
+      </div>
+    </div>
+
+    <hr style="margin:18px 0;">
+
+    <!-- =========================
+         2) Reservation details (like user booking)
+         ========================= -->
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <label class="form-label" style="font-weight:900;">Room</label>
+        <select name="room" class="form-select" required>
+          <option value="">Select Room</option>
+          {% for r in rooms %}
+            <option value="{{ r.id }}">
+              {{ r.room_number }} — {{ r.category.category_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <label class="form-label" style="font-weight:900;">Check-in</label>
+        <input type="date" name="check_in_date" class="form-control" required>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <label class="form-label" style="font-weight:900;">Check-out</label>
+        <input type="date" name="check_out_date" class="form-control" required>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4 mb-3">
+        <label class="form-label" style="font-weight:900;">Number of Guests</label>
+        <input type="number" name="number_of_guests" value="1" min="1" class="form-control">
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label" style="font-weight:900;">Status</label>
+        <select name="status" class="form-select">
+          {% for key,label in status_choices %}
+            <option value="{{ key }}">{{ key }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-md-4 mb-3">
+        <label class="form-label" style="font-weight:900;">Special Requests (optional)</label>
+        <input type="text" name="special_requests" class="form-control" placeholder="e.g., Late check-in">
+      </div>
+    </div>
+
+    <!-- =========================
+         actions
+         ========================= -->
+    <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px;">
+      <a href="{% url 'manage_reservations' %}" class="btn btn-light">Cancel</a>
+      <button type="submit" class="btn btn-primary" style="font-weight:900;">
+        <i class="fas fa-check"></i> Create Reservation
+      </button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

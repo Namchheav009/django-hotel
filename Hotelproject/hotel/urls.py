@@ -35,6 +35,12 @@ urlpatterns = [
     path('dashboard/users/<int:user_id>/delete/', views.delete_user, name='delete_user'),
 
     path('dashboard/reservations/', views.manage_reservations, name='manage_reservations'),
+    path("dashboard/reservations/add/", views.add_reservation_page, name="add_reservation_page"),
+path("dashboard/reservations/add/submit/", views.add_reservation, name="add_reservation"),
+
+    path('dashboard/reservations/add/', views.add_reservation, name='add_reservation'),
+    path('dashboard/reservations/<int:reservation_id>/update-status/', views.update_reservation_status, name='update_reservation_status'),
+    path('dashboard/reservations/<int:reservation_id>/delete/', views.delete_reservation, name='delete_reservation'),
     path('dashboard/reservations/<int:reservation_id>/update-status/', views.update_reservation_status, name='update_reservation_status'),
 
     path('dashboard/rooms/', views.manage_rooms, name='manage_rooms'),
@@ -59,6 +65,7 @@ urlpatterns = [
     path('dashboard/reviews/<int:review_id>/edit/', views.edit_review, name='edit_review'),
     path('dashboard/services/', views.manage_services, name='manage_services'),
     path('dashboard/bookings/', views.manage_bookings, name='manage_bookings'),
+    path('dashboard/payment/', views.manage_payment, name='manage_payment'),
     path('dashboard/reviews/', views.manage_reviews, name='manage_reviews'),
     path('dashboard/contacts/', views.manage_contacts, name='manage_contacts'),
     path('dashboard/contacts/<int:contact_id>/mark-read/', views.mark_contact_read, name='mark_contact_read'),

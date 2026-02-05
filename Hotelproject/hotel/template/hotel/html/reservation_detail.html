@@ -3,83 +3,334 @@
 
 {% block title %}Reservation Details - MyHotel{% endblock %}
 
+{% block extra_head %}
+<style>
+  :root{
+    --text:#0a1020;
+    --muted:#6a7387;
+    --line:#e9edf7;
+    --card:#ffffff;
+    --bg:#f7f9fc;
+    --dark:#0b1220;
+    --accent:#f4b63a;
+    --success:#14b86a;
+    --danger:#e5484d;
+    --radius:16px;
+    --shadow: 0 16px 40px rgba(10,16,32,.10);
+  }
+
+  .rd-wrap{ padding: 18px 0 60px; }
+  .rd-grid{ display:grid; grid-template-columns: 2fr 1fr; gap:18px; }
+
+  .rd-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow: 0 10px 24px rgba(10,16,32,.06);
+    overflow:hidden;
+  }
+  .rd-card-h{
+    padding:16px 18px;
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .rd-card-h h3, .rd-card-h h5{ margin:0; font-weight:900; color:var(--text); }
+  .rd-card-b{ padding:18px; }
+
+  .rd-title{
+    display:flex; align-items:flex-start; justify-content:space-between; gap:14px;
+    margin-bottom: 6px;
+  }
+  .rd-sub{ color:var(--muted); margin:6px 0 0; font-weight:700; }
+
+  .badge-soft{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:7px 12px;
+    border-radius:999px;
+    font-weight:900;
+    border:1px solid var(--line);
+    background:#f3f6ff;
+    color:#2b3a5a;
+    font-size:.85rem;
+    white-space:nowrap;
+  }
+  .dot{ width:8px; height:8px; border-radius:50%; background:#94a3b8; }
+  .badge-soft.pending .dot{ background: #f59e0b; }
+  .badge-soft.confirmed .dot{ background: #3b82f6; }
+  .badge-soft.checked-in .dot{ background: #22c55e; }
+  .badge-soft.checked-out .dot{ background: #64748b; }
+  .badge-soft.cancelled .dot{ background: #ef4444; }
+
+  .rd-section{
+    border-top:1px solid var(--line);
+    padding-top:14px;
+    margin-top:14px;
+  }
+
+  .rd-2col{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:14px;
+  }
+
+  .kv{
+    display:flex; justify-content:space-between; gap:14px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:#fbfcff;
+  }
+  .kv strong{ color:var(--text); }
+  .kv span{ color:var(--muted); font-weight:800; text-align:right; }
+
+  .money{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    padding:14px 12px;
+    border-radius:14px;
+    background: linear-gradient(180deg, #0b1220 0%, #111c33 100%);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.08);
+  }
+  .money .label{ opacity:.85; font-weight:800; }
+  .money .value{ font-size:1.4rem; font-weight:900; letter-spacing:.3px; }
+
+  .txn{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:10px 12px;
+    border:1px dashed #d7def2;
+    border-radius:12px;
+    background:#f7f9ff;
+  }
+  .txn code{
+    font-weight:900;
+    color:#1f2a44;
+    background:#eef3ff;
+    border:1px solid #dbe6ff;
+    padding:6px 10px;
+    border-radius:10px;
+  }
+
+  .btnx{
+    width:100%;
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    padding:12px 14px;
+    border-radius:12px;
+    font-weight:900;
+    text-decoration:none;
+    border:1px solid transparent;
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btnx:hover{ transform: translateY(-2px); }
+
+  .btn-dark{ background: var(--dark); color:#fff; box-shadow: 0 14px 30px rgba(11,18,32,.18); }
+  .btn-dark:hover{ color:#fff; }
+
+  .btn-success{ background: var(--success); color:#fff; box-shadow: 0 14px 30px rgba(20,184,106,.20); }
+  .btn-success:hover{ color:#fff; }
+
+  .btn-danger{ background: var(--danger); color:#fff; box-shadow: 0 14px 30px rgba(229,72,77,.18); }
+  .btn-danger:hover{ color:#fff; }
+
+  .btn-ghost{
+    background:#fff;
+    color:var(--text);
+    border:1px solid var(--line);
+  }
+
+  .actions-stack{ display:flex; flex-direction:column; gap:10px; }
+
+  .note{
+    color:var(--muted);
+    font-weight:700;
+    line-height:1.6;
+    margin: 10px 0 0;
+  }
+
+  @media (max-width: 992px){
+    .rd-grid{ grid-template-columns: 1fr; }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h3>Reservation Details</h3>
+<div class="container rd-wrap">
+
+  <div class="rd-grid">
+
+    <!-- LEFT: DETAILS -->
+    <div class="rd-card">
+      <div class="rd-card-h">
+        <h3>Reservation Details</h3>
+
+        {% with s=reservation.status|lower %}
+          <span class="badge-soft
+            {% if s == 'pending' %}pending{% endif %}
+            {% if s == 'confirmed' %}confirmed{% endif %}
+            {% if s == 'checked in' %}checked-in{% endif %}
+            {% if s == 'checked out' %}checked-out{% endif %}
+            {% if s == 'cancelled' %}cancelled{% endif %}
+          ">
+            <span class="dot"></span>
+            {{ reservation.status }}
+          </span>
+        {% endwith %}
+      </div>
+
+      <div class="rd-card-b">
+
+        <div class="rd-title">
+          <div>
+            <div style="font-weight:900; color:var(--text); font-size:1.05rem;">
+              Room {{ reservation.room.room_number }} • {{ reservation.room.category.category_name }}
             </div>
-            <div class="card-body">
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h5>Guest Information</h5>
-                        <p><strong>Name:</strong> {{ reservation.guest.user.get_full_name }}</p>
-                        <p><strong>Email:</strong> {{ reservation.guest.user.email }}</p>
-                        <p><strong>Phone:</strong> {{ reservation.guest.phone }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Reservation Status</h5>
-                        <p><strong>Status:</strong> <span class="badge badge-warning">{{ reservation.status }}</span></p>
-                        <p><strong>Booking Date:</strong> {{ reservation.booking_date }}</p>
-                    </div>
-                </div>
-                <hr>
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <h5>Room Information</h5>
-                        <p><strong>Room Number:</strong> {{ reservation.room.room_number }}</p>
-                        <p><strong>Category:</strong> {{ reservation.room.category.category_name }}</p>
-                        <p><strong>Floor:</strong> {{ reservation.room.floor }}</p>
-                    </div>
-                    <div class="col-md-6">
-                        <h5>Stay Duration</h5>
-                        <p><strong>Check-in:</strong> {{ reservation.check_in_date }}</p>
-                        <p><strong>Check-out:</strong> {{ reservation.check_out_date }}</p>
-                        <p><strong>Number of Guests:</strong> {{ reservation.number_of_guests }}</p>
-                    </div>
-                </div>
-                <hr>
-                <h5>Billing</h5>
-                <p><strong>Price per Night:</strong> ${{ reservation.room.category.base_price }}</p>
-                <p><strong>Total Price:</strong> ${{ reservation.total_price }}</p>
-                {% if reservation.special_requests %}
-                    <p><strong>Special Requests:</strong> {{ reservation.special_requests }}</p>
-                {% endif %}
+            <div class="rd-sub">
+              Booking date: {{ reservation.booking_date|date:"M d, Y • H:i" }}
             </div>
+          </div>
         </div>
-        {% if reservation.payment %}
-            <div class="card mt-3">
-                <div class="card-header">
-                    <h5>Payment Information</h5>
-                </div>
-                <div class="card-body">
-                    <p><strong>Amount:</strong> ${{ reservation.payment.amount }}</p>
-                    <p><strong>Method:</strong> {{ reservation.payment.payment_method }}</p>
-                    <p><strong>Status:</strong> <span class="badge badge-success">{{ reservation.payment.payment_status }}</span></p>
-                    <p><strong>Transaction ID:</strong> {{ reservation.payment.transaction_id }}</p>
-                </div>
-            </div>
-        {% endif %}
-    </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5>Actions</h5>
-            </div>
-            <div class="card-body">
-                {% if reservation.status == 'Pending' %}
-                    <a href="{% url 'payment' reservation.id %}" class="btn btn-success" style="width:100%">Complete Payment</a>
-                {% endif %}
-                {% if reservation.status != 'Checked Out' and reservation.status != 'Cancelled' %}
-                    <form method="POST" action="{% url 'cancel_reservation' reservation.id %}" style="margin-top:10px">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger" style="width:100%" onclick="return confirm('Are you sure?')">Cancel Reservation</button>
-                    </form>
-                {% endif %}
-            </div>
+
+        <div class="rd-section">
+          <h5 style="margin:0 0 12px; font-weight:900; color:var(--text);">Guest Information</h5>
+          <div class="rd-2col">
+            <div class="kv"><strong>Name</strong><span>{{ reservation.guest.user.get_full_name|default:reservation.guest.user.username }}</span></div>
+            <div class="kv"><strong>Email</strong><span>{{ reservation.guest.user.email|default:"-" }}</span></div>
+            <div class="kv"><strong>Phone</strong><span>{{ reservation.guest.phone|default:"-" }}</span></div>
+            <div class="kv"><strong>Guests</strong><span>{{ reservation.number_of_guests }}</span></div>
+          </div>
         </div>
+
+        <div class="rd-section">
+          <h5 style="margin:0 0 12px; font-weight:900; color:var(--text);">Stay Duration</h5>
+          <div class="rd-2col">
+            <div class="kv"><strong>Check-in</strong><span>{{ reservation.check_in_date|date:"M d, Y" }}</span></div>
+            <div class="kv"><strong>Check-out</strong><span>{{ reservation.check_out_date|date:"M d, Y" }}</span></div>
+            <div class="kv"><strong>Floor</strong><span>{{ reservation.room.floor }}</span></div>
+            <div class="kv"><strong>Status</strong><span>{{ reservation.status }}</span></div>
+          </div>
+
+          {% if reservation.special_requests %}
+            <p class="note"><strong style="color:var(--text);">Special requests:</strong> {{ reservation.special_requests }}</p>
+          {% endif %}
+        </div>
+
+        <div class="rd-section">
+          <h5 style="margin:0 0 12px; font-weight:900; color:var(--text);">Billing</h5>
+
+          <div class="rd-2col">
+            <div class="kv"><strong>Price / Night</strong><span>${{ reservation.room.category.base_price }}</span></div>
+            <div class="money">
+              <div>
+                <div class="label">Total Price</div>
+                <div style="font-weight:800; opacity:.85;">Includes stay nights & taxes (if any)</div>
+              </div>
+              <div class="value">${{ reservation.total_price }}</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
+
+    <!-- RIGHT: ACTIONS + PAYMENT -->
+    <div class="actions-stack">
+
+      <div class="rd-card">
+        <div class="rd-card-h">
+          <h5>Actions</h5>
+        </div>
+        <div class="rd-card-b">
+
+          {% if reservation.status == 'Pending' %}
+            <a href="{% url 'payment' reservation.id %}" class="btnx btn-success">
+              <i class="fas fa-credit-card"></i> Complete Payment
+            </a>
+          {% endif %}
+
+          {% if reservation.status != 'Checked Out' and reservation.status != 'Cancelled' %}
+            <form method="POST" action="{% url 'cancel_reservation' reservation.id %}">
+              {% csrf_token %}
+              <button type="submit" class="btnx btn-danger"
+                onclick="return confirm('Are you sure you want to cancel this reservation?')">
+                <i class="fas fa-times-circle"></i> Cancel Reservation
+              </button>
+            </form>
+          {% endif %}
+
+          <a href="{% url 'my_reservations' %}" class="btnx btn-ghost">
+            <i class="fas fa-arrow-left"></i> Back to My Stays
+          </a>
+
+        </div>
+      </div>
+
+      {% if reservation.payment %}
+      <div class="rd-card">
+        <div class="rd-card-h">
+          <h5>Payment & Transaction</h5>
+
+          {% with ps=reservation.payment.payment_status|lower %}
+            <span class="badge-soft
+              {% if ps == 'paid' %}confirmed{% endif %}
+              {% if ps == 'pending' %}pending{% endif %}
+              {% if ps == 'failed' %}cancelled{% endif %}
+            ">
+              <span class="dot"></span>
+              {{ reservation.payment.payment_status }}
+            </span>
+          {% endwith %}
+        </div>
+
+        <div class="rd-card-b">
+          <div class="rd-2col">
+            <div class="kv"><strong>Amount</strong><span>${{ reservation.payment.amount }}</span></div>
+            <div class="kv"><strong>Method</strong><span>{{ reservation.payment.payment_method|default:"-" }}</span></div>
+          </div>
+
+          <div style="margin-top:12px;">
+            <div class="txn">
+              <div>
+                <div style="font-weight:900; color:var(--text);">Transaction ID</div>
+                <div class="rd-sub" style="margin-top:2px;">Keep this for reference</div>
+              </div>
+
+              {% if reservation.payment.transaction_id %}
+                <code id="txnCode">{{ reservation.payment.transaction_id }}</code>
+              {% else %}
+                <code id="txnCode">N/A</code>
+              {% endif %}
+            </div>
+
+            <button type="button" class="btnx btn-dark" style="margin-top:10px;"
+              onclick="copyTxn()">
+              <i class="fas fa-copy"></i> Copy Transaction ID
+            </button>
+          </div>
+
+          {% if reservation.payment.payment_date %}
+            <p class="note" style="margin-top:12px;">
+              <strong style="color:var(--text);">Payment date:</strong>
+              {{ reservation.payment.payment_date|date:"M d, Y • H:i" }}
+            </p>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+  </div>
 </div>
-<a href="{% url 'my_reservations' %}" class="btn btn-outline-secondary mt-3"><i class="fas fa-arrow-left"></i> Back to Reservations</a>
+
+<script>
+  function copyTxn(){
+    const el = document.getElementById("txnCode");
+    if(!el) return;
+    const text = el.innerText || el.textContent || "";
+    if(!text || text === "N/A") return alert("No transaction ID to copy.");
+
+    navigator.clipboard.writeText(text)
+      .then(() => alert("Transaction ID copied!"))
+      .catch(() => alert("Copy failed. Please copy manually."));
+  }
+</script>
 {% endblock %}

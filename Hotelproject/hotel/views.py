@@ -12,13 +12,15 @@ from django.db.models import Q
 from datetime import datetime, timedelta
 from .models import (
     Room, RoomCategory, Reservation, Payment, Guest, 
-    Contact, Service, UserProfile, Staff
+    Contact, Service, UserProfile, Staff,RoomRating,ServiceRating
 )
 from .forms import (
     CustomUserCreationForm, GuestForm, ReservationForm, 
     RoomFilterForm, PaymentForm, ContactForm, CustomPasswordResetForm
 )
 from django.middleware.csrf import get_token
+from .models import Booking
+from django.utils import timezone
 
 from django.conf import settings
 from functools import wraps
@@ -26,6 +28,8 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 # (UserProfile already imported above)
 from django.db.models import Q , Count, Sum, Avg
+
+
 
 
 # Decorator for admin-only access (checks UserProfile role and superuser)
@@ -63,14 +67,45 @@ def manage_categories(request):
 
 @admin_login_required
 def add_category(request):
-    if request.method == 'POST':
-        name = request.POST.get('category_name')
-        if name:
-            RoomCategory.objects.create(category_name=name)
-            messages.success(request, f'Category "{name}" added.')
+    """Add a new category"""
+    if request.method == "POST":
+        # Handle both form POST and JSON POST
+        if request.content_type == "application/json":
+            import json
+            try:
+                data = json.loads(request.body)
+                name = (data.get('category_name') or "").strip()
+            except json.JSONDecodeError:
+                return JsonResponse({"success": False, "error": "Invalid JSON."})
         else:
-            messages.error(request, 'Category name is required.')
-    return redirect('manage_categories')
+            name = (request.POST.get('category_name') or "").strip()
+
+        if not name:
+            if request.content_type == "application/json":
+                return JsonResponse({"success": False, "error": "Category name is required."})
+            else:
+                messages.error(request, "Category name is required.")
+                return redirect('manage_categories')
+
+        # prevent duplicate name
+        if RoomCategory.objects.filter(category_name__iexact=name).exists():
+            msg = f'Category "{name}" already exists.'
+            if request.content_type == "application/json":
+                return JsonResponse({"success": False, "error": msg})
+            else:
+                messages.warning(request, msg)
+                return redirect('manage_categories')
+
+        RoomCategory.objects.create(category_name=name)
+        
+        if request.content_type == "application/json":
+            return JsonResponse({"success": True, "message": f'Category "{name}" added successfully.'})
+        else:
+            messages.success(request, f'Category "{name}" added successfully.')
+            return redirect('manage_categories')
+    
+    return JsonResponse({"success": False, "error": "Method not allowed."}, status=405)
+
 
 
 @admin_login_required
@@ -92,13 +127,15 @@ def manage_services(request):
 @admin_login_required
 def manage_bookings(request):
     """Manage bookings/booking history"""
-    # Booking model may not always exist; try to import safely
-    try:
-        from .models import Booking
-        bookings = Booking.objects.select_related('user','room','reservation').all().order_by('-booking_date')[:200]
-    except Exception:
-        bookings = []
+    bookings = Booking.objects.select_related('user', 'room', 'reservation').all().order_by('-booking_date')[:200]
     return render(request, 'hotel/admin/manage_bookings.html', {'bookings': bookings})
+
+
+@admin_login_required
+def manage_payment(request):
+    """Manage payments"""
+    payments = Payment.objects.select_related('reservation', 'reservation__guest', 'reservation__room').all().order_by('-payment_date', '-id')[:200]
+    return render(request, 'hotel/admin/manage_payment.html', {'payments': payments})
 
 
 @admin_login_required
@@ -107,9 +144,20 @@ def manage_reviews(request):
     try:
         from .models import RoomRating
         reviews = RoomRating.objects.select_related('user','room','reservation').order_by('-created_at')[:200]
+        users = User.objects.all()
+        rooms = Room.objects.all()
+        reservations = Reservation.objects.order_by('-booking_date')[:200]
     except Exception:
         reviews = []
-    return render(request, 'hotel/admin/manage_reviews.html', {'reviews': reviews})
+        users = []
+        rooms = []
+        reservations = []
+    return render(request, 'hotel/admin/manage_reviews.html', {
+        'reviews': reviews,
+        'users': users,
+        'rooms': rooms,
+        'reservations': reservations,
+    })
 
 
 @admin_login_required
@@ -412,15 +460,27 @@ def book_room(request, room_id):
 
 @login_required(login_url='login')
 def my_reservations(request):
-    """View user's reservations"""
+    """View user's reservations (My Stays)"""
     try:
         guest = request.user.guest
-        reservations = guest.reservations.all()
+        reservations = guest.reservations.select_related("room", "room__category").all()
+
+        # ✅ which reservations already reviewed by this user
+        from .models import RoomRating
+        reviewed_res_ids = set(
+            RoomRating.objects.filter(user=request.user, reservation__guest=guest)
+            .values_list("reservation_id", flat=True)
+        )
     except Guest.DoesNotExist:
         reservations = []
-    
-    context = {'reservations': reservations}
-    return render(request, 'hotel/html/my_reservations.html', context)
+        reviewed_res_ids = set()
+
+    context = {
+        "reservations": reservations,
+        "reviewed_res_ids": reviewed_res_ids,
+    }
+    return render(request, "hotel/html/my_reservations.html", context)
+
 
 
 @login_required(login_url='login')
@@ -463,33 +523,34 @@ def payment(request, reservation_id):
     """Process payment for reservation"""
     reservation = get_object_or_404(Reservation, id=reservation_id)
 
-    # permission check
+    # ✅ permission check
     if reservation.guest.user != request.user:
         messages.error(request, "You don't have permission to access this reservation.")
         return redirect('my_reservations')
 
-    # ✅ create or get payment object (ONE place only)
-    payment_obj, created = Payment.objects.get_or_create(
+    # ✅ create/get payment object
+    payment_obj, _ = Payment.objects.get_or_create(
         reservation=reservation,
         defaults={
             "amount": reservation.total_price,
-            "payment_method": "Cash",     # default method
-            "payment_status": "Pending",  # default status
+            "payment_method": "Cash",
+            "payment_status": "Pending",
         }
     )
 
-    # ✅ if already paid
-    if payment_obj.payment_status == "Paid":
+    # ✅ already paid (IMPORTANT: use 'Completed', not 'Paid')
+    if payment_obj.payment_status == "Completed":
         messages.info(request, "Payment already completed for this reservation.")
         return redirect('reservation_detail', reservation_id=reservation.id)
 
     if request.method == "POST":
-        form = PaymentForm(request.POST, instance=payment_obj)
+        form = PaymentForm(request.POST, instance=payment_obj, reservation=reservation)
         if form.is_valid():
             payment_obj = form.save(commit=False)
 
-            # ✅ mark paid
-            payment_obj.payment_status = "Paid"
+            # ✅ mark completed
+            payment_obj.payment_status = "Completed"
+            payment_obj.payment_date = timezone.now()
             payment_obj.transaction_id = f"TXN-{reservation.id}-{int(datetime.now().timestamp())}"
             payment_obj.save()
 
@@ -497,10 +558,37 @@ def payment(request, reservation_id):
             reservation.status = "Confirmed"
             reservation.save(update_fields=["status"])
 
+            # ✅ create booking record (always create to show in admin)
+            try:
+                booking, created = Booking.objects.get_or_create(
+                    reservation=reservation,
+                    defaults={
+                        "user": request.user,
+                        "room": reservation.room,
+                        "booking_status": "Confirmed",
+                        "confirmation_number": f"BK-{reservation.id}-{int(datetime.now().timestamp())}",
+                    }
+                )
+                if not created:
+                    # Update if already exists
+                    booking.user = request.user
+                    booking.room = reservation.room
+                    booking.booking_status = "Confirmed"
+                    if not booking.confirmation_number:
+                        booking.confirmation_number = f"BK-{reservation.id}-{int(datetime.now().timestamp())}"
+                    booking.save()
+            except Exception as e:
+                # Log error but don't fail payment
+                messages.warning(request, f"Payment completed but booking record creation failed: {str(e)}")
+
             messages.success(request, "Payment completed successfully! Your reservation is confirmed.")
             return redirect('reservation_detail', reservation_id=reservation.id)
+        else:
+            messages.error(request, "Form validation failed.")
+
+
     else:
-        form = PaymentForm(instance=payment_obj)
+        form = PaymentForm(instance=payment_obj, reservation=reservation)
 
     return render(request, "hotel/html/payment.html", {
         "reservation": reservation,
@@ -577,35 +665,102 @@ def manage_reservations(request):
     }
     return render(request, 'hotel/admin/manage_reservations.html', context)
 
+@admin_login_required
+def add_reservation_page(request):
+    guests = Guest.objects.select_related("user").all().order_by("user__username")
+    rooms = Room.objects.select_related("category").all().order_by("room_number")
+    return render(request, "hotel/admin/add-reservations.html", {
+        "guests": guests,
+        "rooms": rooms,
+        "status_choices": Reservation.STATUS_CHOICES,
+    })
 
 @admin_login_required
 @require_http_methods(["POST"])
 def add_reservation(request):
-    """Admin: create a reservation"""
-    guest_id = request.POST.get('guest')
-    room_id = request.POST.get('room')
-    check_in = request.POST.get('check_in_date')
-    check_out = request.POST.get('check_out_date')
-    number_of_guests = request.POST.get('number_of_guests', 1)
-    status = request.POST.get('status', 'Pending')
+    guest_id = request.POST.get("guest")
+    room_id = request.POST.get("room")
+    check_in = request.POST.get("check_in_date")
+    check_out = request.POST.get("check_out_date")
+    number_of_guests = int(request.POST.get("number_of_guests", 1))
+    status = request.POST.get("status", "Pending")
 
-    try:
-        guest = Guest.objects.get(id=guest_id)
-        room = Room.objects.get(id=room_id)
-        reservation = Reservation.objects.create(
-            guest=guest,
-            room=room,
-            check_in_date=check_in,
-            check_out_date=check_out,
-            number_of_guests=int(number_of_guests),
-            status=status,
+    # offline guest fields
+    full_name = request.POST.get("offline_full_name", "").strip()
+    phone = request.POST.get("offline_phone", "").strip()
+    email = request.POST.get("offline_email", "").strip()
+    address = request.POST.get("offline_address", "").strip()
+
+    if not room_id or not check_in or not check_out:
+        messages.error(request, "Room and dates are required.")
+        return redirect("add_reservation_page")
+
+    ci = datetime.strptime(check_in, "%Y-%m-%d").date()
+    co = datetime.strptime(check_out, "%Y-%m-%d").date()
+
+    if co <= ci:
+        messages.error(request, "Check-out must be after check-in.")
+        return redirect("add_reservation_page")
+
+    room = get_object_or_404(Room, id=room_id)
+
+    # prevent double booking
+    if Reservation.objects.filter(
+        room=room,
+        status__in=["Pending", "Confirmed", "Checked In"],
+        check_in_date__lt=co,
+        check_out_date__gt=ci
+    ).exists():
+        messages.error(request, "Room already booked for these dates.")
+        return redirect("add_reservation_page")
+
+    # determine guest
+    if guest_id:
+        guest = get_object_or_404(Guest, id=guest_id)
+    else:
+        if not full_name or not phone:
+            messages.error(request, "Offline guest name & phone required.")
+            return redirect("add_reservation_page")
+
+        username = full_name.lower().replace(" ", "")
+        if User.objects.filter(username=username).exists():
+            username += str(User.objects.count() + 1)
+
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=User.objects.make_random_password()
         )
-        reservation.calculate_total_price()
-        reservation.save()
-        messages.success(request, f'Reservation #{reservation.id} created.')
-    except Exception as e:
-        messages.error(request, f'Error creating reservation: {str(e)}')
-    return redirect('manage_reservations')
+        user.first_name = full_name
+        user.save()
+
+        guest = Guest.objects.create(
+            user=user,
+            phone=phone,
+            address=address or "-"
+        )
+
+    reservation = Reservation.objects.create(
+        guest=guest,
+        room=room,
+        check_in_date=ci,
+        check_out_date=co,
+        number_of_guests=number_of_guests,
+        status=status,
+        is_online_booking=False,
+    )
+    reservation.calculate_total_price()
+    reservation.save()
+
+    Booking.objects.create(
+        user=guest.user,
+        reservation=reservation,
+        room=room,
+        booking_status="Confirmed" if status == "Confirmed" else "Pending",
+    )
+
+    messages.success(request, "Reservation created successfully.")
+    return redirect("manage_reservations")
 
 
 @admin_login_required
@@ -623,24 +778,27 @@ def delete_reservation(request, reservation_id):
 @admin_login_required
 @require_http_methods(["POST"])
 def update_reservation_status(request, reservation_id):
-    """Update reservation status"""
     reservation = get_object_or_404(Reservation, id=reservation_id)
-    new_status = request.POST.get('status')
-    
+    new_status = request.POST.get('status')  # ✅ must match template
+
     if new_status in dict(Reservation.STATUS_CHOICES):
         reservation.status = new_status
+
+        # optional: update room status
         if new_status in ['Checked Out', 'Cancelled']:
             reservation.room.status = 'Available'
-            reservation.room.save()
-        elif new_status == 'Checked In':
+            reservation.room.save(update_fields=['status'])
+        elif new_status in ['Checked In', 'Confirmed']:
             reservation.room.status = 'Booked'
-            reservation.room.save()
-        reservation.save()
+            reservation.room.save(update_fields=['status'])
+
+        reservation.save(update_fields=['status'])
         messages.success(request, f"Reservation status updated to {new_status}.")
     else:
         messages.error(request, "Invalid status.")
-    
+
     return redirect('manage_reservations')
+
 
 
 @admin_login_required
@@ -760,30 +918,30 @@ def admin_reports(request):
 
 @login_required(login_url='login')
 def user_profile(request):
-    """User profile page"""
     try:
         guest = request.user.guest
     except Guest.DoesNotExist:
         guest = None
-    
+
     bookings = Reservation.objects.filter(guest=guest).order_by('-check_in_date') if guest else []
-    
-    from .models import RoomRating, ServiceRating
-    reviews = RoomRating.objects.filter(user=request.user)
-    
+
+    room_reviews = RoomRating.objects.filter(user=request.user).select_related("room")
+    service_reviews = ServiceRating.objects.filter(user=request.user).select_related("service")
+
     total_bookings = bookings.count()
     total_nights = sum((b.check_out_date - b.check_in_date).days for b in bookings if b.check_out_date and b.check_in_date) if bookings else 0
-    reviews_count = reviews.count()
-    
+
     context = {
         'guest': guest,
         'bookings': bookings,
-        'reviews': reviews,
+        'room_reviews': room_reviews,
+        'service_reviews': service_reviews,
         'total_bookings': total_bookings,
         'total_nights': total_nights,
-        'reviews_count': reviews_count,
+        'reviews_count': room_reviews.count() + service_reviews.count(),
     }
     return render(request, 'hotel/html/user_profile.html', context)
+
 
 
 @login_required(login_url='login')
@@ -835,24 +993,40 @@ def rate_room(request, room_id):
     """Rate a room after checkout"""
     from .models import RoomRating
     room = get_object_or_404(Room, id=room_id)
-    
+    # Find the user's most recent reservation for this room
+    reservation = Reservation.objects.filter(guest__user=request.user, room=room).order_by('-check_out_date').first()
+    if not reservation:
+        messages.error(request, "No reservation found for you and this room.")
+        return redirect('my_reservations')
+
     if request.method == 'POST':
-        from .forms import RoomRatingForm
-        form = RoomRatingForm(request.POST)
-        if form.is_valid():
-            rating = form.save(commit=False)
-            rating.room = room
-            rating.user = request.user
-            rating.save()
+        rating_val = request.POST.get('rating')
+        cleanliness = request.POST.get('cleanliness', 5)
+        comfort = request.POST.get('comfort', 5)
+        amenities = request.POST.get('amenities', 5)
+        review_text = request.POST.get('review', '')
+
+        try:
+            RoomRating.objects.create(
+                user=request.user,
+                room=room,
+                reservation=reservation,
+                rating=int(rating_val),
+                review=review_text,
+                cleanliness=int(cleanliness),
+                comfort=int(comfort),
+                amenities=int(amenities),
+            )
             messages.success(request, "Thank you for your review!")
             return redirect('user_profile')
-    else:
-        from .forms import RoomRatingForm
-        form = RoomRatingForm()
-    
+        except Exception as e:
+            messages.error(request, f"Error saving review: {str(e)}")
+
+    # provide minimal form context expected by template
     context = {
+        'reservation': reservation,
         'room': room,
-        'form': form,
+        'form': {},
     }
     return render(request, 'hotel/html/rate_room.html', context)
 
@@ -862,24 +1036,39 @@ def rate_service(request, service_id):
     """Rate a service"""
     from .models import ServiceRating, ServiceBooking
     service = get_object_or_404(Service, id=service_id)
-    
+    # find most recent service booking for this user & service
+    service_booking = ServiceBooking.objects.filter(user=request.user, service=service).order_by('-scheduled_date').first()
+    if not service_booking:
+        messages.error(request, "No service booking found for you and this service.")
+        return redirect('service')
+
     if request.method == 'POST':
-        from .forms import ServiceRatingForm
-        form = ServiceRatingForm(request.POST)
-        if form.is_valid():
-            rating = form.save(commit=False)
-            rating.service = service
-            rating.user = request.user
-            rating.save()
+        rating_val = request.POST.get('rating')
+        quality = request.POST.get('quality', 5)
+        timeliness = request.POST.get('timeliness', 5)
+        value_for_money = request.POST.get('value_for_money', 5)
+        review_text = request.POST.get('review', '')
+
+        try:
+            ServiceRating.objects.create(
+                user=request.user,
+                service=service,
+                service_booking=service_booking,
+                rating=int(rating_val),
+                review=review_text,
+                quality=int(quality),
+                timeliness=int(timeliness),
+                value_for_money=int(value_for_money),
+            )
             messages.success(request, "Thank you for your service review!")
             return redirect('user_profile')
-    else:
-        from .forms import ServiceRatingForm
-        form = ServiceRatingForm()
-    
+        except Exception as e:
+            messages.error(request, f"Error saving service review: {str(e)}")
+
     context = {
         'service': service,
-        'form': form,
+        'service_booking': service_booking,
+        'form': {},
     }
     return render(request, 'hotel/html/rate_service.html', context)
 
@@ -1083,16 +1272,20 @@ def add_contact(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         email = request.POST.get('email')
+        phone = request.POST.get('phone', '')
+        subject = request.POST.get('subject', '')
         message = request.POST.get('message')
-        
+
         if not all([name, email, message]):
-            messages.error(request, 'All fields are required.')
+            messages.error(request, 'Name, email and message are required.')
             return redirect('manage_contacts')
-        
+
         try:
             Contact.objects.create(
                 name=name,
                 email=email,
+                phone=phone or None,
+                subject=subject or '',
                 message=message
             )
             messages.success(request, 'Contact message saved.')

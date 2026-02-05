@@ -745,27 +745,44 @@
                                 <h5>My Reviews & Ratings</h5>
                             </div>
                             <div class="content-card-body">
-                                {% if reviews %}
-                                <div class="reviews-list">
-                                    {% for review in reviews %}
-                                    <div class="review-item">
-                                        <h6 class="review-title">{{ review.room.room_number|default:review.service.name }}</h6>
-                                        <div class="review-rating">
-                                            {% for i in "12345" %}
-                                                <i class="fas fa-star {% if i|add:0 <= review.rating %}filled{% else %}empty{% endif %}"></i>
-                                            {% endfor %}
-                                            <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
-                                        </div>
-                                        <p class="review-text">{{ review.review }}</p>
-                                    </div>
-                                    {% endfor %}
-                                </div>
-                                {% else %}
-                                <div class="empty-state">
-                                    <i class="fas fa-star"></i>
-                                    <p>You haven't written any reviews yet.</p>
-                                </div>
-                                {% endif %}
+                                {% if room_reviews or service_reviews %}
+  <div class="reviews-list">
+
+    {% for review in room_reviews %}
+      <div class="review-item">
+        <h6 class="review-title">Room {{ review.room.room_number }}</h6>
+
+        <div class="review-rating">
+          {% for i in "12345" %}
+            <i class="fas fa-star {% if forloop.counter <= review.rating %}filled{% else %}empty{% endif %}"></i>
+          {% endfor %}
+          <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+        </div>
+
+        <p class="review-text">{{ review.review }}</p>
+      </div>
+    {% endfor %}
+
+    {% for review in service_reviews %}
+      <div class="review-item">
+        <h6 class="review-title">Service {{ review.service.name }}</h6>
+
+        <div class="review-rating">
+          {% for i in "12345" %}
+            <i class="fas fa-star {% if forloop.counter <= review.rating %}filled{% else %}empty{% endif %}"></i>
+          {% endfor %}
+          <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+        </div>
+
+        <p class="review-text">{{ review.review }}</p>
+      </div>
+    {% endfor %}
+
+  </div>
+{% else %}
+  <p class="text-muted">No reviews yet.</p>
+{% endif %}
+
                             </div>
                         </div>
                     </div>

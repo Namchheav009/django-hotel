@@ -1,66 +1,261 @@
 {% extends 'hotel/admin/admin_base.html' %}
-{% block admin_content %}
+{% load static %}
 
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-  <h2>Manage Categories</h2>
-  <button class="btn" style="padding:8px 12px;background:#0f2133;color:#fff;border-radius:8px;text-decoration:none;font-weight:800;" data-bs-toggle="modal" data-bs-target="#addCategoryModal">New Category</button>
+{% block admin_content %}
+<style>
+  .page-head{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:14px;
+    margin-bottom:14px;
+  }
+  .page-head h2{ margin:0; font-weight:900; }
+  .page-sub{ margin:6px 0 0; color:var(--muted); font-weight:700; }
+
+  .btnx{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:10px 14px;
+    border-radius:12px;
+    font-weight:900;
+    border:1px solid transparent;
+    background:#0f2133;
+    color:#fff;
+  }
+  .btnx:hover{ color:#fff; }
+
+  .cardx{
+    background:#fff;
+    border:1px solid #eef1f7;
+    border-radius:16px;
+    box-shadow: 0 10px 24px rgba(10,16,32,.06);
+    overflow:hidden;
+  }
+  .cardx-top{
+    padding:14px 16px;
+    border-bottom:1px solid #eef1f7;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px;
+  }
+
+  .search{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 12px;
+    border:1px solid #e9edf7;
+    border-radius:12px;
+    background:#fbfcff;
+    min-width:260px;
+  }
+  .search input{
+    border:none; outline:none; background:transparent;
+    width:100%;
+    font-weight:700;
+  }
+
+  table{ width:100%; border-collapse:collapse; }
+  thead th{
+    text-align:left;
+    color:var(--muted);
+    font-weight:900;
+    font-size:13px;
+    padding:12px 16px;
+    background:#fbfcff;
+    border-bottom:1px solid #eef1f7;
+  }
+  tbody td{
+    padding:14px 16px;
+    border-top:1px solid #f0f2f6;
+    vertical-align:middle;
+    font-weight:800;
+    color:#0a1020;
+  }
+  tbody tr:hover{ background:#fbfcff; }
+
+  .muted{ color:var(--muted); font-weight:800; }
+
+  .action-wrap{ display:flex; gap:8px; align-items:center; }
+  .link-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px solid #e9edf7;
+    background:#fff;
+    font-weight:900;
+    text-decoration:none;
+    color:#0a1020;
+  }
+  .danger-btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px solid #fee2e2;
+    background:#fff;
+    font-weight:900;
+    color:#ef4444;
+  }
+
+  .empty{
+    padding:22px;
+    color:var(--muted);
+    font-weight:800;
+  }
+</style>
+
+<div class="page-head">
+  <div>
+    <h2>Manage Categories</h2>
+    <p class="page-sub">Create, edit, and organize room categories.</p>
+  </div>
+
+  <!-- ✅ Button works (opens modal by JS) -->
+  <button type="button" class="btnx" onclick="openAddCategoryModal()">
+    <i class="fas fa-plus"></i> New Category
+  </button>
 </div>
 
-<div class="admin-card">
+<div class="cardx">
+  <div class="cardx-top">
+    <div class="muted">Total: {{ categories|length }}</div>
+
+    <div class="search">
+      <i class="fas fa-search muted"></i>
+      <input id="q" type="text" placeholder="Search category..." onkeyup="filterRows()">
+    </div>
+  </div>
+
   {% if categories %}
-    <table style="width:100%;border-collapse:collapse;">
-      <thead>
-        <tr style="text-align:left;color:var(--muted);font-weight:800;font-size:13px;">
-          <th style="padding:12px 8px;">Name</th>
-          <th style="padding:12px 8px;">Base Price</th>
-          <th style="padding:12px 8px;">Manager</th>
-          <th style="padding:12px 8px;">Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for c in categories %}
-          <tr style="border-top:1px solid #f0f2f6;">
-            <td style="padding:12px 8px;">{{ c.category_name }}</td>
-            <td style="padding:12px 8px;color:var(--muted);">N/A</td>
-            <td style="padding:12px 8px;color:var(--muted);">N/A</td>
-            <td style="padding:12px 8px;">
-              <a href="{% url 'edit_category' c.id %}" class="btn">Edit</a>
-              <form method="post" action="{% url 'delete_category' c.id %}" style="display:inline;">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this category?');">Delete</button>
-              </form>
-            </td>
+    <div style="overflow:auto;">
+      <table id="catTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th class="muted">Info</th>
+            <th>Action</th>
           </tr>
-        {% endfor %}
-      <!-- Add Category Modal -->
-      <div class="modal fade" id="addCategoryModal" tabindex="-1">
-        <div class="modal-dialog">
-          <div class="modal-content">
-            <div class="modal-header">
-              <h5 class="modal-title">Add New Category</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="post" action="{% url 'add_category' %}">
-              {% csrf_token %}
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label for="category_name" class="form-label">Category Name</label>
-                  <input type="text" class="form-control" id="category_name" name="category_name" required>
+        </thead>
+
+        <tbody>
+          {% for c in categories %}
+            <tr>
+              <td>{{ c.category_name }}</td>
+              <td class="muted">ID: {{ c.id }}</td>
+
+              <td>
+                <div class="action-wrap">
+                  <a href="{% url 'edit_category' c.id %}" class="link-btn">
+                    <i class="fas fa-pen"></i> Edit
+                  </a>
+
+                  <form method="post" action="{% url 'delete_category' c.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="danger-btn"
+                      onclick="return confirm('Delete this category?');">
+                      <i class="fas fa-trash"></i> Delete
+                    </button>
+                  </form>
                 </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary">Add Category</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-      </tbody>
-    </table>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
   {% else %}
-    <div style="padding:18px;color:var(--muted);">No categories found.</div>
+    <div class="empty">No categories found.</div>
   {% endif %}
 </div>
+
+<!-- ✅ Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:16px; overflow:hidden;">
+      <div class="modal-header">
+        <h5 class="modal-title" style="font-weight:900;">Add New Category</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body">
+        <label class="form-label fw-bold">Category Name</label>
+        <input type="text" class="form-control" id="category_name" placeholder="e.g. Deluxe Ocean Suite">
+        <small id="catError" style="color:red; display:none; font-weight:700;"></small>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary fw-bold" onclick="submitCategory()">
+          Add Category
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function filterRows(){
+    const q = (document.getElementById("q").value || "").toLowerCase();
+    const table = document.getElementById("catTable");
+    if(!table) return;
+
+    table.querySelectorAll("tbody tr").forEach(r => {
+      r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none";
+    });
+  }
+
+  function openAddCategoryModal(){
+    document.getElementById("category_name").value = "";
+    const err = document.getElementById("catError");
+    err.style.display = "none";
+
+    const modal = new bootstrap.Modal(document.getElementById("addCategoryModal"));
+    modal.show();
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function submitCategory(){
+    const name = document.getElementById("category_name").value.trim();
+    const err = document.getElementById("catError");
+
+    if(!name){
+      err.innerText = "Category name is required.";
+      err.style.display = "block";
+      return;
+    }
+
+    fetch("{% url 'add_category' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": getCookie("csrftoken")
+      },
+      body: JSON.stringify({ category_name: name })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if(data.success){
+        bootstrap.Modal.getInstance(document.getElementById("addCategoryModal")).hide();
+        location.reload();
+      } else {
+        err.innerText = data.error || "Failed to add category.";
+        err.style.display = "block";
+      }
+    })
+    .catch(() => {
+      err.innerText = "Server error. Try again.";
+      err.style.display = "block";
+    });
+  }
+</script>
 
 {% endblock %}

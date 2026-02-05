@@ -1,44 +1,225 @@
 {% extends 'hotel/html/base.html' %}
 {% load static %}
 
-{% block title %}My Reservations - MyHotel{% endblock %}
+{% block title %}My Stays - MyHotel{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root{
+    --text:#0a1020;
+    --muted:#6a7387;
+    --line:#e9edf7;
+    --card:#ffffff;
+    --dark:#0b1220;
+    --success:#22c55e;
+    --warn:#f59e0b;
+    --danger:#ef4444;
+    --radius:16px;
+  }
+
+  .stays-wrap{ padding: 18px 0 60px; }
+  .stays-head{ margin: 10px 0 18px; }
+  .stays-head h1{ font-weight: 900; color:var(--text); margin:0; }
+  .stays-head p{ margin:6px 0 0; color:var(--muted); font-weight:700; }
+
+  .stay-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow: 0 10px 24px rgba(10,16,32,.06);
+    overflow:hidden;
+    margin-bottom: 18px;
+  }
+
+  .stay-inner{
+    display:grid;
+    grid-template-columns: 320px 1fr;
+    gap: 18px;
+    padding: 18px;
+  }
+
+  .stay-media{
+    position:relative;
+    border-radius: 14px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:#f1f4fb;
+    height: 190px;
+  }
+  .stay-media img{
+    width:100%;
+    height:100%;
+    object-fit: cover;
+    display:block;
+  }
+
+  .pill{
+    position:absolute;
+    top:12px; left:12px;
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 10px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:.85rem;
+    border:1px solid rgba(0,0,0,.06);
+    background: rgba(255,255,255,.92);
+    color:#0b1220;
+    backdrop-filter: blur(8px);
+  }
+  .dot{ width:8px; height:8px; border-radius:50%; background:#94a3b8; }
+  .pill.pending .dot{ background:var(--warn); }
+  .pill.confirmed .dot{ background:#3b82f6; }
+  .pill.completed .dot{ background:var(--success); }
+  .pill.cancelled .dot{ background:var(--danger); }
+
+  .stay-title{
+    font-weight:900;
+    color:var(--text);
+    margin: 4px 0 8px;
+    font-size: 1.25rem;
+  }
+
+  .stay-meta{
+    display:flex; flex-wrap:wrap; gap:16px;
+    color:var(--muted);
+    font-weight:800;
+    align-items:center;
+    margin-bottom: 12px;
+  }
+  .meta-item{ display:inline-flex; align-items:center; gap:8px; }
+  .meta-item i{ color:#99a3b7; }
+
+  .stay-actions{
+    margin-top: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .btnx{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    padding:10px 14px;
+    border-radius:12px;
+    font-weight:900;
+    text-decoration:none;
+    border:1px solid transparent;
+    transition: transform .15s ease;
+  }
+  .btnx:hover{ transform: translateY(-2px); }
+
+  .btn-dark{ background: var(--dark); color:#fff; }
+  .btn-dark:hover{ color:#fff; }
+
+  .btn-ghost{
+    background:#fff;
+    color:var(--text);
+    border:1px solid var(--line);
+  }
+
+  .reviewed{
+    display:inline-flex; align-items:center; gap:10px;
+    font-weight:900;
+    color:#f97316;
+    margin-left:auto;
+  }
+
+  @media(max-width: 992px){
+    .stay-inner{ grid-template-columns: 1fr; }
+    .stay-media{ height: 220px; }
+    .reviewed{ margin-left:0; }
+  }
+</style>
+{% endblock %}
 
 {% block content %}
-<h1 class="page-title"><i class="fas fa-calendar"></i> My Reservations</h1>
+<div class="container stays-wrap">
 
-{% if reservations %}
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead class="table-dark">
-                <tr>
-                    <th>Room</th>
-                    <th>Check-in</th>
-                    <th>Check-out</th>
-                    <th>Status</th>
-                    <th>Total Price</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for reservation in reservations %}
-                    <tr>
-                        <td>{{ reservation.room.room_number }}</td>
-                        <td>{{ reservation.check_in_date }}</td>
-                        <td>{{ reservation.check_out_date }}</td>
-                        <td><span class="badge badge-warning">{{ reservation.status }}</span></td>
-                        <td>${{ reservation.total_price }}</td>
-                        <td>
-                            <a href="{% url 'reservation_detail' reservation.id %}" class="btn btn-sm btn-primary">Details</a>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-{% else %}
+  <div class="stays-head">
+    <h1>My Stays</h1>
+    <p>View your history and share your experiences.</p>
+  </div>
+
+  {% if reservations %}
+    {% for r in reservations %}
+
+      <div class="stay-card">
+        <div class="stay-inner">
+
+          <!-- Image -->
+          <div class="stay-media">
+
+            {% if r.status == 'Checked Out' %}
+              <span class="pill completed"><span class="dot"></span> Completed</span>
+            {% elif r.status == 'Confirmed' %}
+              <span class="pill confirmed"><span class="dot"></span> Confirmed</span>
+            {% elif r.status == 'Cancelled' %}
+              <span class="pill cancelled"><span class="dot"></span> Cancelled</span>
+            {% else %}
+              <span class="pill pending"><span class="dot"></span> {{ r.status }}</span>
+            {% endif %}
+
+            {% if r.room.image %}
+              <img src="{{ r.room.image.url }}" alt="Room image">
+            {% else %}
+              <img src="{% static 'hotel/img/hero.png' %}" alt="Room image">
+            {% endif %}
+          </div>
+
+          <!-- Content -->
+          <div>
+            <div class="stay-title">
+              {{ r.room.category.category_name }} — Room {{ r.room.room_number }}
+            </div>
+
+            <div class="stay-meta">
+              <span class="meta-item">
+                <i class="fas fa-calendar"></i>
+                {{ r.check_in_date|date:"M d, Y" }} - {{ r.check_out_date|date:"M d, Y" }}
+              </span>
+
+              <span class="meta-item">
+                <i class="far fa-moon"></i>
+                {{ r.nights }} Nights
+              </span>
+
+              <span class="meta-item">
+                <i class="fas fa-dollar-sign"></i>
+                ${{ r.total_price }}
+              </span>
+            </div>
+
+            <div class="stay-actions">
+              <a class="btnx btn-ghost" href="{% url 'reservation_detail' r.id %}">
+                <i class="fas fa-receipt"></i> View Details
+              </a>
+
+              {% if r.status == 'Checked Out' and r.id not in reviewed_res_ids %}
+                <a class="btnx btn-dark" href="{% url 'rate_room' r.room.id %}">
+                  <i class="fas fa-star"></i> Leave a Review
+                </a>
+              {% endif %}
+
+              {% if r.id in reviewed_res_ids %}
+                <span class="reviewed">
+                  <i class="fas fa-check-circle"></i> Reviewed
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    {% endfor %}
+  {% else %}
     <div class="alert alert-info">
-        <i class="fas fa-info-circle"></i> You don't have any reservations yet.
-        <a href="{% url 'room_list' %}" class="btn btn-sm btn-primary">Browse Rooms</a>
+      <i class="fas fa-info-circle"></i> You don't have any reservations yet.
+      <a href="{% url 'room_list' %}" class="btn btn-sm btn-primary">Browse Rooms</a>
     </div>
-{% endif %}
+  {% endif %}
+
+</div>
 {% endblock %}

@@ -119,7 +119,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-MEDIA_URL = 'media/'
+# Ensure MEDIA_URL starts with a leading slash so image URLs resolve correctly in templates
+MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # REST Framework Configuration

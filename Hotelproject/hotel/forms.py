@@ -88,6 +88,19 @@ class RoomFilterForm(forms.Form):
 
 
 class PaymentForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        reservation = kwargs.pop('reservation', None)
+        super().__init__(*args, **kwargs)
+        
+        # Filter payment methods based on booking type
+        if reservation and reservation.is_online_booking:
+            # Online bookings: exclude Cash (only Card, Online, Bank Transfer)
+            self.fields['payment_method'].choices = [
+                choice for choice in Payment.PAYMENT_METHOD_CHOICES 
+                if choice[0] != 'Cash'
+            ]
+        # Walk-in bookings: show all payment methods including Cash
+
     class Meta:
         model = Payment
         fields = ('payment_method',)
