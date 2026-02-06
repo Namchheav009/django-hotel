@@ -37,6 +37,12 @@
         margin: 20px;
         padding: 10px 30px;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        position: sticky;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 70px;
+        z-index: 1000;
     }
     
     .navbar-brand {
@@ -102,7 +108,8 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
     }
-    
+   
+  
     .dropdown-menu {
         background: rgba(10, 25, 47, 0.98);
         border: 1px solid rgba(0, 229, 255, 0.2);
@@ -132,6 +139,7 @@
     
     .container {
         max-width: 1200px;
+       
     }
     
     /* Messages */
@@ -427,24 +435,25 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-center">
+                <ul class="navbar-nav ms-auto align-items-cente">
+                
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'guest_home' %}">Home</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'guest_home' %}active{% endif %}" href="{% url 'guest_home' %}">Home</a>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'room_list' %}">Rooms</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'room_list' %}active{% endif %}" href="{% url 'room_list' %}">Rooms</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'service' %}">Services</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'service' %}active{% endif %}" href="{% url 'service' %}">Services</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'about' %}">About</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'contact' %}">Contact</a>
+                        <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a>
                     </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'my_reservations' %}">My Bookings</a>
+                            <a class="nav-link {% if request.resolver_match.url_name == 'my_reservations' %}active{% endif %}" href="{% url 'my_reservations' %}">My Bookings</a>
                         </li>
                         <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'reviews' %}active{% endif %}"
@@ -460,18 +469,20 @@
                             <ul class="dropdown-menu" aria-labelledby="userDropdown">
                                 <li><a class="dropdown-item" href="{% url 'user_profile' %}">My Profile</a></li>
                                 <li><a class="dropdown-item" href="{% url 'complete_profile' %}">Edit Profile</a></li>
+                                <li><a class="dropdown-item" href="{% url 'my_service_bookings' %}">My Service Bookings</a></li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
                             </ul>
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                            <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'login' %}">Login</a>
                         </li>
                         <li class="nav-item">
-                            <a class="btn-book" href="{% url 'register' %}">Register</a>
+                            <a class="btn-book {% if request.resolver_match.url_name == 'register' %}active{% endif %}" href="{% url 'register' %}">Register</a>
                         </li>
                     {% endif %}
+                    </li>
                 </ul>
             </div>
         </div>

@@ -35,13 +35,12 @@ urlpatterns = [
     path('dashboard/users/<int:user_id>/delete/', views.delete_user, name='delete_user'),
 
     path('dashboard/reservations/', views.manage_reservations, name='manage_reservations'),
-    path("dashboard/reservations/add/", views.add_reservation_page, name="add_reservation_page"),
-path("dashboard/reservations/add/submit/", views.add_reservation, name="add_reservation"),
-
-    path('dashboard/reservations/add/', views.add_reservation, name='add_reservation'),
+    path('dashboard/reservations/add/', views.add_reservation_page, name='add_reservation_page'),
+    path('dashboard/reservations/add/submit/', views.add_reservation, name='add_reservation'),
+    path('dashboard/reservations/<int:reservation_id>/edit/', views.edit_reservation, name='edit_reservation'),
+    path("dashboard/reservations/<int:reservation_id>/edit/",views.edit_reservation, name="edit_reservation"),
     path('dashboard/reservations/<int:reservation_id>/update-status/', views.update_reservation_status, name='update_reservation_status'),
     path('dashboard/reservations/<int:reservation_id>/delete/', views.delete_reservation, name='delete_reservation'),
-    path('dashboard/reservations/<int:reservation_id>/update-status/', views.update_reservation_status, name='update_reservation_status'),
 
     path('dashboard/rooms/', views.manage_rooms, name='manage_rooms'),
     path('dashboard/rooms/add/', views.add_room, name='add_room'),
@@ -57,10 +56,8 @@ path("dashboard/reservations/add/submit/", views.add_reservation, name="add_rese
     path('dashboard/contacts/add/', views.add_contact, name='add_contact'),
     path('dashboard/contacts/<int:contact_id>/delete/', views.delete_contact, name='delete_contact'),
     path('dashboard/contacts/<int:contact_id>/edit/', views.edit_contact, name='edit_contact'),
-    path('dashboard/reservations/add/', views.add_reservation, name='add_reservation'),
-    path('dashboard/reservations/<int:reservation_id>/delete/', views.delete_reservation, name='delete_reservation'),
-    path('dashboard/reservations/<int:reservation_id>/edit/', views.edit_reservation, name='edit_reservation'),
-    path('dashboard/reviews/add/', views.add_review, name='add_review'),
+
+    path('dashboard/reviews/add/', views.add_room_review_admin, name='add_review'),
     path('dashboard/reviews/<int:review_id>/delete/', views.delete_review, name='delete_review'),
     path('dashboard/reviews/<int:review_id>/edit/', views.edit_review, name='edit_review'),
     path('dashboard/services/', views.manage_services, name='manage_services'),
@@ -87,6 +84,13 @@ path("dashboard/reservations/add/submit/", views.add_reservation, name="add_rese
     # Ratings
     path('room/<int:room_id>/rate/', views.rate_room, name='rate_room'),
     path('service/<int:service_id>/rate/', views.rate_service, name='rate_service'),
+    
+    # Service Booking
+    path('services/<int:service_id>/book/', views.book_service, name='book_service'),
+    path('my-service-bookings/', views.my_service_bookings, name='my_service_bookings'),
+    path('dashboard/service-bookings/', views.manage_service_bookings, name='manage_service_bookings'),
+    path('dashboard/service-bookings/<int:booking_id>/status/', views.update_service_booking_status, name='update_service_booking_status'),
+    path('dashboard/service-bookings/<int:booking_id>/cancel/', views.cancel_service_booking, name='cancel_service_booking'),
     
     path("reviews/", views.reviews_page, name="reviews"),
    

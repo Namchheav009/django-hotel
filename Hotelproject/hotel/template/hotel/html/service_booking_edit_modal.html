@@ -1,0 +1,37 @@
+<div class="modal fade" id="editBookingModal{{ booking.id }}" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Service Booking</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="POST" action="{% url 'book_service' booking.service.id %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Service</label>
+            <input type="text" class="form-control" value="{{ booking.service.name }}" disabled>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Scheduled Date</label>
+            <input type="datetime-local" class="form-control" name="scheduled_date" 
+                   value="{{ booking.scheduled_date|date:'Y-m-d\TH:i' }}" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Quantity</label>
+            <input type="number" class="form-control" name="quantity" 
+                   value="{{ booking.quantity }}" min="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notes</label>
+            <textarea class="form-control" name="notes" rows="3">{{ booking.notes }}</textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Booking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

@@ -1,73 +1,409 @@
 {% extends 'hotel/admin/admin_base.html' %}
 
+{% block title %}Dashboard - Admin Panel{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block page_subtitle %}Hotel analytics overview{% endblock %}
+
 {% block admin_content %}
-<div style="display:grid; grid-template-columns: 1fr 360px; gap:24px; align-items:start;">
-    <div>
-        <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:18px;">
-            <div class="admin-card" style="display:flex; flex-direction:column; gap:8px;">
-                <div style="font-size:12px; color:var(--muted); font-weight:800;">Total Rooms</div>
-                <div style="font-size:22px; font-weight:900;">{{ total_rooms }}</div>
-            </div>
 
-            <div class="admin-card" style="display:flex; flex-direction:column; gap:8px;">
-                <div style="font-size:12px; color:var(--muted); font-weight:800;">Active Reservations</div>
-                <div style="font-size:22px; font-weight:900;">{{ active_reservations }}</div>
-            </div>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-            <div class="admin-card" style="display:flex; flex-direction:column; gap:8px;">
-                <div style="font-size:12px; color:var(--muted); font-weight:800;">Guests Today</div>
-                <div style="font-size:22px; font-weight:900;">{{ guests_today }}</div>
-            </div>
+<style>
+  .kpi-grid{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:14px;
+    margin-bottom:16px;
+  }
 
-            <div class="admin-card" style="display:flex; flex-direction:column; gap:8px;">
-                <div style="font-size:12px; color:var(--muted); font-weight:800;">Revenue (Today)</div>
-                <div style="font-size:22px; font-weight:900;">${{ revenue_today }}</div>
-            </div>
+  .kpi{
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+  }
+  .kpi .icon{
+    width:38px;height:38px;border-radius:14px;
+    display:flex;align-items:center;justify-content:center;
+    background:#f1fff7;
+    border:1px solid #c9f7da;
+    color:#0f172a;
+    font-weight:1000;
+  }
+  .kpi .label{ color:var(--muted); font-weight:900; font-size:12px; }
+  .kpi .value{ font-weight:1000; font-size:20px; margin-top:2px; }
+  .kpi .hint{ font-weight:900; font-size:12px; margin-top:2px; color:#16a34a; }
+
+  .grid-2{
+    display:grid;
+    grid-template-columns: 1.35fr .65fr;
+    gap:16px;
+    align-items:start;
+  }
+
+  .card-title{
+    font-weight:1000;
+    margin:0;
+    font-size:16px;
+  }
+  .card-sub{
+    margin:4px 0 0;
+    color:var(--muted);
+    font-weight:800;
+    font-size:13px;
+  }
+
+  .chart-wrap{ height:310px; }
+  .chart-wrap canvas{ width:100% !important; height:100% !important; }
+
+  .mini-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:16px;
+    margin-top:16px;
+  }
+
+  .list{
+    margin:12px 0 0;
+    padding:0;
+    list-style:none;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+  }
+  .list li{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:14px;
+    background:#fff;
+  }
+  .dot{ width:9px;height:9px;border-radius:999px; margin-top:6px; background:#22c55e; }
+  .dot.blue{ background:#60a5fa; }
+  .dot.orange{ background:#f59e0b; }
+  .list strong{ font-weight:1000; }
+  .list .small{ color:var(--muted); font-weight:800; font-size:13px; }
+
+  @media (max-width: 1100px){
+    .kpi-grid{ grid-template-columns: repeat(2, 1fr); }
+    .grid-2{ grid-template-columns: 1fr; }
+    .mini-grid{ grid-template-columns: 1fr; }
+  }
+
+
+ /* Topbar */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      margin-bottom:18px;
+    }
+    .top-left{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .page-title{
+      font-weight:1000;
+      margin:0;
+      font-size:20px;
+    }
+    .page-sub{
+      margin:0;
+      font-weight:800;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .top-actions{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .search{
+      display:flex; align-items:center; gap:10px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px 12px;
+      min-width:260px;
+      box-shadow: 0 8px 20px rgba(11,18,32,.05);
+    }
+    .search i{ color:#98a2b3; }
+    .search input{
+      border:none; outline:none; width:100%;
+      font-weight:800;
+      color:var(--text);
+    }
+
+    .chip{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 12px;
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:14px;
+      font-weight:900;
+      color:#111827;
+      box-shadow: 0 8px 20px rgba(11,18,32,.05);
+      text-decoration:none;
+      cursor:pointer;
+    }
+
+
+</style>
+
+
+
+<div class="topbar">
+        <div class="top-left">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <p class="page-sub">Overview of hotel performance</p>
+          </div>
         </div>
 
-        <div class="admin-card" style="margin-top:20px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                <h3 style="margin:0;">Recent Reservations</h3>
-                <a href="{% url 'manage_reservations' %}" style="color:var(--muted); font-weight:800; text-decoration:none;">View All →</a>
-            </div>
+        <div class="top-actions">
+          <div class="search d-none d-md-flex">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" placeholder="Search..." />
+          </div>
 
-            {% if recent_reservations %}
-                <table style="width:100%; border-collapse:collapse;">
-                    <thead>
-                        <tr style="text-align:left; color:var(--muted); font-weight:800; font-size:13px;">
-                            <th style="padding:12px 8px;">Guest</th>
-                            <th style="padding:12px 8px;">Room</th>
-                            <th style="padding:12px 8px;">Check-in</th>
-                            <th style="padding:12px 8px;">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for reservation in recent_reservations %}
-                            <tr style="border-top:1px solid #f0f2f6;">
-                                <td style="padding:12px 8px;"><strong>{{ reservation.guest.user.get_full_name|default:reservation.guest.user.username }}</strong></td>
-                                <td style="padding:12px 8px; color:var(--muted);">{{ reservation.room.category.category_name }} ({{ reservation.room.room_number }})</td>
-                                <td style="padding:12px 8px; color:var(--muted);">{{ reservation.check_in_date|date:"M d" }}</td>
-                                <td style="padding:12px 8px;"><span style="background:#e9f7ef; color:#1b7a3a; padding:6px 10px; border-radius:999px; font-weight:900;">{{ reservation.status }}</span></td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <div style="color:var(--muted); padding:18px; text-align:center;">No reservations yet.</div>
-            {% endif %}
-        </div>
-    </div>
-
-    <div>
-        <div class="admin-card">
-            <h4 style="margin:0 0 12px 0;">Today's Overview</h4>
-            <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:12px;">
-                <li style="display:flex; gap:10px; align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#ffb74d;margin-top:6px;"></div><div><strong>Room 304 Cleaning Required</strong><div style="color:var(--muted); font-size:13px;">Guest checked out at 10:00 AM</div></div></li>
-                <li style="display:flex; gap:10px; align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#5ad3ff;margin-top:6px;"></div><div><strong>New Booking Request</strong><div style="color:var(--muted); font-size:13px;">Family Suite for Dec 24-28</div></div></li>
-                <li style="display:flex; gap:10px; align-items:flex-start;"><div style="width:8px;height:8px;border-radius:50%;background:#7be3a8;margin-top:6px;"></div><div><strong>VIP Guest Arrival</strong><div style="color:var(--muted); font-size:13px;">Mr. Thompson arriving at 2:00 PM</div></div></li>
+          <div class="dropdown">
+            <button class="chip dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="fa-regular fa-calendar"></i> Time period
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#">Today</a></li>
+              <li><a class="dropdown-item" href="#">Last 7 days</a></li>
+              <li><a class="dropdown-item" href="#">Last 30 days</a></li>
+              <li><a class="dropdown-item" href="#">This year</a></li>
             </ul>
-            <div style="margin-top:16px; text-align:center;"><a class="btn" href="#" style="padding:10px 14px; background:#fff; border-radius:10px; text-decoration:none; font-weight:800;">View Schedule</a></div>
+          </div>
+
+          <a class="chip" href="{% url 'manage_reservations' %}">
+            <i class="fa-solid fa-plus"></i> Add data
+          </a>
         </div>
+      </div>
+
+<!-- KPI cards -->
+<div class="kpi-grid">
+  <div class="admin-card kpi">
+    <div class="icon"><i class="fa-solid fa-door-open"></i></div>
+    <div>
+      <div class="label">Total Rooms</div>
+      <div class="value">{{ total_rooms|default:"0" }}</div>
+      <div class="hint">+2.5%</div>
     </div>
+  </div>
+
+  <div class="admin-card kpi">
+    <div class="icon" style="background:#eef7ff;border-color:#cfe7ff;">
+      <i class="fa-solid fa-calendar-check"></i>
+    </div>
+    <div>
+      <div class="label">Active Reservations</div>
+      <div class="value">{{ active_reservations|default:"0" }}</div>
+      <div class="hint" style="color:#2563eb;">+0.5%</div>
+    </div>
+  </div>
+
+  <div class="admin-card kpi">
+    <div class="icon" style="background:#fff7ed;border-color:#fed7aa;">
+      <i class="fa-solid fa-users"></i>
+    </div>
+    <div>
+      <div class="label">Guests Today</div>
+      <div class="value">{{ guests_today|default:"0" }}</div>
+      <div class="hint" style="color:#f59e0b;">+0.2%</div>
+    </div>
+  </div>
+
+  <div class="admin-card kpi">
+    <div class="icon" style="background:#fdf2f8;border-color:#fbcfe8;">
+      <i class="fa-solid fa-dollar-sign"></i>
+    </div>
+    <div>
+      <div class="label">Revenue (Today)</div>
+      <div class="value">${{ revenue_today|default:"0" }}</div>
+      <div class="hint" style="color:#db2777;">+1.2%</div>
+    </div>
+  </div>
 </div>
+
+<!-- Main charts -->
+<div class="grid-2">
+  <div class="admin-card">
+    <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:10px;">
+      <div>
+        <div class="card-title">Reservation activity</div>
+        <div class="card-sub">Bookings and revenue trend (sample chart)</div>
+      </div>
+      <span class="badge text-bg-light" style="border:1px solid var(--line);">Last 12 days</span>
+    </div>
+
+    <div class="chart-wrap">
+      <canvas id="barChart"></canvas>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div class="card-title">Today’s Overview</div>
+    <div class="card-sub">Important notes and tasks</div>
+
+    <ul class="list">
+      <li>
+        <div class="dot"></div>
+        <div>
+          <strong>Room cleaning required</strong>
+          <div class="small">Guest checked out — housekeeping needed</div>
+        </div>
+      </li>
+      <li>
+        <div class="dot blue"></div>
+        <div>
+          <strong>New booking request</strong>
+          <div class="small">Family suite — pending confirmation</div>
+        </div>
+      </li>
+      <li>
+        <div class="dot orange"></div>
+        <div>
+          <strong>VIP arrival</strong>
+          <div class="small">Prepare welcome pack & priority check-in</div>
+        </div>
+      </li>
+    </ul>
+
+    <div style="margin-top:12px;display:flex;justify-content:center;">
+      <a class="btn btn-outline-secondary" href="{% url 'manage_reservations' %}" style="border-radius:14px;font-weight:900;">
+        View reservations
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom cards -->
+<div class="mini-grid">
+  <div class="admin-card">
+    <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:10px;">
+      <div>
+        <div class="card-title">Sales by room category</div>
+        <div class="card-sub">Distribution (sample donut)</div>
+      </div>
+    </div>
+
+    <div class="chart-wrap" style="height:260px;">
+      <canvas id="donutChart"></canvas>
+    </div>
+  </div>
+
+  <div class="admin-card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div>
+        <div class="card-title">Recent Reservations</div>
+        <div class="card-sub">Latest activity</div>
+      </div>
+      <a href="{% url 'manage_reservations' %}" style="text-decoration:none;font-weight:1000;color:var(--muted);">View all →</a>
+    </div>
+
+    {% if recent_reservations %}
+      <div class="table-responsive">
+        <table class="table align-middle" style="margin:0;">
+          <thead>
+            <tr style="color:var(--muted); font-weight:1000; font-size:13px;">
+              <th>Guest</th>
+              <th>Room</th>
+              <th>Check-in</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for r in recent_reservations %}
+            <tr>
+              <td style="font-weight:1000;">
+                {{ r.guest.user.get_full_name|default:r.guest.user.username }}
+              </td>
+              <td class="text-muted" style="font-weight:900;">
+                {{ r.room.room_number }} — {{ r.room.category.category_name }}
+              </td>
+              <td class="text-muted" style="font-weight:900;">
+                {{ r.check_in_date|date:"M d" }}
+              </td>
+              <td>
+                <span class="badge text-bg-light" style="border:1px solid var(--line);font-weight:1000;">
+                  {{ r.status }}
+                </span>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="text-muted" style="font-weight:900;padding:14px;border:1px dashed var(--line);border-radius:14px;">
+        No reservations yet.
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<script>
+  // ===== Bar chart (sample UI like your screenshot) =====
+  const barCtx = document.getElementById('barChart');
+  new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: ['1 Jul','2 Jul','3 Jul','4 Jul','5 Jul','6 Jul','7 Jul','8 Jul','9 Jul','10 Jul','11 Jul','12 Jul'],
+      datasets: [
+        {
+          label: 'Reservations',
+          data: [22, 28, 18, 30, 44, 25, 19, 29, 24, 41, 33, 47],
+          borderRadius: 10,
+        },
+        {
+          label: 'Revenue',
+          data: [35, 42, 30, 55, 60, 48, 36, 52, 39, 58, 50, 63],
+          borderRadius: 10,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { beginAtZero: true, grid: { color: '#eef2f7' } },
+        x: { grid: { display: false } }
+      }
+    }
+  });
+
+  // ===== Donut chart =====
+  const donutCtx = document.getElementById('donutChart');
+  new Chart(donutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Deluxe', 'Standard', 'Suite', 'Family', 'VIP'],
+      datasets: [{
+        data: [25, 20, 18, 22, 15],
+        borderWidth: 2,
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '70%',
+      plugins: { legend: { position: 'left' } }
+    }
+  });
+</script>
+
 {% endblock %}

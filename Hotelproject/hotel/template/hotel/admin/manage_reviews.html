@@ -1,28 +1,65 @@
 {% extends 'hotel/admin/admin_base.html' %}
 {% block admin_content %}
-<h2>Manage Reviews & Ratings</h2>
-<div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReviewModal">New Review</button>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+  <div>
+    <h2 style="margin:0;font-weight:900;">Manage Reviews & Ratings</h2>
+    <div style="color:var(--muted);font-weight:700;margin-top:6px;">Room reviews with details (reservation-based).</div>
+  </div>
+
+  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReviewModal">
+    <i class="fas fa-plus"></i> New Review
+  </button>
 </div>
-<div class="admin-card" style="margin-top:12px;">
+
+<div class="admin-card">
   {% if reviews %}
     <div style="display:grid;gap:12px;">
       {% for r in reviews %}
-        <div style="padding:12px;border-radius:10px;border:1px solid #eef2f7;background:#fff;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;position:relative;">
-          <div>
-            <div style="font-weight:900;">{{ r.user.get_full_name|default:r.user.username }} — {{ r.room.room_number }}</div>
-            <div style="color:var(--muted); margin-top:6px;">{{ r.review|truncatechars:140 }}</div>
-          </div>
-          <div style="text-align:right;">
-            <div style="font-weight:900;">{{ r.rating }}/5</div>
-            <div style="color:var(--muted); font-size:12px;">{{ r.created_at|date:"M d, Y" }}</div>
-          </div>
-          <div style="position:absolute;top:8px;right:8px;display:flex;gap:6px;">
-            <a class="btn btn-sm btn-warning" href="{% url 'edit_review' r.id %}">Edit</a>
-            <form method="post" action="{% url 'delete_review' r.id %}">
-              {% csrf_token %}
-              <button class="btn btn-sm btn-danger">Delete</button>
-            </form>
+        <div style="padding:14px;border-radius:12px;border:1px solid #eef2f7;background:#fff;position:relative;">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+            <div>
+              <div style="font-weight:900;">
+                {{ r.user.get_full_name|default:r.user.username }}
+                <span style="color:var(--muted);font-weight:800;">• Room {{ r.room.room_number }}</span>
+              </div>
+
+              <div style="margin-top:6px;color:#111827;">
+                {% for i in "12345" %}
+                  {% if forloop.counter <= r.rating %}
+                    <i class="fas fa-star" style="color:#f4b63a;"></i>
+                  {% else %}
+                    <i class="fas fa-star" style="color:#e5e7eb;"></i>
+                  {% endif %}
+                {% endfor %}
+                <span style="color:var(--muted);font-weight:800;margin-left:8px;">{{ r.rating }}/5</span>
+              </div>
+
+              <div style="margin-top:8px;color:var(--muted);font-weight:800;">
+                Cleanliness: {{ r.cleanliness }}/5 • Comfort: {{ r.comfort }}/5 • Amenities: {{ r.amenities }}/5
+              </div>
+
+              {% if r.review %}
+                <div style="margin-top:8px;color:#374151;line-height:1.6;">{{ r.review|truncatechars:180 }}</div>
+              {% else %}
+                <div style="margin-top:8px;color:var(--muted);">No written review.</div>
+              {% endif %}
+            </div>
+
+            <div style="text-align:right;">
+              <div style="color:var(--muted);font-size:12px;font-weight:800;">{{ r.created_at|date:"M d, Y" }}</div>
+              <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
+                <a class="btn btn-sm btn-warning" href="{% url 'edit_review' r.id %}">
+                  <i class="fas fa-edit"></i> Edit
+                </a>
+                <form method="post" action="{% url 'delete_review' r.id %}">
+                  {% csrf_token %}
+                  <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this review?');">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
         </div>
       {% endfor %}
@@ -31,61 +68,76 @@
     <div style="padding:18px;color:var(--muted);">No reviews found.</div>
   {% endif %}
 </div>
-{% endblock %}
 
 
 <!-- Add Review Modal -->
 <div class="modal fade" id="addReviewModal" tabindex="-1">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Add Review</h5>
+        <h5 class="modal-title" style="font-weight:900;">Add Room Review (Reservation Based)</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
+
       <form method="post" action="{% url 'add_review' %}">
         {% csrf_token %}
         <div class="modal-body">
+
           <div class="mb-3">
-            <label class="form-label">User</label>
-            <select name="user" class="form-select" required>
-              <option value="">Select User</option>
-              {% for u in users %}
-                <option value="{{ u.id }}">{{ u.get_full_name|default:u.username }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Room</label>
-            <select name="room" class="form-select" required>
-              <option value="">Select Room</option>
-              {% for rm in rooms %}
-                <option value="{{ rm.id }}">{{ rm.room_number }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Reservation (optional)</label>
-            <select name="reservation" class="form-select">
-              <option value="">None</option>
+            <label class="form-label" style="font-weight:900;">Reservation</label>
+            <select name="reservation" class="form-select" required>
+              <option value="">Select reservation (Checked Out)</option>
               {% for res in reservations %}
-                <option value="{{ res.id }}">#{{ res.id }} — {{ res.guest.user.username }}</option>
+                <option value="{{ res.id }}">
+                  #{{ res.id }} — {{ res.guest.user.get_full_name|default:res.guest.user.username }}
+                  — Room {{ res.room.room_number }}
+                  ({{ res.check_in_date|date:"M d" }} → {{ res.check_out_date|date:"M d" }})
+                </option>
               {% endfor %}
             </select>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px;">
+              User + Room will be taken automatically from this reservation.
+            </div>
           </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Overall Rating</label>
+              <input type="number" name="rating" class="form-control" min="1" max="5" value="5" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Cleanliness</label>
+              <input type="number" name="cleanliness" class="form-control" min="1" max="5" value="5" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Comfort</label>
+              <input type="number" name="comfort" class="form-control" min="1" max="5" value="5" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Amenities</label>
+              <input type="number" name="amenities" class="form-control" min="1" max="5" value="5" required>
+            </div>
+          </div>
+
           <div class="mb-3">
-            <label class="form-label">Rating</label>
-            <input type="number" name="rating" class="form-control" min="1" max="5" value="5" required>
+            <label class="form-label" style="font-weight:900;">Review (optional)</label>
+            <textarea name="review" class="form-control" rows="3" placeholder="Write guest feedback..."></textarea>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Review</label>
-            <textarea name="review" class="form-control" rows="3"></textarea>
-          </div>
+
         </div>
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Add Review</button>
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" style="font-weight:900;">
+            <i class="fas fa-check"></i> Add Review
+          </button>
         </div>
       </form>
     </div>
   </div>
 </div>
+
+{% endblock %}

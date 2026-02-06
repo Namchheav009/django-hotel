@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, PasswordResetForm
-from .models import Reservation, Payment, Contact, Guest
+from .models import Reservation, Payment, Contact, Guest, ServiceBooking
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -189,3 +189,37 @@ class ServiceRatingForm(forms.Form):
             'maxlength': '1000'
         })
     )
+
+
+class ServiceBookingForm(forms.ModelForm):
+    class Meta:
+        model = ServiceBooking
+        fields = ('scheduled_date', 'quantity', 'notes')
+        widgets = {
+            'scheduled_date': forms.DateTimeInput(attrs={
+                'type': 'datetime-local',
+                'class': 'form-control',
+                'placeholder': 'When do you need this service?'
+            }),
+            'quantity': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': '1',
+                'value': '1'
+            }),
+            'notes': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': '3',
+                'placeholder': 'Any special requests or instructions?'
+            }),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        scheduled_date = cleaned_data.get('scheduled_date')
+
+        if scheduled_date:
+            from django.utils import timezone
+            if scheduled_date < timezone.now():
+                raise forms.ValidationError("Scheduled date must be in the future.")
+
+        return cleaned_data

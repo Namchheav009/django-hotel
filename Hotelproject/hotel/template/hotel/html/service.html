@@ -41,9 +41,9 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     {% if user.is_authenticated %}
-                        <a href="{% url 'contact' %}" class="btn btn-primary">Request Service</a>
+                        <a href="{% url 'book_service' service.id %}" class="btn btn-primary">Book Service</a>
                     {% else %}
-                        <a href="{% url 'login' %}" class="btn btn-primary">Login to Request</a>
+                        <a href="{% url 'login' %}" class="btn btn-primary">Login to Book</a>
                     {% endif %}
                 </div>
             </div>

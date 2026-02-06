@@ -1,142 +1,176 @@
 {% extends 'hotel/html/base.html' %}
-
 {% block title %}Register - MyHotel{% endblock %}
 
 {% block content %}
-
-<div class="register-container">
-    <h2>Create an Account</h2>
-
-    {% if messages %}
-        {% for message in messages %}
-            {% if 'success' in message.tags or 'info' in message.tags %}
-                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
-
-    <form method="POST" novalidate>
-        {% csrf_token %}
-        {% if csrf_token_value %}
-            <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token_value }}">
-        {% endif %}
-
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
-        {% endif %}
-
-        <div class="mb-3">
-            {{ form.username.label_tag }}
-            {{ form.username }}
-            {% if form.username.errors %}
-                <div class="text-danger">{{ form.username.errors }}</div>
-            {% endif %}
+<div class="container mt-5" style="max-width: 600px;">
+    <div class="card shadow-lg">
+        <div class="card-header text-white" style="background-color: #2c3e50;">
+            <h3 class="mb-0"><i class="fas fa-user-plus"></i> Create Account</h3>
         </div>
-
-        <div class="mb-3">
-            {{ form.email.label_tag }}
-            {{ form.email }}
-            {% if form.email.errors %}
-                <div class="text-danger">{{ form.email.errors }}</div>
+        <div class="card-body p-4">
+            {% if messages %}
+                {% for message in messages %}
+                    {% if 'success' in message.tags or 'info' in message.tags %}
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% elif 'error' in message.tags %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+                {% endfor %}
             {% endif %}
-        </div>
 
-        <div class="mb-3">
-            {{ form.password1.label_tag }}
-            {{ form.password1 }}
-            {% if form.password1.errors %}
-                <div class="text-danger">{{ form.password1.errors }}</div>
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ form.non_field_errors }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
             {% endif %}
+
+            <form method="POST" novalidate>
+                {% csrf_token %}
+
+                <!-- Account Information -->
+                <h5 class="mb-3" style="font-weight: 700; color: #2c3e50;">
+                    <i class="fas fa-lock"></i> Account Information
+                </h5>
+
+                <div class="mb-3">
+                    <label for="id_username" class="form-label">Username</label>
+                    <input type="text" id="id_username" name="username" class="form-control form-control-lg" placeholder="Choose a username" required>
+                    {% if form.username.errors %}
+                        <div class="text-danger small mt-1">{{ form.username.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_email" class="form-label">Email Address</label>
+                    <input type="email" id="id_email" name="email" class="form-control form-control-lg" placeholder="Enter your email" required>
+                    {% if form.email.errors %}
+                        <div class="text-danger small mt-1">{{ form.email.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password1" class="form-label">Password</label>
+                    <input type="password" id="id_password1" name="password1" class="form-control form-control-lg" placeholder="Create a strong password" required>
+                    {% if form.password1.errors %}
+                        <div class="text-danger small mt-1">{{ form.password1.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_password2" class="form-label">Confirm Password</label>
+                    <input type="password" id="id_password2" name="password2" class="form-control form-control-lg" placeholder="Confirm your password" required>
+                    {% if form.password2.errors %}
+                        <div class="text-danger small mt-1">{{ form.password2.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Guest Information -->
+                <h5 class="mb-3" style="font-weight: 700; color: #2c3e50;">
+                    <i class="fas fa-user"></i> Personal Information
+                </h5>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_first_name" class="form-label">First Name</label>
+                        <input type="text" id="id_first_name" name="first_name" class="form-control form-control-lg" placeholder="First name" required>
+                        {% if form.first_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.first_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_last_name" class="form-label">Last Name</label>
+                        <input type="text" id="id_last_name" name="last_name" class="form-control form-control-lg" placeholder="Last name">
+                        {% if form.last_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.last_name.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_phone" class="form-label">Phone Number</label>
+                    <input type="tel" id="id_phone" name="phone" class="form-control form-control-lg" placeholder="Enter your phone number" required>
+                    {% if guest_form.phone.errors %}
+                        <div class="text-danger small mt-1">{{ guest_form.phone.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_address" class="form-label">Address</label>
+                    <textarea id="id_address" name="address" class="form-control" rows="3" placeholder="Enter your address" required></textarea>
+                    {% if guest_form.address.errors %}
+                        <div class="text-danger small mt-1">{{ guest_form.address.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+
+            <div class="mt-4 text-center">
+                <p class="text-muted">
+                    Already have an account? <a href="{% url 'login' %}" class="btn-link text-decoration-none">Sign in</a>
+                </p>
+            </div>
+
+            <hr>
+
+            <div class="text-center">
+                <small class="text-muted">
+                    <i class="fas fa-shield-alt"></i> Your information is secure and encrypted.
+                </small>
+            </div>
         </div>
-
-        <div class="mb-3">
-            {{ form.password2.label_tag }}
-            {{ form.password2 }}
-            {% if form.password2.errors %}
-                <div class="text-danger">{{ form.password2.errors }}</div>
-            {% endif %}
-        </div>
-
-        <hr>
-
-        {% if guest_form.non_field_errors %}
-            <div class="alert alert-danger">{{ guest_form.non_field_errors }}</div>
-        {% endif %}
-
-        <div class="mb-3">
-            {{ form.first_name.label_tag }}
-            {{ form.first_name }}
-            {% if form.first_name.errors %}
-                <div class="text-danger">{{ form.first_name.errors }}</div>
-            {% endif %}
-        </div>
-
-        <div class="mb-3">
-            {{ form.last_name.label_tag }}
-            {{ form.last_name }}
-            {% if form.last_name.errors %}
-                <div class="text-danger">{{ form.last_name.errors }}</div>
-            {% endif %}
-        </div>
-
-        <div class="mb-3">
-            {{ guest_form.phone.label_tag }}
-            {{ guest_form.phone }}
-            {% if guest_form.phone.errors %}
-                <div class="text-danger">{{ guest_form.phone.errors }}</div>
-            {% endif %}
-        </div>
-
-        <div class="mb-3">
-            {{ guest_form.address.label_tag }}
-            {{ guest_form.address }}
-            {% if guest_form.address.errors %}
-                <div class="text-danger">{{ guest_form.address.errors }}</div>
-            {% endif %}
-        </div>
-
-        <button type="submit" class="btn btn-primary">Register</button>
-    </form>
-
-    <p class="login-link">
-        Already have an account? <a href="{% url 'login' %}">Login</a>
-    </p>
+    </div>
 </div>
 
-<script>
-// Ensure CSRF token is sent even if cookie/token mismatch occurs in some dev browsers.
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
+<style>
 
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('form');
-    if (!form) return;
-    form.addEventListener('submit', function() {
-        const existing = form.querySelector('input[name="csrfmiddlewaretoken"]');
-        if (!existing) {
-            const token = getCookie('csrftoken');
-            if (token) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'csrfmiddlewaretoken';
-                input.value = token;
-                form.appendChild(input);
-            }
-        }
-    });
-});
-</script>
+  
+    
+    .card {
+        border: none;
+        border-radius: 15px;
+       background-color: #7c7d80c2;
+    }
+    .form-control-lg {
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        padding: 12px 16px;
+        font-size: 1rem;
+    }
+    .form-control-lg:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+    }
+    .form-control {
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        padding: 10px 12px;
+    }
+    .form-control:focus {
+        border-color: #2c3e50;
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+    }
+    .btn-link {
+        color: #393b3d;
+        font-weight: 500;
+    }
+    .btn-link:hover {
+        color: #1636c0;
+    }
+    .text-muted {
+        color: #dee0e2 !important;
+    }
+</style>
 
 {% endblock %}

@@ -1,0 +1,193 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block title %}My Service Bookings - MyHotel{% endblock %}
+
+{% block extra_head %}
+<style>
+  :root{
+    --text:#0a1020;
+    --muted:#6a7387;
+    --line:#e9edf7;
+    --card:#ffffff;
+    --dark:#0b1220;
+    --success:#22c55e;
+    --warn:#f59e0b;
+    --danger:#ef4444;
+    --radius:16px;
+  }
+
+  .bookings-wrap{ padding: 18px 0 60px; }
+  .bookings-head{ margin: 10px 0 18px; }
+  .bookings-head h1{ font-weight: 900; color: #e9edf7 ; margin:0; }
+  .bookings-head p{ margin:6px 0 0; color:var(--muted); font-weight:700; }
+
+  .booking-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow: 0 10px 24px rgba(10,16,32,.06);
+    overflow:hidden;
+    margin-bottom: 18px;
+  }
+
+  .booking-inner{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 18px;
+  }
+
+  .pill{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 12px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:.85rem;
+    border:1px solid transparent;
+    color:#fff;
+    width: fit-content;
+  }
+  .pill.pending { background: rgba(245,158,11,.2); color: #f59e0b; border: 1px solid rgba(245,158,11,.3); }
+  .pill.confirmed { background: rgba(59,130,246,.2); color: #3b82f6; border: 1px solid rgba(59,130,246,.3); }
+  .pill.completed { background: rgba(34,197,94,.2); color: #22c55e; border: 1px solid rgba(34,197,94,.3); }
+  .pill.cancelled { background: rgba(239,68,68,.2); color: #ef4444; border: 1px solid rgba(239,68,68,.3); }
+
+  .booking-title{
+    font-weight:900;
+    color:var(--text);
+    margin: 4px 0 8px;
+    font-size: 1.25rem;
+  }
+
+  .booking-meta{
+    display:flex; flex-wrap:wrap; gap:16px;
+    color:var(--muted);
+    font-weight:800;
+    align-items:center;
+    margin-bottom: 12px;
+  }
+  .meta-item{ display:inline-flex; align-items:center; gap:8px; }
+  .meta-item i{ color:#99a3b7; }
+
+  .booking-actions{
+    margin-top: 10px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  .btnx{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    padding:10px 14px;
+    border-radius:12px;
+    font-weight:900;
+    text-decoration:none;
+    border:1px solid transparent;
+    transition: transform .15s ease;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--line);
+  }
+  .btnx:hover{ transform: translateY(-2px); color: var(--text); }
+
+  .btn-danger{
+    background: rgba(239,68,68,.1);
+    color: var(--danger);
+    border: 1px solid rgba(239,68,68,.2);
+  }
+  .btn-danger:hover{
+    background: rgba(239,68,68,.2);
+    color: var(--danger);
+  }
+
+  @media(max-width: 992px){
+    .booking-inner{ grid-template-columns: 1fr; }
+  }
+  
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container bookings-wrap">
+
+  <div class="bookings-head">
+    <h1>My Service Bookings</h1>
+    <p>Manage your service bookings and track their status.</p>
+  </div>
+
+  {% if bookings %}
+    {% for booking in bookings %}
+
+      <div class="booking-card">
+        <div class="booking-inner">
+
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <div class="booking-title">
+                {{ booking.service.name }}
+              </div>
+
+              <div class="booking-meta">
+                <span class="meta-item">
+                  <i class="fas fa-calendar"></i>
+                  {{ booking.scheduled_date|date:"M d, Y" }}
+                </span>
+
+                <span class="meta-item">
+                  <i class="fas fa-cubes"></i>
+                  Qty: {{ booking.quantity }}
+                </span>
+
+                <span class="meta-item">
+                  <i class="fas fa-dollar-sign"></i>
+                  ${{ booking.total_price }}
+                </span>
+              </div>
+
+              {% if booking.notes %}
+                <div style="margin-top: 8px; color: var(--muted); font-size: 14px;">
+                  <strong>Notes:</strong> {{ booking.notes }}
+                </div>
+              {% endif %}
+            </div>
+
+            <span class="pill {% if booking.status == 'Pending' %}pending{% elif booking.status == 'Confirmed' %}confirmed{% elif booking.status == 'Completed' %}completed{% else %}cancelled{% endif %}">
+              {{ booking.status }}
+            </span>
+          </div>
+
+          <div class="booking-actions">
+            {% if booking.status == 'Pending' %}
+              <button type="button" class="btnx" data-bs-toggle="modal" data-bs-target="#editBookingModal{{ booking.id }}" title="Edit Booking">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              {% include "hotel/html/service_booking_edit_modal.html" with booking=booking %}
+            {% endif %}
+
+            {% if booking.status != 'Cancelled' and booking.status != 'Completed' %}
+              <form method="POST" action="{% url 'cancel_service_booking' booking.id %}" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btnx btn-danger" onclick="return confirm('Are you sure you want to cancel this booking?');">
+                  <i class="fas fa-times"></i> Cancel
+                </button>
+              </form>
+            {% endif %}
+          </div>
+
+        </div>
+      </div>
+
+    {% endfor %}
+  {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle"></i> You don't have any service bookings yet.
+      <a href="{% url 'service' %}" class="btn btn-sm btn-primary">Browse Services</a>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
