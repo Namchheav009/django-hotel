@@ -11,10 +11,12 @@ from django.db import models
 from django.db.models import Q
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
+from django.utils import timezone
 import uuid
 from .models import (
     Room, RoomCategory, Reservation, Payment, Guest, 
-    Contact, Service, UserProfile, Staff,RoomRating,ServiceRating, ServiceBooking
+    Contact, Service, UserProfile, Staff, RoomRating, ServiceRating, ServiceBooking, RoomImage,
+    Cart, CartItem
 )
 from .forms import (
     CustomUserCreationForm, GuestForm, ReservationForm, 
@@ -128,9 +130,14 @@ def manage_services(request):
 
 @admin_login_required
 def manage_bookings(request):
-    """Manage bookings/booking history"""
-    bookings = Booking.objects.select_related('user', 'room', 'reservation').all().order_by('-booking_date')[:200]
-    return render(request, 'hotel/admin/manage_bookings.html', {'bookings': bookings})
+    """Manage bookings/booking history - combines room and service bookings"""
+    room_bookings = Booking.objects.select_related('user', 'room', 'reservation').all().order_by('-booking_date')[:200]
+    service_bookings = ServiceBooking.objects.select_related('user', 'service', 'reservation').all().order_by('-booking_date')[:200]
+    
+    return render(request, 'hotel/admin/manage_bookings.html', {
+        'room_bookings': room_bookings,
+        'service_bookings': service_bookings,
+    })
 
 
 @admin_login_required
@@ -149,32 +156,31 @@ def edit_user(request, user_id):
     except UserProfile.DoesNotExist:
         profile = None
 
-    role_choices = UserProfile.ROLE_CHOICES
-
     if request.method == 'POST':
         role = request.POST.get('role')
         is_staff = True if request.POST.get('is_staff') == 'on' else False
         is_super = True if request.POST.get('is_superuser') == 'on' else False
 
-        # ensure profile exists
-        if not profile:
-            profile = UserProfile(user=user, role=role or 'Customer')
-        else:
-            profile.role = role or profile.role
-        profile.save()
+        try:
+            # ensure profile exists
+            if not profile:
+                profile = UserProfile(user=user, role=role or 'Customer')
+            else:
+                profile.role = role or profile.role
+            profile.save()
 
-        user.is_staff = is_staff
-        user.is_superuser = is_super
-        user.save()
+            user.is_staff = is_staff
+            user.is_superuser = is_super
+            user.save()
 
-        messages.success(request, f"User {user.username} updated.")
+            messages.success(request, f"User '{user.username}' updated successfully.")
+        except Exception as e:
+            messages.error(request, f"Error updating user: {str(e)}")
+        
         return redirect('manage_users')
 
-    return render(request, 'hotel/admin/edit_user.html', {
-        'user': user,
-        'profile': profile,
-        'role_choices': role_choices,
-    })
+    # GET request - redirect to manage_users
+    return redirect('manage_users')
 
 
 
@@ -499,9 +505,108 @@ def cancel_reservation(request, reservation_id):
 
 
 # ===== PAYMENT VIEWS =====
+
 @login_required(login_url='login')
-def payment(request, reservation_id):
-    """Process payment for reservation"""
+def payment(request, reservation_id=None):
+    """
+    Process payment for reservation(s).
+    Handles both:
+    - Single reservation (via reservation_id) - legacy flow
+    - Multiple reservations (from session) - from confirm_information flow
+    """
+    # Check if multiple items payment (from confirm_information)
+    if reservation_id is None:
+        reservation_ids = request.session.get('checkout_reservation_ids', [])
+        service_booking_ids = request.session.get('checkout_service_booking_ids', [])
+        
+        if not reservation_ids and not service_booking_ids:
+            messages.error(request, "No reservations found. Please start from cart.")
+            return redirect('view_cart')
+        
+        # Handle multiple items POST request
+        if request.method == "POST":
+            payment_method = request.POST.get('payment_method', 'Cash')
+            
+            if not payment_method:
+                messages.error(request, "Please select a payment method.")
+                return redirect('checkout_payment') if hasattr(request, 'path') else render(request, 'hotel/html/payment.html', {})
+            
+            try:
+                # Process all reservations
+                reservations = Reservation.objects.filter(id__in=reservation_ids, guest__user=request.user)
+                service_bookings = ServiceBooking.objects.filter(id__in=service_booking_ids, user=request.user)
+                
+                for res in reservations:
+                    # Create or update payment
+                    payment_obj, _ = Payment.objects.get_or_create(
+                        reservation=res,
+                        defaults={
+                            "amount": res.total_price,
+                            "payment_method": payment_method,
+                            "payment_status": "Completed",
+                            "payment_date": timezone.now(),
+                            "transaction_id": f"TXN-{res.id}-{int(datetime.now().timestamp())}"
+                        }
+                    )
+                    
+                    if payment_obj.payment_status != "Completed":
+                        payment_obj.payment_status = "Completed"
+                        payment_obj.payment_method = payment_method
+                        payment_obj.payment_date = timezone.now()
+                        payment_obj.transaction_id = f"TXN-{res.id}-{int(datetime.now().timestamp())}"
+                        payment_obj.save()
+                    
+                    # Confirm reservation
+                    res.status = "Confirmed"
+                    res.save(update_fields=["status"])
+                    
+                    # Create booking record
+                    try:
+                        Booking.objects.get_or_create(
+                            reservation=res,
+                            defaults={
+                                "user": request.user,
+                                "room": res.room,
+                                "booking_status": "Confirmed",
+                                "confirmation_number": f"BK-{res.id}-{int(datetime.now().timestamp())}"
+                            }
+                        )
+                    except Exception as e:
+                        pass
+                
+                # Confirm service bookings
+                for sb in service_bookings:
+                    sb.status = "Confirmed"
+                    sb.save(update_fields=["status"])
+                
+                # Clear session
+                if 'checkout_reservation_ids' in request.session:
+                    del request.session['checkout_reservation_ids']
+                if 'checkout_service_booking_ids' in request.session:
+                    del request.session['checkout_service_booking_ids']
+                if 'checkout_total' in request.session:
+                    del request.session['checkout_total']
+                
+                messages.success(request, "Payment completed successfully!")
+                return redirect('payment_success')
+            
+            except Exception as e:
+                messages.error(request, f"Payment processing error: {str(e)}")
+                return redirect('view_cart')
+        
+        # GET request - show payment form with multiple items
+        reservations = Reservation.objects.filter(id__in=reservation_ids, guest__user=request.user)
+        service_bookings = ServiceBooking.objects.filter(id__in=service_booking_ids, user=request.user)
+        total_amount = sum(r.total_price for r in reservations) + sum(sb.total_price for sb in service_bookings)
+        
+        return render(request, 'hotel/html/payment.html', {
+            'reservations': reservations,
+            'service_bookings': service_bookings,
+            'total_amount': total_amount,
+            'multiple_items': True,
+        })
+    
+    # Single reservation flow (from reservation_detail.html)
     reservation = get_object_or_404(Reservation, id=reservation_id)
 
     # ✅ permission check
@@ -509,73 +614,91 @@ def payment(request, reservation_id):
         messages.error(request, "You don't have permission to access this reservation.")
         return redirect('my_reservations')
 
-    # ✅ create/get payment object
-    payment_obj, _ = Payment.objects.get_or_create(
-        reservation=reservation,
-        defaults={
-            "amount": reservation.total_price,
-            "payment_method": "Cash",
-            "payment_status": "Pending",
-        }
-    )
-
     # ✅ already paid (IMPORTANT: use 'Completed', not 'Paid')
-    if payment_obj.payment_status == "Completed":
+    payment_obj = Payment.objects.filter(reservation=reservation).first()
+    if payment_obj and payment_obj.payment_status == "Completed":
         messages.info(request, "Payment already completed for this reservation.")
         return redirect('reservation_detail', reservation_id=reservation.id)
 
     if request.method == "POST":
-        form = PaymentForm(request.POST, instance=payment_obj, reservation=reservation)
-        if form.is_valid():
-            payment_obj = form.save(commit=False)
-
-            # ✅ mark completed
-            payment_obj.payment_status = "Completed"
-            payment_obj.payment_date = timezone.now()
-            payment_obj.transaction_id = f"TXN-{reservation.id}-{int(datetime.now().timestamp())}"
-            payment_obj.save()
-
-            # ✅ confirm reservation
+        # Handle payment form submission
+        payment_method = request.POST.get('payment_method', 'Cash')
+        
+        if not payment_method:
+            messages.error(request, "Please select a payment method.")
+            return render(request, 'hotel/html/payment.html', {
+                'reservation': reservation,
+                'payment_obj': payment_obj,
+                'multiple_items': False,
+            })
+        
+        try:
+            # Create or update payment object
+            payment_obj, _ = Payment.objects.get_or_create(
+                reservation=reservation,
+                defaults={
+                    "amount": reservation.total_price,
+                    "payment_method": payment_method,
+                    "payment_status": "Completed",
+                    "payment_date": timezone.now(),
+                    "transaction_id": f"TXN-{reservation.id}-{int(datetime.now().timestamp())}"
+                }
+            )
+            
+            if payment_obj.payment_status != "Completed":
+                payment_obj.payment_status = "Completed"
+                payment_obj.payment_method = payment_method
+                payment_obj.payment_date = timezone.now()
+                payment_obj.transaction_id = f"TXN-{reservation.id}-{int(datetime.now().timestamp())}"
+                payment_obj.save()
+            
+            # Confirm reservation
             reservation.status = "Confirmed"
             reservation.save(update_fields=["status"])
-
-            # ✅ create booking record (always create to show in admin)
+            
+            # Create booking record
             try:
-                booking, created = Booking.objects.get_or_create(
+                Booking.objects.get_or_create(
                     reservation=reservation,
                     defaults={
                         "user": request.user,
                         "room": reservation.room,
                         "booking_status": "Confirmed",
-                        "confirmation_number": f"BK-{reservation.id}-{int(datetime.now().timestamp())}",
+                        "confirmation_number": f"BK-{reservation.id}-{int(datetime.now().timestamp())}"
                     }
                 )
-                if not created:
-                    # Update if already exists
-                    booking.user = request.user
-                    booking.room = reservation.room
-                    booking.booking_status = "Confirmed"
-                    if not booking.confirmation_number:
-                        booking.confirmation_number = f"BK-{reservation.id}-{int(datetime.now().timestamp())}"
-                    booking.save()
             except Exception as e:
-                # Log error but don't fail payment
-                messages.warning(request, f"Payment completed but booking record creation failed: {str(e)}")
-
+                pass
+            
             messages.success(request, "Payment completed successfully! Your reservation is confirmed.")
+            return redirect('payment_success')
+        
+        except Exception as e:
+            messages.error(request, f"Payment processing error: {str(e)}")
             return redirect('reservation_detail', reservation_id=reservation.id)
-        else:
-            messages.error(request, "Form validation failed.")
 
+    # GET request - show payment form with single reservation
+    if not payment_obj:
+        payment_obj = Payment.objects.create(
+            reservation=reservation,
+            amount=reservation.total_price,
+            payment_method="Cash",
+            payment_status="Pending"
+        )
 
-    else:
-        form = PaymentForm(instance=payment_obj, reservation=reservation)
-
-    return render(request, "hotel/html/payment.html", {
-        "reservation": reservation,
-        "payment": payment_obj,
-        "form": form,
+    return render(request, 'hotel/html/payment.html', {
+        'reservation': reservation,
+        'payment_obj': payment_obj,
+        'multiple_items': False,
     })
+
+
+def payment_success(request):
+    """
+    Display payment success page after successful payment processing.
+    Both multi-item and single-reservation flows redirect here.
+    """
+    return render(request, 'hotel/html/payment_success.html', {})
 
 
 # ===== ADMIN DASHBOARD VIEWS =====
@@ -597,20 +720,136 @@ def admin_login_required(view_func):
 @admin_login_required
 def admin_dashboard(request):
     """Admin dashboard home"""
+    from django.db.models import Count, Sum
+    from datetime import date, timedelta
+    
+    # ===== ROOM STATISTICS =====
     total_rooms = Room.objects.count()
     available_rooms = Room.objects.filter(status='Available').count()
+    booked_rooms = Room.objects.filter(status='Booked').count()
+    
+    # ===== RESERVATION STATISTICS =====
     total_reservations = Reservation.objects.count()
     pending_reservations = Reservation.objects.filter(status='Pending').count()
+    confirmed_reservations = Reservation.objects.filter(status='Confirmed').count()
+    
+    # ===== PAYMENT STATISTICS =====
     total_payments = Payment.objects.filter(payment_status='Completed').count()
     total_revenue = Payment.objects.filter(payment_status='Completed').aggregate(
         total=models.Sum('amount')
     )['total'] or 0
     
-    recent_reservations = Reservation.objects.order_by('-booking_date')[:10]
-    recent_contacts = Contact.objects.filter(is_read=False).order_by('-created_at')[:5]
+    # ===== TODAY STATISTICS =====
+    today = timezone.now().date()
+    guests_today = Reservation.objects.filter(
+        check_in_date=today
+    ).count()
     
-    booked_rooms = Room.objects.filter(status='Booked').count()
+    revenue_today = Payment.objects.filter(
+        payment_status='Completed',
+        payment_date__date=today
+    ).aggregate(total=models.Sum('amount'))['total'] or 0
+    
+    active_reservations = Reservation.objects.filter(
+        status__in=['Confirmed', 'Checked In']
+    ).count()
+    
+    # ===== RECENT DATA =====
+    recent_reservations = Reservation.objects.select_related(
+        'guest__user', 'room__category'
+    ).order_by('-booking_date')[:10]
+    
+    recent_contacts = Contact.objects.filter(is_read=False).order_by('-created_at')[:5]
     unread_contacts = Contact.objects.filter(is_read=False)
+    
+    # ===== PENDING & CONFIRMED BOOKINGS =====
+    pending_room_bookings = Reservation.objects.filter(status='Pending').select_related('guest__user', 'room__category').order_by('-booking_date')[:5]
+    pending_service_bookings = ServiceBooking.objects.filter(status='Pending').select_related('user', 'service').order_by('-booking_date')[:5]
+    
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    confirmed_room_bookings = Reservation.objects.filter(status='Confirmed', booking_date__gte=seven_days_ago).select_related('guest__user', 'room__category').order_by('-booking_date')[:5]
+    confirmed_service_bookings = ServiceBooking.objects.filter(status='Confirmed', booking_date__gte=seven_days_ago).select_related('user', 'service').order_by('-booking_date')[:5]
+    
+    pending_bookings = len(list(pending_room_bookings) + list(pending_service_bookings))
+    confirmed_bookings = len(list(confirmed_room_bookings) + list(confirmed_service_bookings))
+    total_notifications = pending_bookings + confirmed_bookings
+    
+    # ===== CHART DATA - Last 7 Days =====
+    last_7_days = [timezone.now().date() - timedelta(days=i) for i in range(6, -1, -1)]
+    reservation_counts = []
+    revenue_by_day = []
+    
+    for day in last_7_days:
+        count = Reservation.objects.filter(booking_date__date=day).count()
+        revenue = Payment.objects.filter(
+            payment_status='Completed',
+            payment_date__date=day
+        ).aggregate(total=models.Sum('amount'))['total'] or 0
+        reservation_counts.append(count)
+        revenue_by_day.append(float(revenue))
+    
+    chart_labels = [d.strftime('%d %b') for d in last_7_days]
+    
+    # ===== ROOM CATEGORY DISTRIBUTION =====
+    category_data = Room.objects.values('category__category_name').annotate(
+        count=Count('id')
+    ).order_by('-count')[:5]
+    
+    category_names = [item['category__category_name'] for item in category_data]
+    category_counts = [item['count'] for item in category_data]
+    
+    # ===== TODAY'S OVERVIEW =====
+    today_activities = []
+    
+    # Checkouts today
+    checkouts_today = Reservation.objects.filter(
+        check_out_date=today,
+        status__in=['Confirmed', 'Checked In']
+    ).count()
+    if checkouts_today > 0:
+        today_activities.append({
+            'type': 'checkout',
+            'title': f'{checkouts_today} guest(s) checking out',
+            'subtitle': 'Prepare rooms for cleaning',
+            'color': 'orange'
+        })
+    
+    # New bookings today
+    new_bookings_today = Reservation.objects.filter(
+        booking_date__date=today
+    ).count()
+    if new_bookings_today > 0:
+        today_activities.append({
+            'type': 'booking',
+            'title': f'{new_bookings_today} new booking(s)',
+            'subtitle': 'Family suites and standard rooms',
+            'color': 'blue'
+        })
+    
+    # VIP arrivals
+    vip_count = Reservation.objects.filter(
+        check_in_date=today,
+        total_price__gte=5000
+    ).count()
+    if vip_count > 0:
+        today_activities.append({
+            'type': 'vip',
+            'title': f'{vip_count} high-value guest(s) arriving',
+            'subtitle': 'Prepare premium welcome package',
+            'color': 'pink'
+        })
+    
+    # Pending payments
+    pending_payments = Payment.objects.filter(
+        payment_status='Pending'
+    ).count()
+    if pending_payments > 0:
+        today_activities.append({
+            'type': 'payment',
+            'title': f'{pending_payments} pending payment(s)',
+            'subtitle': 'Follow up with guests',
+            'color': 'red'
+        })
     
     context = {
         'total_rooms': total_rooms,
@@ -618,10 +857,27 @@ def admin_dashboard(request):
         'booked_rooms': booked_rooms,
         'total_reservations': total_reservations,
         'pending_reservations': pending_reservations,
+        'confirmed_reservations': confirmed_reservations,
         'total_payments': total_payments,
         'total_revenue': total_revenue,
+        'guests_today': guests_today,
+        'revenue_today': revenue_today,
+        'active_reservations': active_reservations,
         'recent_reservations': recent_reservations,
         'unread_contacts': unread_contacts,
+        'pending_bookings': pending_bookings,
+        'pending_room_bookings': pending_room_bookings,
+        'pending_service_bookings': pending_service_bookings,
+        'confirmed_bookings': confirmed_bookings,
+        'confirmed_room_bookings': confirmed_room_bookings,
+        'confirmed_service_bookings': confirmed_service_bookings,
+        'total_notifications': total_notifications,
+        'reservation_counts': reservation_counts,
+        'revenue_by_day': revenue_by_day,
+        'chart_labels': chart_labels,
+        'category_names': category_names,
+        'category_counts': category_counts,
+        'today_activities': today_activities,
     }
     return render(request, 'hotel/admin/dashboard.html', context)
 
@@ -1076,13 +1332,18 @@ def rate_room(request, room_id):
 
 @login_required(login_url='login')
 def rate_service(request, service_id):
-    """Rate a service"""
+    """Rate a service - only for completed bookings"""
     from .models import ServiceRating, ServiceBooking
     service = get_object_or_404(Service, id=service_id)
-    # find most recent service booking for this user & service
-    service_booking = ServiceBooking.objects.filter(user=request.user, service=service).order_by('-scheduled_date').first()
+    # find most recent COMPLETED service booking for this user & service
+    service_booking = ServiceBooking.objects.filter(
+        user=request.user, 
+        service=service,
+        status='Completed'
+    ).order_by('-scheduled_date').first()
+    
     if not service_booking:
-        messages.error(request, "No service booking found for you and this service.")
+        messages.error(request, "No completed service booking found for you and this service. You can only rate services after they're completed.")
         return redirect('service')
 
     if request.method == 'POST':
@@ -1159,15 +1420,25 @@ def my_service_bookings(request):
 def manage_service_bookings(request):
     """Admin: Manage all service bookings"""
     bookings = ServiceBooking.objects.select_related('user', 'service', 'reservation').all().order_by('-booking_date')[:500]
-    
+
     # Filter by status if provided
     status_filter = request.GET.get('status')
     if status_filter:
         bookings = bookings.filter(status=status_filter)
-    
+
+    # Optional filter by service id (from manage_services quick-link)
+    service_id = request.GET.get('service_id')
+    if service_id:
+        try:
+            sid = int(service_id)
+            bookings = bookings.filter(service__id=sid)
+        except (ValueError, TypeError):
+            pass
+
     context = {
         'bookings': bookings,
         'status_choices': ServiceBooking._meta.get_field('status').choices,
+        'filtered_service_id': service_id,
     }
     return render(request, 'hotel/admin/manage_service_bookings.html', context)
 
@@ -1291,6 +1562,28 @@ def edit_room(request, room_id):
         
         try:
             room.save()
+            
+            # Handle room image gallery (up to 6 images)
+            for i in range(1, 7):
+                image_file = request.FILES.get(f'room_image_{i}')
+                alt_text = request.POST.get(f'alt_text_{i}', '')
+                
+                if image_file:
+                    # Check if image already exists for this position
+                    existing_image = RoomImage.objects.filter(room=room, order=i).first()
+                    if existing_image:
+                        existing_image.image = image_file
+                        existing_image.alt_text = alt_text
+                        existing_image.save()
+                    else:
+                        # Create new image
+                        RoomImage.objects.create(
+                            room=room,
+                            image=image_file,
+                            alt_text=alt_text,
+                            order=i
+                        )
+            
             messages.success(request, f'Room {room.room_number} updated successfully.')
             return redirect('manage_rooms')
         except Exception as e:
@@ -1312,6 +1605,21 @@ def delete_room(request, room_id):
         messages.success(request, f'Room {room_number} deleted successfully.')
     except Exception as e:
         messages.error(request, f'Error deleting room: {str(e)}')
+    
+    return redirect('manage_rooms')
+
+
+@admin_login_required
+def delete_room_image(request, image_id):
+    """Delete a room gallery image"""
+    room_image = get_object_or_404(RoomImage, id=image_id)
+    room_id = room_image.room.id
+    
+    try:
+        room_image.delete()
+        messages.success(request, 'Image deleted successfully.')
+    except Exception as e:
+        messages.error(request, f'Error deleting image: {str(e)}')
     
     return redirect('manage_rooms')
 
@@ -1356,6 +1664,7 @@ def add_service(request):
         description = request.POST.get("description", "").strip()
         price_str = request.POST.get("price", "0")
         is_active = request.POST.get("is_active") == "on"
+        image = request.FILES.get("image")
 
         if not name:
             messages.error(request, "Service name is required.")
@@ -1363,12 +1672,15 @@ def add_service(request):
 
         try:
             price = float(price_str) if price_str else 0
-            Service.objects.create(
+            service = Service.objects.create(
                 name=name,
                 description=description,
                 price=price,
                 is_active=is_active
             )
+            if image:
+                service.image = image
+                service.save()
             messages.success(request, f"Service '{name}' added successfully.")
         except ValueError:
             messages.error(request, "Invalid price. Please enter a number.")
@@ -1391,15 +1703,18 @@ def edit_service(request, service_id):
         service.price = float(price) if price else service.price
         service.is_active = request.POST.get('is_active') == 'on'
         
+        # Handle image upload
+        image = request.FILES.get('image')
+        if image:
+            service.image = image
+        
         try:
             service.save()
             messages.success(request, f'Service "{service.name}" updated successfully.')
-            return redirect('manage_services')
         except Exception as e:
             messages.error(request, f'Error updating service: {str(e)}')
     
-    context = {'service': service}
-    return render(request, 'hotel/admin/edit_service.html', context)
+    return redirect('manage_services')
 
 
 @admin_login_required
@@ -1453,6 +1768,8 @@ def edit_contact(request, contact_id):
     if request.method == 'POST':
         contact.name = request.POST.get('name', contact.name)
         contact.email = request.POST.get('email', contact.email)
+        contact.phone = request.POST.get('phone', contact.phone)
+        contact.subject = request.POST.get('subject', contact.subject)
         contact.message = request.POST.get('message', contact.message)
         contact.is_read = request.POST.get('is_read') == 'on'
         
@@ -1481,6 +1798,8 @@ def delete_contact(request, contact_id):
 
 
 @admin_login_required
+@admin_login_required
+@admin_login_required
 def add_user(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -1488,33 +1807,52 @@ def add_user(request):
         password = request.POST.get('password')
         is_staff = request.POST.get('is_staff') == 'on'
         is_superuser = request.POST.get('is_superuser') == 'on'
-        role = request.POST.get('role', 'staff')
+        role = request.POST.get('role', 'Customer')
+        
+        # Validation
         if not username or not password:
             messages.error(request, "Username and password are required.")
-            return redirect('add_user')
-        user = User.objects.create_user(username=username, email=email, password=password)
-        user.is_staff = is_staff
-        user.is_superuser = is_superuser
-        user.save()
+            return redirect('manage_users')
+        
+        # Check if username already exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, f"Username '{username}' already exists.")
+            return redirect('manage_users')
+        
         try:
-            UserProfile.objects.create(user=user, role=role)
-        except Exception:
-            pass
-        messages.success(request, f'User "{username}" created.')
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.is_staff = is_staff
+            user.is_superuser = is_superuser
+            user.save()
+            try:
+                UserProfile.objects.create(user=user, role=role)
+            except Exception:
+                pass
+            messages.success(request, f"User '{username}' created successfully.")
+        except Exception as e:
+            messages.error(request, f"Error creating user: {str(e)}")
+        
         return redirect('manage_users')
-    return render(request, 'hotel/admin/add_user.html')
+    
+    # GET request - redirect to manage_users
+    return redirect('manage_users')
 
 
 @login_required
 @admin_login_required
 def manage_reviews(request):
-    reviews = RoomRating.objects.select_related("user", "room", "reservation").all().order_by("-created_at")
+    room_reviews = RoomRating.objects.select_related("user", "room", "reservation").all()
+    service_reviews = ServiceRating.objects.select_related("user", "service", "service_booking").all()
+    
+    # Combine both querysets and sort by created_at descending
+    combined_reviews = list(room_reviews) + list(service_reviews)
+    combined_reviews.sort(key=lambda x: x.created_at, reverse=True)
 
     # only show reservations that are Checked Out (recommended)
     reservations = Reservation.objects.select_related("guest__user", "room").filter(status="Checked Out").order_by("-booking_date")
 
     return render(request, "hotel/admin/manage_reviews.html", {
-        "reviews": reviews,
+        "reviews": combined_reviews,
         "reservations": reservations,
     })
 
@@ -1583,11 +1921,17 @@ def edit_review(request, review_id):
         r.cleanliness = int(request.POST.get("cleanliness", r.cleanliness))
         r.comfort = int(request.POST.get("comfort", r.comfort))
         r.amenities = int(request.POST.get("amenities", r.amenities))
-        r.save()
-        messages.success(request, "Review updated.")
-        return redirect("manage_reviews")
+        
+        try:
+            r.save()
+            messages.success(request, "Review updated successfully.")
+            return redirect("manage_reviews")
+        except Exception as e:
+            messages.error(request, f"Error updating review: {str(e)}")
+            return redirect("manage_reviews")
 
-    return render(request, "hotel/admin/edit_review.html", {"r": r})
+    context = {'r': r}
+    return render(request, "hotel/admin/edit_review.html", context)
 
 
 @login_required(login_url='login')
@@ -1613,3 +1957,697 @@ def edit_reservation(request, reservation_id):
         "status_choices": Reservation.STATUS_CHOICES,
     }
     return render(request, "hotel/admin/edit_reservation.html", context)
+
+
+# ===== CART VIEWS =====
+# 
+# HOTEL BOOKING 8-STEP PROCESS:
+# =============================
+# Step 1️⃣: Browse Items - User explores rooms/services (room_list, room_detail, service_view)
+# Step 2️⃣: Add to Cart - User adds items to temporary storage (add_room_to_cart, add_service_to_cart)
+# Step 3️⃣: View Cart - User reviews selected items (view_cart)
+# Step 4️⃣: Checkout - System converts cart to orders (checkout) → Creates reservations/bookings
+# Step 5️⃣: Select Payment Method - User chooses payment type (checkout_payment GET)
+# Step 6️⃣: Process Payment - Transaction executed (checkout_payment POST)
+# Step 7️⃣: Payment Confirmation - Success page shown (payment_success.html)
+# Step 8️⃣: Booking Completion - Orders finalized, cart cleared, confirmations sent
+#
+
+@login_required(login_url='login')
+def view_cart(request):
+    """
+    STEP 3️⃣: VIEW CART - Review Cart Items
+    
+    User reviews their selected rooms and services before checkout.
+    Can modify quantities or remove items.
+    Shows order summary with total amount.
+    """
+    cart, created = Cart.objects.get_or_create(user=request.user)
+    context = {
+        'cart': cart,
+        'cart_items': cart.items.all(),
+        'total_price': cart.get_total_price(),
+    }
+    return render(request, 'hotel/html/cart.html', context)
+
+
+@login_required(login_url='login')
+def add_room_to_cart(request, room_id):
+    """
+    STEP 2️⃣: ADD ROOM TO CART
+    
+    Saves room with check-in/check-out dates to cart.
+    Validates date range and availability.
+    Stores in Cart/CartItem for logged-in user.
+    """
+    if request.method == 'POST':
+        room = get_object_or_404(Room, id=room_id)
+        check_in = request.POST.get('check_in_date')
+        check_out = request.POST.get('check_out_date')
+        guests = request.POST.get('number_of_guests', 1)
+        
+        if not check_in or not check_out:
+            messages.error(request, 'Please select check-in and check-out dates.')
+            return redirect('room_detail', room_id=room_id)
+        
+        try:
+            check_in_date = datetime.strptime(check_in, '%Y-%m-%d').date()
+            check_out_date = datetime.strptime(check_out, '%Y-%m-%d').date()
+            
+            if check_out_date <= check_in_date:
+                messages.error(request, 'Check-out date must be after check-in date.')
+                return redirect('room_detail', room_id=room_id)
+            
+            cart, created = Cart.objects.get_or_create(user=request.user)
+            CartItem.objects.create(
+                cart=cart,
+                item_type='Room',
+                room=room,
+                check_in_date=check_in_date,
+                check_out_date=check_out_date,
+                number_of_guests=int(guests),
+            )
+            
+            messages.success(request, f'{room.room_number} added to cart!')
+            return redirect('view_cart')
+        except Exception as e:
+            messages.error(request, f'Error adding room to cart: {str(e)}')
+            return redirect('room_detail', room_id=room_id)
+    
+    return redirect('room_detail', room_id=room_id)
+
+
+@login_required(login_url='login')
+def add_service_to_cart(request, service_id):
+    """
+    STEP 2️⃣: ADD SERVICE TO CART
+    
+    Saves service with quantity and schedule to cart.
+    Validates quantity is positive.
+    Stores in Cart/CartItem for logged-in user.
+    """
+    if request.method == 'POST':
+        service = get_object_or_404(Service, id=service_id)
+        quantity = int(request.POST.get('quantity', 1))
+        scheduled_date = request.POST.get('scheduled_date')
+        
+        if quantity < 1:
+            messages.error(request, 'Quantity must be at least 1.')
+            return redirect('book_service', service_id=service_id)
+        
+        try:
+            if scheduled_date:
+                scheduled_date = datetime.strptime(scheduled_date, '%Y-%m-%d %H:%M')
+            
+            cart, created = Cart.objects.get_or_create(user=request.user)
+            CartItem.objects.create(
+                cart=cart,
+                item_type='Service',
+                service=service,
+                service_quantity=quantity,
+                scheduled_date=scheduled_date if scheduled_date else None,
+            )
+            
+            messages.success(request, f'{service.name} added to cart!')
+            return redirect('view_cart')
+        except Exception as e:
+            messages.error(request, f'Error adding service to cart: {str(e)}')
+            return redirect('book_service', service_id=service_id)
+    
+    return redirect('book_service', service_id=service_id)
+
+
+@login_required(login_url='login')
+def remove_from_cart(request, item_id):
+    """
+    STEP 3️⃣: REMOVE ITEM FROM CART (Variation)
+    
+    Allows user to remove item from cart while reviewing.
+    User stays on cart view after deletion.
+    """
+    cart = get_object_or_404(Cart, user=request.user)
+    item = get_object_or_404(CartItem, id=item_id, cart=cart)
+    item.delete()
+    messages.success(request, 'Item removed from cart.')
+    return redirect('view_cart')
+
+
+@login_required(login_url='login')
+@require_http_methods(["POST"])
+def update_cart_item_quantity(request, item_id):
+    """
+    STEP 3️⃣: UPDATE ITEM QUANTITY (Variation)
+    
+    Allows user to modify quantity of services in cart.
+    For services: increase/decrease quantity
+    For rooms: update number of guests or dates
+    Returns JSON response for AJAX or redirects back to cart
+    """
+    cart = get_object_or_404(Cart, user=request.user)
+    item = get_object_or_404(CartItem, id=item_id, cart=cart)
+    
+    try:
+        # For Services: Update service_quantity
+        if item.item_type == 'Service':
+            quantity = request.POST.get('quantity')
+            action = request.POST.get('action')  # 'increment', 'decrement', or 'set'
+            
+            if action == 'increment':
+                item.service_quantity += 1
+            elif action == 'decrement':
+                if item.service_quantity > 1:
+                    item.service_quantity -= 1
+                else:
+                    messages.warning(request, 'Quantity cannot be less than 1.')
+                    return redirect('view_cart')
+            elif action == 'set' and quantity:
+                qty = int(quantity)
+                if qty < 1:
+                    messages.error(request, 'Quantity must be at least 1.')
+                    return redirect('view_cart')
+                item.service_quantity = qty
+            
+            item.save()
+            messages.success(request, 'Service quantity updated.')
+        
+        # For Rooms: Update number_of_guests or dates
+        elif item.item_type == 'Room':
+            action = request.POST.get('action')
+
+            # Some forms in the template send simple 'increment'/'decrement' actions
+            # with a marker `guest_action` when adjusting guests. Support those.
+            if request.POST.get('guest_action'):
+                if action == 'increment':
+                    if item.number_of_guests < item.room.max_occupancy:
+                        item.number_of_guests = (item.number_of_guests or 1) + 1
+                        item.save()
+                        messages.success(request, f'Updated to {item.number_of_guests} guest(s).')
+                    else:
+                        messages.error(request, f'Room capacity is {item.room.max_occupancy} guests.')
+                        return redirect('view_cart')
+                elif action == 'decrement':
+                    if (item.number_of_guests or 1) > 1:
+                        item.number_of_guests = (item.number_of_guests or 1) - 1
+                        item.save()
+                        messages.success(request, f'Updated to {item.number_of_guests} guest(s).')
+                    else:
+                        messages.warning(request, 'Number of guests cannot be less than 1.')
+                        return redirect('view_cart')
+                elif action == 'set':
+                    guests = request.POST.get('number_of_guests')
+                    if guests:
+                        guests_int = int(guests)
+                        if guests_int < 1:
+                            messages.error(request, 'Number of guests must be at least 1.')
+                            return redirect('view_cart')
+                        if guests_int > item.room.max_occupancy:
+                            messages.error(request, f'Room capacity is {item.room.max_occupancy} guests.')
+                            return redirect('view_cart')
+                        item.number_of_guests = guests_int
+                        item.save()
+                        messages.success(request, f'Updated to {guests_int} guest(s).')
+
+            # Backwards-compatible explicit update action
+            elif action == 'update_guests':
+                guests = request.POST.get('number_of_guests')
+                if guests:
+                    guests_int = int(guests)
+                    if guests_int < 1:
+                        messages.error(request, 'Number of guests must be at least 1.')
+                        return redirect('view_cart')
+                    if guests_int > item.room.max_occupancy:
+                        messages.error(request, f'Room capacity is {item.room.max_occupancy} guests.')
+                        return redirect('view_cart')
+                    item.number_of_guests = guests_int
+                    item.save()
+                    messages.success(request, f'Updated to {guests_int} guest(s).')
+
+            elif action == 'update_dates':
+                check_in = request.POST.get('check_in_date')
+                check_out = request.POST.get('check_out_date')
+
+                if check_in and check_out:
+                    check_in_date = datetime.strptime(check_in, '%Y-%m-%d').date()
+                    check_out_date = datetime.strptime(check_out, '%Y-%m-%d').date()
+
+                    if check_out_date <= check_in_date:
+                        messages.error(request, 'Check-out date must be after check-in date.')
+                        return redirect('view_cart')
+
+                    item.check_in_date = check_in_date
+                    item.check_out_date = check_out_date
+                    item.save()
+                    messages.success(request, 'Room dates updated.')
+        
+        # Return JSON if AJAX request
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': True,
+                'item_total': float(item.get_item_total()),
+                'cart_total': float(cart.get_total_price()),
+            })
+        
+        return redirect('view_cart')
+    except (ValueError, TypeError) as e:
+        messages.error(request, 'Invalid input.')
+        return redirect('view_cart')
+
+
+@login_required(login_url='login')
+def checkout(request):
+    """
+    STEP 4️⃣: CHECKOUT - Verify Cart & Redirect
+    
+    Checks cart exists and redirects to confirm_information.
+    
+    Flow: Cart → Confirm Information
+    """
+    cart = get_object_or_404(Cart, user=request.user)
+    
+    if not cart.items.exists():
+        messages.error(request, 'Your cart is empty.')
+        return redirect('view_cart')
+    
+    if request.method == 'POST':
+        # Redirect to confirmation form
+        return redirect('confirm_information')
+    
+    context = {
+        'cart': cart,
+        'cart_items': cart.items.all(),
+        'total_price': cart.get_total_price(),
+    }
+    return render(request, 'hotel/html/checkout.html', context)
+
+
+@login_required(login_url='login')
+def confirm_information(request):
+    """
+    STEP 4.5️⃣: CONFIRM INFORMATION - Collect User Details
+    
+    Shows form for user to confirm personal and address information.
+    On submission:
+    - Creates Reservation objects for rooms (status: Pending)
+    - Creates ServiceBooking objects for services (status: Pending)
+    - Stores booking IDs in session
+    - Clears cart
+    - Redirects to checkout_payment
+    
+    Flow: Confirm Info (GET show form) → (POST create reservations) → Payment
+    """
+    cart = get_object_or_404(Cart, user=request.user)
+    
+    if not cart.items.exists():
+        messages.error(request, 'Your cart is empty.')
+        return redirect('view_cart')
+    
+    if request.method == 'POST':
+        try:
+            # Get form data
+            full_name = request.POST.get('full_name', '').strip()
+            email = request.POST.get('email', '').strip()
+            phone = request.POST.get('phone', '').strip()
+            country = request.POST.get('country', '').strip()
+            address = request.POST.get('address', '').strip()
+            city = request.POST.get('city', '').strip()
+            state = request.POST.get('state', '').strip()
+            postal_code = request.POST.get('postal_code', '').strip()
+            special_requests = request.POST.get('special_requests', '').strip()
+            
+            # Validate required fields
+            if not all([full_name, email, phone, country, address, city, state, postal_code]):
+                messages.error(request, 'All required fields must be filled.')
+                return redirect('confirm_information')
+            
+            # Update user's guest profile
+            try:
+                guest = request.user.guest
+            except Guest.DoesNotExist:
+                guest = Guest.objects.create(user=request.user)
+            
+            # Update user's first/last name
+            names = full_name.split(' ', 1)
+            request.user.first_name = names[0]
+            request.user.last_name = names[1] if len(names) > 1 else ''
+            request.user.email = email
+            request.user.save()
+            
+            # Update guest profile with address/contact info
+            if hasattr(guest, 'phone_number'):
+                guest.phone_number = phone
+            if hasattr(guest, 'country'):
+                guest.country = country
+            if hasattr(guest, 'address'):
+                guest.address = address
+            if hasattr(guest, 'city'):
+                guest.city = city
+            if hasattr(guest, 'state_province'):
+                guest.state_province = state
+            if hasattr(guest, 'postal_code'):
+                guest.postal_code = postal_code
+            guest.save()
+            
+            # Create reservations for room items
+            room_items = cart.items.filter(item_type='Room')
+            reservations = []
+            total_amount = 0
+            
+            for item in room_items:
+                reservation = Reservation.objects.create(
+                    guest=guest,
+                    room=item.room,
+                    check_in_date=item.check_in_date,
+                    check_out_date=item.check_out_date,
+                    number_of_guests=item.number_of_guests,
+                    special_requests=special_requests,
+                    status='Pending',
+                    is_online_booking=True,
+                )
+                reservation.calculate_total_price()
+                reservation.save()
+                reservations.append(reservation)
+                total_amount += reservation.total_price
+            
+            # Create service bookings for service items
+            service_items = cart.items.filter(item_type='Service')
+            service_bookings = []
+            
+            for item in service_items:
+                service_booking = ServiceBooking.objects.create(
+                    user=request.user,
+                    service=item.service,
+                    quantity=item.service_quantity,
+                    total_price=item.service.price * item.service_quantity,
+                    scheduled_date=item.scheduled_date if item.scheduled_date else timezone.now(),
+                    status='Pending',
+                )
+                service_bookings.append(service_booking)
+                total_amount += service_booking.total_price
+            
+            # Store checkout info in session
+            request.session['checkout_reservation_ids'] = [r.id for r in reservations]
+            request.session['checkout_service_booking_ids'] = [sb.id for sb in service_bookings]
+            request.session['checkout_total'] = str(total_amount)
+            
+            # Clear the cart
+            cart.items.all().delete()
+            
+            messages.success(request, 'Information confirmed. Proceed to payment.')
+            # Redirect to payment with all reservations and service bookings
+            return render(request, 'hotel/html/payment.html', {
+                'reservations': reservations,
+                'service_bookings': service_bookings,
+                'total_amount': total_amount,
+                'multiple_items': True,
+            })
+        
+        except Exception as e:
+            messages.error(request, f'Error during confirmation: {str(e)}')
+            return redirect('confirm_information')
+    
+    # GET request - show form
+    # Build full name from user
+    full_name = f"{request.user.first_name} {request.user.last_name}".strip()
+    
+    try:
+        guest = request.user.guest
+        context = {
+            'cart_items': cart.items.all(),
+            'total_price': cart.get_total_price(),
+            'full_name': full_name,
+            'email': request.user.email,
+            'phone': getattr(guest, 'phone_number', ''),
+            'country': getattr(guest, 'country', ''),
+            'address': getattr(guest, 'address', ''),
+            'city': getattr(guest, 'city', ''),
+            'state': getattr(guest, 'state_province', ''),
+            'postal_code': getattr(guest, 'postal_code', ''),
+            'special_requests': '',
+        }
+    except Guest.DoesNotExist:
+        context = {
+            'cart_items': cart.items.all(),
+            'total_price': cart.get_total_price(),
+            'full_name': full_name,
+            'email': request.user.email,
+            'phone': '',
+            'country': '',
+            'address': '',
+            'city': '',
+            'state': '',
+            'postal_code': '',
+            'special_requests': '',
+        }
+    
+    return render(request, 'hotel/html/confirm_information.html', context)
+
+
+@login_required(login_url='login')
+def checkout_payment(request):
+    """
+    STEP 5️⃣ + STEP 6️⃣: SELECT PAYMENT METHOD & PROCESS PAYMENT
+    
+    GET Request (Step 5): Shows payment method selection form
+    - User can choose: Cash, Card, Bank Transfer, Online
+    - Displays order summary with all items and total
+    
+    POST Request (Step 6): Processes payment
+    - Creates Payment objects for each reservation
+    - Marks payment status as 'Completed'
+    - Sets transaction ID and timestamp
+    - Updates reservation status to 'Confirmed'
+    - Creates Booking records
+    - Confirms ServiceBookings
+    - Clears session data
+    - Redirects to payment_success view
+    
+    Flow: Select Method → Process → Confirm Payment
+    """
+    # Get reservation and service booking IDs from session
+    reservation_ids = request.session.get('checkout_reservation_ids', [])
+    service_booking_ids = request.session.get('checkout_service_booking_ids', [])
+    
+    if not reservation_ids and not service_booking_ids:
+        messages.error(request, 'No items found for payment. Please start from cart.')
+        return redirect('view_cart')
+    
+    # Get all reservations and service bookings
+    reservations = Reservation.objects.filter(id__in=reservation_ids, guest__user=request.user)
+    service_bookings = ServiceBooking.objects.filter(id__in=service_booking_ids, user=request.user)
+    
+    if not reservations.exists() and not service_bookings.exists():
+        messages.error(request, 'No valid bookings found.')
+        return redirect('view_cart')
+    
+    # Calculate total
+    total_amount = sum(r.total_price for r in reservations) + sum(sb.total_price for sb in service_bookings)
+    
+    if request.method == 'POST':
+        payment_method = request.POST.get('payment_method', 'Cash')
+        
+        try:
+            # Process payment for each reservation
+            for reservation in reservations:
+                payment_obj, _ = Payment.objects.get_or_create(
+                    reservation=reservation,
+                    defaults={
+                        'amount': reservation.total_price,
+                        'payment_method': payment_method,
+                        'payment_status': 'Pending',
+                    }
+                )
+                
+                # Mark as completed
+                payment_obj.payment_status = 'Completed'
+                payment_obj.payment_date = timezone.now()
+                payment_obj.transaction_id = f"TXN-{reservation.id}-{int(datetime.now().timestamp())}"
+                payment_obj.payment_method = payment_method
+                payment_obj.save()
+                
+                # Confirm reservation
+                reservation.status = 'Confirmed'
+                reservation.save(update_fields=['status'])
+                
+                # Create booking record
+                booking, created = Booking.objects.get_or_create(
+                    reservation=reservation,
+                    defaults={
+                        'user': request.user,
+                        'room': reservation.room,
+                        'booking_status': 'Confirmed',
+                        'confirmation_number': f"BK-{reservation.id}-{int(datetime.now().timestamp())}",
+                    }
+                )
+                if not created:
+                    booking.booking_status = 'Confirmed'
+                    booking.save()
+            
+            # Confirm service bookings
+            for service_booking in service_bookings:
+                service_booking.status = 'Confirmed'
+                service_booking.save()
+            
+            # Clear session
+            if 'checkout_reservation_ids' in request.session:
+                del request.session['checkout_reservation_ids']
+            if 'checkout_service_booking_ids' in request.session:
+                del request.session['checkout_service_booking_ids']
+            if 'checkout_total' in request.session:
+                del request.session['checkout_total']
+            
+            messages.success(request, 'Payment completed successfully! Your bookings are confirmed.')
+            return render(request, 'hotel/html/payment_success.html', {
+                'reservations': reservations,
+                'service_bookings': service_bookings,
+                'total_amount': total_amount,
+            })
+        
+        except Exception as e:
+            messages.error(request, f'Error processing payment: {str(e)}')
+            return redirect('view_cart')
+    
+    return render(request, 'hotel/html/checkout_payment.html', {
+        'reservations': reservations,
+        'service_bookings': service_bookings,
+        'total_amount': total_amount,
+    })
+
+
+@login_required(login_url='login')
+@require_http_methods(["POST"])
+def payment_process(request):
+    """
+    STEP 5️⃣: PROCESS PAYMENT - From Confirm Information
+    
+    Handles payment form submission from confirm_information flow.
+    Creates Payment objects, marks as completed, and redirects to success.
+    
+    Flow: Payment Form POST → Payment Objects Created → Success Page
+    """
+    try:
+        payment_method = request.POST.get('payment_method', 'Card').strip()
+        
+        # Get reservation and service booking IDs from session
+        reservation_ids = request.session.get('checkout_reservation_ids', [])
+        service_booking_ids = request.session.get('checkout_service_booking_ids', [])
+        
+        if not reservation_ids and not service_booking_ids:
+            messages.error(request, 'No bookings found. Please start over.')
+            return redirect('view_cart')
+        
+        # Get all reservations and service bookings
+        reservations = Reservation.objects.filter(id__in=reservation_ids, guest__user=request.user)
+        service_bookings = ServiceBooking.objects.filter(id__in=service_booking_ids, user=request.user)
+        
+        if not reservations.exists() and not service_bookings.exists():
+            messages.error(request, 'No bookings found.')
+            return redirect('view_cart')
+        
+        # Create Payment objects for reservations
+        for reservation in reservations:
+            payment_obj, created = Payment.objects.get_or_create(
+                reservation=reservation,
+                defaults={
+                    'amount': reservation.total_price,
+                    'payment_method': payment_method,
+                    'payment_status': 'Completed',
+                    'transaction_id': f"TXN-{reservation.id}-{timezone.now().timestamp()}",
+                }
+            )
+            if created:
+                payment_obj.save()
+            else:
+                payment_obj.payment_method = payment_method
+                payment_obj.payment_status = 'Completed'
+                payment_obj.transaction_id = f"TXN-{reservation.id}-{timezone.now().timestamp()}"
+                payment_obj.save()
+            
+            # Update reservation status to Confirmed
+            reservation.status = 'Confirmed'
+            reservation.save()
+            
+            # Create Booking record
+            Booking.objects.get_or_create(
+                reservation=reservation,
+                defaults={
+                    'user': request.user,
+                    'room': reservation.room,
+                    'booking_status': 'Confirmed',
+                }
+            )
+        
+        # Confirm service bookings
+        for service_booking in service_bookings:
+            service_booking.status = 'Confirmed'
+            service_booking.save()
+        
+        # Clear session data
+        if 'checkout_reservation_ids' in request.session:
+            del request.session['checkout_reservation_ids']
+        if 'checkout_service_booking_ids' in request.session:
+            del request.session['checkout_service_booking_ids']
+        if 'checkout_total' in request.session:
+            del request.session['checkout_total']
+        
+        total_amount = sum(r.total_price for r in reservations) + sum(sb.total_price for sb in service_bookings)
+        
+        messages.success(request, 'Payment completed successfully! Your bookings are confirmed.')
+        return render(request, 'hotel/html/payment_success.html', {
+            'reservations': reservations,
+            'service_bookings': service_bookings,
+            'total_amount': total_amount,
+        })
+    
+    except Exception as e:
+        messages.error(request, f'Error processing payment: {str(e)}')
+        return redirect('view_cart')
+
+
+# ===== API ENDPOINTS =====
+@admin_login_required
+def api_pending_bookings(request):
+    """API endpoint to get count of pending bookings"""
+    pending_room_bookings = Reservation.objects.filter(status='Pending').count()
+    pending_service_bookings = ServiceBooking.objects.filter(status='Pending').count()
+    pending_count = pending_room_bookings + pending_service_bookings
+    return JsonResponse({'pending_count': pending_count})
+
+
+@admin_login_required
+def api_all_bookings(request):
+    """API endpoint to get all pending and confirmed bookings"""
+    # Pending bookings
+    pending_room_bookings = Reservation.objects.filter(status='Pending').select_related('guest__user', 'room__category').values(
+        'id', 'guest__user__first_name', 'guest__user__last_name', 'room__room_number', 
+        'room__category__category_name', 'check_in_date', 'status'
+    ).order_by('-booking_date')[:5]
+    
+    pending_service_bookings = ServiceBooking.objects.filter(status='Pending').select_related('user', 'service').values(
+        'id', 'user__first_name', 'user__last_name', 'service__name', 'scheduled_date', 'status'
+    ).order_by('-booking_date')[:5]
+    
+    # Confirmed bookings from last 7 days
+    seven_days_ago = timezone.now() - timedelta(days=7)
+    confirmed_room_bookings = Reservation.objects.filter(status='Confirmed', booking_date__gte=seven_days_ago).select_related('guest__user', 'room__category').values(
+        'id', 'guest__user__first_name', 'guest__user__last_name', 'room__room_number', 
+        'room__category__category_name', 'check_in_date', 'status'
+    ).order_by('-booking_date')[:5]
+    
+    confirmed_service_bookings = ServiceBooking.objects.filter(status='Confirmed', booking_date__gte=seven_days_ago).select_related('user', 'service').values(
+        'id', 'user__first_name', 'user__last_name', 'service__name', 'scheduled_date', 'status'
+    ).order_by('-booking_date')[:5]
+    
+    total_pending = Reservation.objects.filter(status='Pending').count() + ServiceBooking.objects.filter(status='Pending').count()
+    total_confirmed = Reservation.objects.filter(status='Confirmed', booking_date__gte=seven_days_ago).count() + ServiceBooking.objects.filter(status='Confirmed', booking_date__gte=seven_days_ago).count()
+    
+    return JsonResponse({
+        'pending_room_bookings': list(pending_room_bookings),
+        'pending_service_bookings': list(pending_service_bookings),
+        'confirmed_room_bookings': list(confirmed_room_bookings),
+        'confirmed_service_bookings': list(confirmed_service_bookings),
+        'total_pending': total_pending,
+        'total_confirmed': total_confirmed,
+        'total': total_pending + total_confirmed,
+    })
+
+

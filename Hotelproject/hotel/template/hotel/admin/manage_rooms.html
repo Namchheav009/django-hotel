@@ -7,58 +7,300 @@
 
 {% block extra_head %}
 <style>
+  :root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #0ea5e9;
+    --purple: #8b5cf6;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg-soft: #f8fafc;
+  }
+
+  .page-head{
+    display:flex; 
+    align-items:flex-end; 
+    justify-content:space-between; 
+    gap:14px;
+    margin-bottom:24px;
+    flex-wrap:wrap;
+  }
+  .page-head h2{ 
+    margin:0; 
+    font-weight:900; 
+    font-size:28px;
+    color:#0f172a;
+  }
+  .page-sub{ 
+    margin:6px 0 0; 
+    color:var(--muted); 
+    font-weight:600;
+    font-size:14px;
+  }
+
+  /* Statistics Cards */
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:16px;
+    margin-bottom:24px;
+  }
+  .stat-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    transition:all 0.2s ease;
+    cursor:pointer;
+  }
+  .stat-card:hover{
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    transform:translateY(-2px);
+  }
+  .stat-icon{
+    width:48px;
+    height:48px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    flex-shrink:0;
+  }
+  .stat-icon.blue{ background:#dbeafe; color:#2563eb; }
+  .stat-icon.green{ background:#dcfce7; color:#16a34a; }
+  .stat-icon.orange{ background:#fed7aa; color:#ea580c; }
+  .stat-icon.red{ background:#fee2e2; color:#dc2626; }
+  .stat-icon.purple{ background:#ede9fe; color:#7c3aed; }
+  
+  .stat-details{
+    flex:1;
+  }
+  .stat-label{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin-bottom:4px;
+  }
+  .stat-value{
+    font-size:24px;
+    font-weight:900;
+    color:#0f172a;
+  }
+
+  /* Toolbar */
+  .toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    margin-bottom:24px;
+    flex-wrap:wrap;
+  }
+
+  .toolbar-left{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+    flex:1;
+  }
+
+  .search{
+    display:flex; 
+    align-items:center; 
+    gap:10px;
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#fff;
+    min-width:280px;
+    transition:all 0.2s ease;
+  }
+  .search:focus-within{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .search input{
+    border:none; 
+    outline:none; 
+    background:transparent;
+    width:100%;
+    font-weight:600;
+    color:#0f172a;
+    font-size:14px;
+  }
+  .search input::placeholder{
+    color:#94a3b8;
+  }
+
+  /* Filter Buttons */
+  .filter-group{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .filter-btn{
+    padding:8px 16px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#fff;
+    font-weight:700;
+    font-size:13px;
+    color:var(--muted);
+    cursor:pointer;
+    transition:all 0.2s ease;
+    white-space:nowrap;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .filter-btn:hover{
+    background:var(--bg-soft);
+    border-color:#cbd5e1;
+  }
+  .filter-btn.active{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
+  }
+
+  /* Action Button */
+  .btn-action{
+    padding:12px 24px;
+    border:none;
+    border-radius:10px;
+    background:var(--primary);
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .btn-action:hover{
+    background:var(--primary-dark);
+    box-shadow:0 4px 12px rgba(59,130,246,0.3);
+  }
+
+  /* Main Card */
+  .admin-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.05);
+    overflow:hidden;
+  }
+
+  /* Summary Bar */
+  .summary-bar{
+    padding:16px 24px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#f8fafc;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .summary-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+  }
+  .summary-label{
+    color:var(--muted);
+    font-weight:700;
+  }
+  .summary-value{
+    font-weight:900;
+    color:#0f172a;
+  }
+
   /* Table */
+  .table-wrapper{
+    overflow-x:auto;
+  }
   .admin-table{
     width:100%;
-    border-collapse:separate;
-    border-spacing:0;
+    border-collapse:collapse;
   }
   .admin-table thead th{
     text-align:left;
-    font-size:13px;
     color:var(--muted);
-    font-weight:1000;
-    padding:12px 10px;
-    border-bottom:1px solid var(--line);
+    font-weight:800;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    padding:16px 20px;
+    background:var(--bg-soft);
+    border-bottom:2px solid var(--border);
+    white-space:nowrap;
   }
   .admin-table tbody td{
-    padding:14px 10px;
-    border-bottom:1px solid var(--line);
+    padding:16px 20px;
+    border-top:1px solid #f1f5f9;
     vertical-align:middle;
-    font-weight:900;
+    font-weight:700;
+    color:#0f172a;
+    font-size:14px;
+  }
+  .admin-table tbody tr{
+    transition:all 0.15s ease;
   }
   .admin-table tbody tr:hover{
-    background:#fbfcff;
+    background:#f8fafc;
   }
 
+  /* Room Cell */
   .room-cell{
     display:flex;
     align-items:center;
-    gap:12px;
+    gap:14px;
   }
   .room-thumb{
-    width:52px;height:42px;border-radius:14px;
-    border:1px solid var(--line);
-    background:#f2f5fb;
+    width:70px;
+    height:60px;
+    border-radius:10px;
+    border:1px solid var(--border);
+    background:#f1f5f9;
     overflow:hidden;
-    flex:0 0 auto;
+    flex-shrink:0;
   }
   .room-thumb img{
-    width:100%;height:100%;
+    width:100%;
+    height:100%;
     object-fit:cover;
     display:block;
   }
+  .room-info{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
   .room-title{
-    font-weight:1000;
-    color:var(--text);
-    margin:0;
-    line-height:1.1;
+    font-weight:900;
+    color:#0f172a;
+    font-size:15px;
   }
   .room-sub{
-    margin:4px 0 0;
-    font-weight:900;
+    font-weight:700;
     color:var(--muted);
     font-size:13px;
+    display:flex;
+    align-items:center;
+    gap:6px;
   }
 
   /* Status badges */
@@ -66,165 +308,411 @@
     display:inline-flex;
     align-items:center;
     gap:8px;
-    padding:8px 10px;
-    border-radius:999px;
-    border:1px solid var(--line);
-    background:#fff;
-    font-weight:1000;
-    font-size:13px;
+    padding:6px 12px;
+    border-radius:8px;
+    font-weight:800;
+    font-size:12px;
   }
-  .dot{ width:8px;height:8px;border-radius:999px;background:#94a3b8; }
-  .st-available{ background:#e9fff3; border-color:#b7f3d0; color:#0b1220; }
-  .st-available .dot{ background:#22c55e; }
-  .st-booked{ background:#fff7ed; border-color:#fed7aa; color:#0b1220; }
-  .st-booked .dot{ background:#f59e0b; }
-  .st-maint{ background:#fef2f2; border-color:#fecaca; color:#0b1220; }
-  .st-maint .dot{ background:#ef4444; }
+  .dot{ 
+    width:6px;
+    height:6px;
+    border-radius:50%;
+  }
+  
+  .st-available{ 
+    background:#d1fae5; 
+    color:#065f46;
+  }
+  .st-available .dot{ 
+    background:#22c55e; 
+  }
+  
+  .st-booked{ 
+    background:#fef3c7; 
+    color:#92400e;
+  }
+  .st-booked .dot{ 
+    background:#f59e0b; 
+  }
+  
+  .st-maint{ 
+    background:#fee2e2; 
+    color:#991b1b;
+  }
+  .st-maint .dot{ 
+    background:#ef4444; 
+  }
 
-  /* Header actions row */
-  .rooms-head{
+  /* Action Buttons */
+  .action-btns{
     display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:12px;
-    margin-bottom:14px;
-  }
-  .rooms-actions{
-    display:flex;
-    gap:10px;
-    align-items:center;
+    gap:8px;
     flex-wrap:wrap;
   }
-
-  .btnx{
-    display:inline-flex;
+  .btn-sm{
+    padding:8px 14px;
+    border-radius:8px;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    display:flex;
     align-items:center;
-    justify-content:center;
-    gap:10px;
-    padding:10px 12px;
-    border-radius:14px;
-    font-weight:1000;
-    text-decoration:none;
-    border:1px solid var(--line);
-    background:#fff;
-    color:#111827;
-    transition:.15s ease;
+    gap:6px;
+    border:none;
   }
-  .btnx:hover{ transform: translateY(-2px); box-shadow: 0 10px 24px rgba(11,18,32,.08); }
-
-  .btnx-dark{
-    background:linear-gradient(180deg,#0f2133,#0c1a2a);
-    border-color:transparent;
+  .btn-warning{
+    background:#fef3c7;
+    color:#92400e;
+    border:1px solid #fde68a;
+  }
+  .btn-warning:hover{
+    background:#fbbf24;
     color:#fff;
   }
-  .btnx-dark:hover{ color:#fff; }
-
-  .btnx-danger{
-    background:#fff;
-    border-color:#fecaca;
-    color:#b91c1c;
+  .btn-danger{
+    background:#fee2e2;
+    color:#991b1b;
+    border:1px solid #fecaca;
+  }
+  .btn-danger:hover{
+    background:#ef4444;
+    color:#fff;
   }
 
-  .muted{ color:var(--muted); font-weight:900; }
+  /* Empty State */
+  .empty{
+    padding:60px 24px;
+    text-align:center;
+  }
+  .empty-icon{
+    font-size:64px;
+    color:#cbd5e1;
+    margin-bottom:16px;
+  }
+  .empty-text{
+    color:var(--muted);
+    font-weight:700;
+    font-size:16px;
+  }
 
-  /* Modal */
+  /* Modal Enhancements */
   .modal-content{
-    border-radius:18px;
-    border:1px solid var(--line);
-    box-shadow: var(--shadow);
+    border-radius:16px;
+    border:none;
+    box-shadow:0 20px 60px rgba(0,0,0,0.2);
   }
   .modal-header{
-    border-bottom:1px solid var(--line);
+    background:var(--bg-soft);
+    border-bottom:1px solid var(--border);
+    padding:20px 24px;
+  }
+  .modal-title{
+    font-weight:900;
+    color:#0f172a;
+    margin:0;
+    font-size:20px;
+  }
+  .modal-subtitle{
+    color:var(--muted);
+    font-size:13px;
+    margin-top:4px;
+    font-weight:600;
+  }
+  .modal-body{
+    padding:24px;
   }
   .modal-footer{
-    border-top:1px solid var(--line);
+    background:var(--bg-soft);
+    border-top:1px solid var(--border);
+    padding:16px 24px;
   }
 
-  @media(max-width: 900px){
-    .rooms-head{ flex-direction:column; align-items:flex-start; }
+  .form-label{
+    font-weight:700;
+    color:#0f172a;
+    margin-bottom:8px;
+    font-size:14px;
+  }
+  .form-control, .form-select{
+    border:1px solid var(--border);
+    border-radius:8px;
+    padding:10px 14px;
+    font-weight:600;
+    transition:all 0.2s ease;
+  }
+  .form-control:focus, .form-select:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(59,130,246,0.1);
+    outline:none;
+  }
+
+  /* Image Gallery */
+  .image-gallery{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:16px;
+    margin-bottom:16px;
+  }
+  .image-slot{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px;
+    background:#f8fafc;
+  }
+  .image-slot-header{
+    font-weight:800;
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:10px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+  }
+  .image-preview{
+    width:100%;
+    height:120px;
+    border-radius:8px;
+    object-fit:cover;
+    margin-bottom:10px;
+  }
+  .image-placeholder{
+    width:100%;
+    height:120px;
+    background:#e9ecef;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#cbd5e1;
+    font-size:32px;
+    margin-bottom:10px;
+  }
+  .image-actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+
+  .muted{ 
+    color:var(--muted); 
+    font-weight:700; 
+  }
+
+  /* Responsive */
+  @media (max-width: 768px){
+    .page-head{
+      flex-direction:column;
+      align-items:flex-start;
+    }
+    .toolbar{
+      flex-direction:column;
+      align-items:stretch;
+    }
+    .toolbar-left{
+      flex-direction:column;
+    }
+    .search{
+      width:100%;
+    }
+    .stats-grid{
+      grid-template-columns:1fr;
+    }
+    .image-gallery{
+      grid-template-columns:1fr;
+    }
   }
 </style>
 {% endblock %}
 
 {% block admin_content %}
 
-<div class="rooms-head">
+<div class="page-head">
   <div>
-    <h3 style="margin:0;font-weight:1000;">Room Management</h3>
-    <div class="muted" style="margin-top:4px;">Total: {{ rooms|length }}</div>
+    <h2>Room Management</h2>
+    <p class="page-sub">Manage hotel rooms, availability, and pricing</p>
   </div>
 
-  <div class="rooms-actions">
-    <button class="btnx btnx-dark" data-bs-toggle="modal" data-bs-target="#addRoomModal">
-      <i class="fa-solid fa-plus"></i> Add New Room
-    </button>
+  <button class="btn-action" data-bs-toggle="modal" data-bs-target="#addRoomModal">
+    <i class="fa-solid fa-plus"></i>
+    Add New Room
+  </button>
+</div>
+
+<!-- Statistics Overview -->
+<div class="stats-grid">
+  <div class="stat-card" onclick="filterByStatus('all')">
+    <div class="stat-icon blue">
+      <i class="fa-solid fa-door-open"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Total Rooms</div>
+      <div class="stat-value"><span id="totalRooms">{{ rooms|length }}</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterByStatus('Available')">
+    <div class="stat-icon green">
+      <i class="fa-solid fa-check-circle"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Available</div>
+      <div class="stat-value"><span id="availableCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterByStatus('Booked')">
+    <div class="stat-icon orange">
+      <i class="fa-solid fa-bed"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Booked</div>
+      <div class="stat-value"><span id="bookedCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterByStatus('Maintenance')">
+    <div class="stat-icon red">
+      <i class="fa-solid fa-tools"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Maintenance</div>
+      <div class="stat-value"><span id="maintenanceCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon purple">
+      <i class="fa-solid fa-dollar-sign"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Avg Price</div>
+      <div class="stat-value">$<span id="avgPrice">0</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <div class="toolbar-left">
+    <div class="search">
+      <i class="fa-solid fa-search"></i>
+      <input id="searchInput" type="text" placeholder="Search by room number or category..." onkeyup="filterRooms()">
+    </div>
+
+    <div class="filter-group">
+      <button class="filter-btn active" onclick="filterByStatus('all')">
+        All Rooms
+      </button>
+      <button class="filter-btn" onclick="filterByStatus('Available')">
+        <i class="fa-solid fa-check"></i> Available
+      </button>
+      <button class="filter-btn" onclick="filterByStatus('Booked')">
+        <i class="fa-solid fa-bed"></i> Booked
+      </button>
+      <button class="filter-btn" onclick="filterByStatus('Maintenance')">
+        <i class="fa-solid fa-tools"></i> Maintenance
+      </button>
+    </div>
   </div>
 </div>
 
 <div class="admin-card">
   {% if rooms %}
-    <div class="table-responsive">
-      <table class="admin-table">
+    <div class="summary-bar">
+      <div class="summary-item">
+        <span class="summary-label">Showing:</span>
+        <span class="summary-value" id="visibleCount">{{ rooms|length }}</span>
+        <span class="summary-label">of {{ rooms|length }} rooms</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Occupancy Rate:</span>
+        <span class="summary-value" id="occupancyRate">0%</span>
+      </div>
+    </div>
+
+    <div class="table-wrapper">
+      <table class="admin-table" id="roomsTable">
         <thead>
           <tr>
-            <th>Room</th>
+            <th>Room Details</th>
             <th>Floor</th>
             <th>Status</th>
-            <th>Occupancy</th>
+            <th>Capacity</th>
             <th>Price</th>
-            <th style="min-width:180px;">Actions</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {% for room in rooms %}
-          <tr>
+          <tr data-status="{{ room.status }}" data-price="{% if room.price %}{{ room.price }}{% else %}0{% endif %}">
             <td>
               <div class="room-cell">
                 <div class="room-thumb">
                   {% if room.image %}
-                    <img src="{{ room.image.url }}" alt="Room image">
+                    <img src="{{ room.image.url }}" alt="Room {{ room.room_number }}">
                   {% else %}
-                    <img src="{% static 'hotel/img/hero.png' %}" alt="Room image">
+                    <img src="{% static 'hotel/img/hero.png' %}" alt="Default room image">
                   {% endif %}
                 </div>
-                <div>
-                  <p class="room-title">Room {{ room.room_number }}</p>
-                  <p class="room-sub">{{ room.category.category_name }}</p>
+                <div class="room-info">
+                  <div class="room-title">Room {{ room.room_number }}</div>
+                  <div class="room-sub">
+                    <i class="fa-solid fa-tag"></i>
+                    {{ room.category.category_name }}
+                  </div>
                 </div>
               </div>
             </td>
 
-            <td class="muted">{{ room.floor }}</td>
+            <td class="muted">
+              <i class="fa-solid fa-building"></i>
+              Floor {{ room.floor }}
+            </td>
 
             <td>
               {% if room.status == 'Available' %}
-                <span class="badge-pill st-available"><span class="dot"></span> Available</span>
+                <span class="badge-pill st-available">
+                  <span class="dot"></span>
+                  Available
+                </span>
               {% elif room.status == 'Booked' %}
-                <span class="badge-pill st-booked"><span class="dot"></span> Booked</span>
+                <span class="badge-pill st-booked">
+                  <span class="dot"></span>
+                  Booked
+                </span>
               {% else %}
-                <span class="badge-pill st-maint"><span class="dot"></span> Maintenance</span>
+                <span class="badge-pill st-maint">
+                  <span class="dot"></span>
+                  Maintenance
+                </span>
               {% endif %}
             </td>
 
-            <td class="muted">{{ room.max_occupancy }} persons</td>
-
             <td class="muted">
+              <i class="fa-solid fa-users"></i>
+              {{ room.max_occupancy }} guest{% if room.max_occupancy > 1 %}s{% endif %}
+            </td>
+
+            <td>
               {% if room.price %}
-                ${{ room.price }}
+                <strong style="color:var(--primary); font-size:15px;">
+                  ${{ room.price }}
+                </strong>
+                <span class="muted" style="font-size:12px;">/night</span>
               {% else %}
-                <span class="muted">Use category price</span>
+                <span class="muted">Category price</span>
               {% endif %}
             </td>
 
             <td>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <div class="action-btns">
                 <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#editRoomModal{{ room.id }}">
                   <i class="fa-solid fa-pen"></i> Edit
                 </button>
 
-                <form method="POST" action="{% url 'delete_room' room.id %}" style="display:inline;">
+                <form method="POST" action="{% url 'delete_room' room.id %}" style="display:inline;margin:0;">
                   {% csrf_token %}
-                  <button class="btn btn-sm btn-danger" onclick="return confirm('Delete room {{ room.room_number }}?');">
+                  <button class="btn btn-sm btn-danger" onclick="return confirm('Delete room {{ room.room_number }}? This action cannot be undone.');">
                     <i class="fa-solid fa-trash"></i> Delete
                   </button>
                 </form>
@@ -236,38 +724,47 @@
       </table>
     </div>
   {% else %}
-    <div class="text-center muted" style="padding:18px;">
-      No rooms available.
+    <div class="empty">
+      <div class="empty-icon">
+        <i class="fa-solid fa-door-open"></i>
+      </div>
+      <div class="empty-text">No rooms available</div>
     </div>
   {% endif %}
 </div>
 
-<!-- ✅ Add Room Modal -->
+<!-- Add Room Modal -->
 <div class="modal fade" id="addRoomModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
 
       <div class="modal-header">
         <div>
-          <h5 class="modal-title" style="font-weight:1000;margin:0;">Add New Room</h5>
-          <div class="muted" style="font-size:13px;margin-top:4px;">Create a room with optional image.</div>
+          <h5 class="modal-title">
+            <i class="fa-solid fa-plus-circle" style="color:var(--primary);"></i>
+            Add New Room
+          </h5>
+          <div class="modal-subtitle">Create a new room with details and images</div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <!-- ✅ IMPORTANT: enctype for image upload -->
       <form method="POST" action="{% url 'add_room' %}" enctype="multipart/form-data">
         {% csrf_token %}
 
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-md-4">
-              <label class="form-label" style="font-weight:1000;">Room Number</label>
+              <label class="form-label">
+                <i class="fa-solid fa-door-open"></i> Room Number *
+              </label>
               <input type="text" class="form-control" name="room_number" placeholder="e.g. 304" required>
             </div>
 
             <div class="col-md-8">
-              <label class="form-label" style="font-weight:1000;">Category</label>
+              <label class="form-label">
+                <i class="fa-solid fa-tag"></i> Category *
+              </label>
               <select class="form-select" name="category" required>
                 <option value="">Select Category</option>
                 {% for cat in categories %}
@@ -277,17 +774,23 @@
             </div>
 
             <div class="col-md-4">
-              <label class="form-label" style="font-weight:1000;">Floor</label>
+              <label class="form-label">
+                <i class="fa-solid fa-building"></i> Floor *
+              </label>
               <input type="number" class="form-control" name="floor" value="1" min="1" required>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label" style="font-weight:1000;">Max Occupancy</label>
+              <label class="form-label">
+                <i class="fa-solid fa-users"></i> Max Occupancy *
+              </label>
               <input type="number" class="form-control" name="max_occupancy" value="2" min="1" required>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label" style="font-weight:1000;">Status</label>
+              <label class="form-label">
+                <i class="fa-solid fa-toggle-on"></i> Status
+              </label>
               <select class="form-select" name="status">
                 <option value="Available">Available</option>
                 <option value="Booked">Booked</option>
@@ -296,33 +799,41 @@
             </div>
 
             <div class="col-md-6">
-              <label class="form-label" style="font-weight:1000;">Room Price (optional)</label>
+              <label class="form-label">
+                <i class="fa-solid fa-dollar-sign"></i> Room Price (Optional)
+              </label>
               <input type="number" step="0.01" class="form-control" name="price" placeholder="Leave blank to use category price">
             </div>
 
             <div class="col-md-6">
-              <label class="form-label" style="font-weight:1000;">Room Image</label>
+              <label class="form-label">
+                <i class="fa-solid fa-image"></i> Main Room Image
+              </label>
               <input type="file" class="form-control" name="image" accept="image/*">
-              <div class="muted" style="font-size:12px;margin-top:6px;">
-                Tip: make sure you configured MEDIA_URL + MEDIA_ROOT.
-              </div>
+              <small class="text-muted">JPG, PNG, GIF up to 5MB</small>
             </div>
 
             <div class="col-12">
-              <label class="form-label" style="font-weight:1000;">Description</label>
-              <textarea class="form-control" name="description" rows="3" placeholder="Room details..."></textarea>
+              <label class="form-label">
+                <i class="fa-solid fa-align-left"></i> Description
+              </label>
+              <textarea class="form-control" name="description" rows="3" placeholder="Describe the room features..."></textarea>
             </div>
 
             <div class="col-12">
-              <label class="form-label" style="font-weight:1000;">Amenities (comma separated)</label>
-              <input type="text" class="form-control" name="amenities" placeholder="WiFi, AC, TV">
+              <label class="form-label">
+                <i class="fa-solid fa-list"></i> Amenities (comma separated)
+              </label>
+              <input type="text" class="form-control" name="amenities" placeholder="WiFi, AC, TV, Mini Bar, Safe">
             </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary" style="font-weight:1000;">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+            <i class="fa-solid fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" style="font-weight:700;">
             <i class="fa-solid fa-check"></i> Add Room
           </button>
         </div>
@@ -332,7 +843,7 @@
   </div>
 </div>
 
-<!-- ✅ Edit Room Modal (one for each room) -->
+<!-- Edit Room Modals -->
 {% for room in rooms %}
 <div class="modal fade" id="editRoomModal{{ room.id }}" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -340,8 +851,11 @@
 
       <div class="modal-header">
         <div>
-          <h5 class="modal-title" style="font-weight:1000;margin:0;">Edit Room {{ room.room_number }}</h5>
-          <div class="muted" style="font-size:13px;margin-top:4px;">Update room details and image.</div>
+          <h5 class="modal-title">
+            <i class="fa-solid fa-edit" style="color:var(--warning);"></i>
+            Edit Room {{ room.room_number }}
+          </h5>
+          <div class="modal-subtitle">Update room details and images</div>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
@@ -352,32 +866,44 @@
         <div class="modal-body">
           <div class="row g-3">
             <div class="col-md-4">
-              <label class="form-label" style="font-weight:1000;">Room Number</label>
+              <label class="form-label">
+                <i class="fa-solid fa-door-open"></i> Room Number *
+              </label>
               <input type="text" class="form-control" name="room_number" value="{{ room.room_number }}" required>
             </div>
 
             <div class="col-md-8">
-              <label class="form-label" style="font-weight:1000;">Category</label>
+              <label class="form-label">
+                <i class="fa-solid fa-tag"></i> Category *
+              </label>
               <select class="form-select" name="category" required>
                 <option value="">Select Category</option>
                 {% for cat in categories %}
-                  <option value="{{ cat.id }}" {% if cat.id == room.category.id %}selected{% endif %}>{{ cat.category_name }}</option>
+                  <option value="{{ cat.id }}" {% if cat.id == room.category.id %}selected{% endif %}>
+                    {{ cat.category_name }}
+                  </option>
                 {% endfor %}
               </select>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label" style="font-weight:1000;">Floor</label>
+              <label class="form-label">
+                <i class="fa-solid fa-building"></i> Floor *
+              </label>
               <input type="number" class="form-control" name="floor" value="{{ room.floor }}" min="1" required>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label" style="font-weight:1000;">Max Occupancy</label>
+              <label class="form-label">
+                <i class="fa-solid fa-users"></i> Max Occupancy *
+              </label>
               <input type="number" class="form-control" name="max_occupancy" value="{{ room.max_occupancy }}" min="1" required>
             </div>
 
             <div class="col-md-4">
-              <label class="form-label" style="font-weight:1000;">Status</label>
+              <label class="form-label">
+                <i class="fa-solid fa-toggle-on"></i> Status
+              </label>
               <select class="form-select" name="status">
                 <option value="Available" {% if room.status == 'Available' %}selected{% endif %}>Available</option>
                 <option value="Booked" {% if room.status == 'Booked' %}selected{% endif %}>Booked</option>
@@ -386,35 +912,99 @@
             </div>
 
             <div class="col-md-6">
-              <label class="form-label" style="font-weight:1000;">Room Price (optional)</label>
-              <input type="number" step="0.01" class="form-control" name="price" value="{% if room.price %}{{ room.price }}{% endif %}" placeholder="Leave blank to use category price">
+              <label class="form-label">
+                <i class="fa-solid fa-dollar-sign"></i> Room Price (Optional)
+              </label>
+              <input type="number" step="0.01" class="form-control" name="price" 
+                value="{% if room.price %}{{ room.price }}{% endif %}" 
+                placeholder="Leave blank to use category price">
             </div>
 
             <div class="col-md-6">
-              <label class="form-label" style="font-weight:1000;">Room Image</label>
+              <label class="form-label">
+                <i class="fa-solid fa-image"></i> Main Room Image
+              </label>
               <input type="file" class="form-control" name="image" accept="image/*">
               {% if room.image %}
-                <div class="muted" style="font-size:12px;margin-top:6px;">
+                <small class="text-muted">
                   Current: <a href="{{ room.image.url }}" target="_blank">View image</a>
-                </div>
+                </small>
               {% endif %}
             </div>
 
+            <!-- Room Image Gallery -->
             <div class="col-12">
-              <label class="form-label" style="font-weight:1000;">Description</label>
+              <label class="form-label">
+                <i class="fa-solid fa-images"></i> Room Image Gallery (up to 6 images)
+              </label>
+              <div class="image-gallery">
+                {% for i in "123456" %}
+                  {% with image=room.images.all|dictsort:"order"|slice:forloop.counter0|first %}
+                  <div class="image-slot">
+                    <div class="image-slot-header">
+                      Image {{ forloop.counter }}
+                    </div>
+                    
+                    {% if image and image.image %}
+                      <img src="{{ image.image.url }}" alt="{{ image.alt_text }}" class="image-preview">
+                      <input type="text" class="form-control form-control-sm mb-2" 
+                        placeholder="Alt text" 
+                        value="{{ image.alt_text }}" 
+                        name="alt_text_{{ forloop.counter }}" 
+                        style="font-size:12px;">
+                      <div class="image-actions">
+                        <input type="file" class="form-control form-control-sm" 
+                          name="room_image_{{ forloop.counter }}" 
+                          accept="image/*" 
+                          style="flex:1;">
+                        <form method="POST" action="{% url 'delete_room_image' image.id %}" style="display:inline;margin:0;">
+                          {% csrf_token %}
+                          <button type="submit" class="btn btn-sm btn-danger" 
+                            onclick="return confirm('Delete this image?');" 
+                            style="padding:6px 10px;">
+                            <i class="fa-solid fa-trash"></i>
+                          </button>
+                        </form>
+                      </div>
+                    {% else %}
+                      <div class="image-placeholder">
+                        <i class="fa-solid fa-image"></i>
+                      </div>
+                      <input type="text" class="form-control form-control-sm mb-2" 
+                        placeholder="Alt text" 
+                        name="alt_text_{{ forloop.counter }}" 
+                        style="font-size:12px;">
+                      <input type="file" class="form-control form-control-sm" 
+                        name="room_image_{{ forloop.counter }}" 
+                        accept="image/*">
+                    {% endif %}
+                  </div>
+                  {% endwith %}
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label class="form-label">
+                <i class="fa-solid fa-align-left"></i> Description
+              </label>
               <textarea class="form-control" name="description" rows="3" placeholder="Room details...">{{ room.description }}</textarea>
             </div>
 
             <div class="col-12">
-              <label class="form-label" style="font-weight:1000;">Amenities (comma separated)</label>
+              <label class="form-label">
+                <i class="fa-solid fa-list"></i> Amenities (comma separated)
+              </label>
               <input type="text" class="form-control" name="amenities" value="{{ room.amenities }}" placeholder="WiFi, AC, TV">
             </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary" style="font-weight:1000;">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+            <i class="fa-solid fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" style="font-weight:700;">
             <i class="fa-solid fa-save"></i> Save Changes
           </button>
         </div>
@@ -424,5 +1014,84 @@
   </div>
 </div>
 {% endfor %}
+
+<script>
+  let currentFilter = 'all';
+
+  // Calculate statistics
+  function calculateStats() {
+    const rows = document.querySelectorAll('#roomsTable tbody tr');
+    let availableCount = 0;
+    let bookedCount = 0;
+    let maintenanceCount = 0;
+    let totalPrice = 0;
+    let priceCount = 0;
+
+    rows.forEach(row => {
+      const status = row.getAttribute('data-status');
+      const price = parseFloat(row.getAttribute('data-price'));
+
+      if (status === 'Available') availableCount++;
+      if (status === 'Booked') bookedCount++;
+      if (status === 'Maintenance') maintenanceCount++;
+
+      if (price > 0) {
+        totalPrice += price;
+        priceCount++;
+      }
+    });
+
+    document.getElementById('availableCount').textContent = availableCount;
+    document.getElementById('bookedCount').textContent = bookedCount;
+    document.getElementById('maintenanceCount').textContent = maintenanceCount;
+
+    const avgPrice = priceCount > 0 ? (totalPrice / priceCount).toFixed(2) : '0.00';
+    document.getElementById('avgPrice').textContent = avgPrice;
+
+    // Calculate occupancy rate
+    const total = rows.length;
+    const occupancyRate = total > 0 ? ((bookedCount / total) * 100).toFixed(1) : '0.0';
+    document.getElementById('occupancyRate').textContent = occupancyRate + '%';
+  }
+
+  // Filter by status
+  function filterByStatus(status) {
+    currentFilter = status;
+
+    // Update filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.closest('.filter-btn').classList.add('active');
+
+    // Apply filter
+    filterRooms();
+  }
+
+  // Filter rooms
+  function filterRooms() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#roomsTable tbody tr');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+      const roomNumber = row.querySelector('.room-title').textContent.toLowerCase();
+      const category = row.querySelector('.room-sub').textContent.toLowerCase();
+      const status = row.getAttribute('data-status');
+
+      const matchesSearch = roomNumber.includes(searchTerm) || category.includes(searchTerm);
+      const matchesFilter = currentFilter === 'all' || status === currentFilter;
+
+      const shouldShow = matchesSearch && matchesFilter;
+      row.style.display = shouldShow ? '' : 'none';
+      if (shouldShow) visibleCount++;
+    });
+
+    document.getElementById('visibleCount').textContent = visibleCount;
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    calculateStats();
+  });
+</script>
 
 {% endblock %}

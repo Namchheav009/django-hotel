@@ -2,114 +2,379 @@
 
 {% block admin_content %}
 <style>
+  :root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --purple: #8b5cf6;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg-soft: #f8fafc;
+  }
+
   .page-head{
     display:flex; align-items:flex-end; justify-content:space-between; gap:14px;
-    margin-bottom:14px;
+    margin-bottom:20px;
+    flex-wrap:wrap;
   }
-  .page-head h2{ margin:0; font-weight:900; }
-  .page-sub{ margin:6px 0 0; color:var(--muted); font-weight:700; }
+  .page-head h2{ margin:0; font-weight:900; font-size:28px; color:#0f172a; }
+  .page-sub{ margin:6px 0 0; color:var(--muted); font-weight:600; font-size:14px; }
+
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+    gap:16px;
+    margin-bottom:24px;
+  }
+  .stat-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    transition:all 0.2s ease;
+  }
+  .stat-card:hover{ box-shadow:0 4px 12px rgba(0,0,0,0.08); transform:translateY(-2px); }
+  .stat-icon{
+    width:48px; height:48px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px; flex-shrink:0;
+  }
+  .stat-icon.blue{ background:#dbeafe; color:#2563eb; }
+  .stat-icon.green{ background:#dcfce7; color:#16a34a; }
+  .stat-icon.orange{ background:#fed7aa; color:#ea580c; }
+  .stat-icon.purple{ background:#ede9fe; color:#7c3aed; }
+
+  .stat-label{
+    font-size:13px; color:var(--muted); font-weight:700;
+    text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;
+  }
+  .stat-value{ font-size:24px; font-weight:900; color:#0f172a; }
 
   .cardx{
     background:#fff;
-    border:1px solid #eef1f7;
+    border:1px solid var(--border);
     border-radius:16px;
-    box-shadow: 0 10px 24px rgba(10,16,32,.06);
+    box-shadow:0 1px 3px rgba(0,0,0,0.05);
     overflow:hidden;
   }
   .cardx-top{
-    padding:14px 16px;
-    border-bottom:1px solid #eef1f7;
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:20px 24px;
+    border-bottom:1px solid var(--border);
+    background:var(--bg-soft);
   }
   .tools{
-    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    display:flex; gap:12px; flex-wrap:wrap; align-items:center;
   }
+
   .search{
     display:flex; align-items:center; gap:10px;
-    padding:10px 12px;
-    border:1px solid #e9edf7;
-    border-radius:12px;
-    background:#fbfcff;
-    min-width:260px;
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#fff;
+    min-width:280px;
+    transition:all 0.2s ease;
+  }
+  .search:focus-within{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(59,130,246,0.1);
   }
   .search input{
     border:none; outline:none; background:transparent;
     width:100%;
-    font-weight:700;
+    font-weight:600;
+    color:#0f172a;
+    font-size:14px;
   }
 
+  /* NEW: Date filters */
+  .date-filters{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .date-box{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:10px 12px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#fff;
+  }
+  .date-box label{
+    font-size:12px;
+    font-weight:800;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin:0;
+    white-space:nowrap;
+  }
+  .date-box input{
+    border:none;
+    outline:none;
+    font-weight:700;
+    color:#0f172a;
+    font-size:13px;
+    background:transparent;
+  }
+  .btn-clear{
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#fff;
+    font-weight:800;
+    font-size:13px;
+    color:var(--muted);
+    cursor:pointer;
+    transition:all 0.2s ease;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .btn-clear:hover{
+    background:var(--bg-soft);
+    border-color:#cbd5e1;
+  }
+
+  .filter-group{
+    display:flex; gap:8px; flex-wrap:wrap;
+  }
+  .filter-btn{
+    padding:8px 16px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#fff;
+    font-weight:700;
+    font-size:13px;
+    color:var(--muted);
+    cursor:pointer;
+    transition:all 0.2s ease;
+    white-space:nowrap;
+  }
+  .filter-btn:hover{ background:var(--bg-soft); border-color:#cbd5e1; }
+  .filter-btn.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
+
+  .btn-export{
+    padding:10px 18px;
+    border:1px solid var(--primary);
+    border-radius:10px;
+    background:var(--primary);
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    display:flex; align-items:center; gap:8px;
+  }
+  .btn-export:hover{ background:var(--primary-dark); box-shadow:0 4px 12px rgba(59,130,246,0.3); }
+
+  .table-wrapper{ overflow-x:auto; }
   table{ width:100%; border-collapse:collapse; }
   thead th{
     text-align:left;
     color:var(--muted);
-    font-weight:900;
-    font-size:13px;
-    padding:12px 16px;
-    background:#fbfcff;
-    border-bottom:1px solid #eef1f7;
+    font-weight:800;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    padding:16px 20px;
+    background:var(--bg-soft);
+    border-bottom:2px solid var(--border);
+    white-space:nowrap;
   }
   tbody td{
-    padding:14px 16px;
-    border-top:1px solid #f0f2f6;
+    padding:16px 20px;
+    border-top:1px solid #f1f5f9;
     vertical-align:middle;
-    font-weight:800;
-    color:#0a1020;
+    font-weight:700;
+    color:#0f172a;
+    font-size:14px;
   }
-  tbody tr:hover{ background:#fbfcff; }
+  tbody tr:hover{ background:#f8fafc; }
 
-  .muted{ color:var(--muted); font-weight:800; }
+  .muted{ color:var(--muted); font-weight:700; }
+
+  .guest-info{ display:flex; align-items:center; gap:12px; }
+  .guest-avatar{
+    width:36px; height:36px; border-radius:50%;
+    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:900; font-size:14px; flex-shrink:0;
+  }
+  .guest-name{ font-weight:800; color:#0f172a; }
+  .guest-email{ font-size:12px; color:var(--muted); font-weight:600; }
+
+  .room-badge{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 12px; border-radius:8px;
+    background:#f1f5f9;
+    font-weight:800; font-size:13px; color:#334155;
+  }
 
   .badge{
     display:inline-flex; align-items:center; gap:8px;
-    padding:6px 10px;
-    border-radius:999px;
-    font-weight:900;
+    padding:6px 12px;
+    border-radius:8px;
+    font-weight:800;
     font-size:12px;
-    border:1px solid #e9edf7;
-    background:#f3f6ff;
+    border:1px solid transparent;
   }
-  .dot{ width:8px; height:8px; border-radius:50%; background:#94a3b8; }
+  .dot{ width:6px; height:6px; border-radius:50%; }
+  .b-pending{ background:#fef3c7; color:#92400e; border-color:#fde68a; }
   .b-pending .dot{ background:#f59e0b; }
+  .b-completed{ background:#d1fae5; color:#065f46; border-color:#a7f3d0; }
   .b-completed .dot{ background:#22c55e; }
+  .b-failed{ background:#fee2e2; color:#991b1b; border-color:#fecaca; }
   .b-failed .dot{ background:#ef4444; }
+  .b-refunded{ background:#ede9fe; color:#5b21b6; border-color:#ddd6fe; }
   .b-refunded .dot{ background:#8b5cf6; }
 
-  .amount{
-    font-weight:900;
-    color:#0a1020;
-    font-size:1.05rem;
+  .amount{ font-weight:900; color:#0f172a; font-size:16px; }
+
+  .transaction-id{
+    background:#f0f9ff;
+    border:1px solid #bae6fd;
+    padding:6px 10px;
+    border-radius:6px;
+    font-weight:700;
+    color:#0c4a6e;
+    font-size:12px;
+    font-family:'Courier New', monospace;
   }
 
-  .empty{
-    padding:22px;
+  .action-btns{ display:flex; gap:8px; }
+  .action-btn{
+    width:32px; height:32px; border-radius:6px;
+    border:1px solid var(--border);
+    background:#fff;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition:all 0.2s ease;
     color:var(--muted);
-    font-weight:800;
+  }
+  .action-btn:hover{ background:var(--bg-soft); color:var(--primary); border-color:var(--primary); }
+  .action-btn.danger:hover{ background:#fef2f2; color:#dc2626; border-color:#dc2626; }
+
+  .empty{ padding:60px 24px; text-align:center; }
+  .empty-icon{ font-size:48px; color:#cbd5e1; margin-bottom:16px; }
+  .empty-text{ color:var(--muted); font-weight:700; font-size:16px; }
+
+  .pagination{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 24px;
+    border-top:1px solid var(--border);
+    background:var(--bg-soft);
+  }
+  .pagination-info{ color:var(--muted); font-weight:700; font-size:14px; }
+  .page-btn{
+    padding:8px 14px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#fff;
+    font-weight:700;
+    font-size:13px;
+    color:var(--muted);
+    cursor:pointer;
+    transition:all 0.2s ease;
+  }
+  .page-btn:disabled{ opacity:0.4; cursor:not-allowed; }
+
+  @media (max-width: 768px){
+    .tools{ width:100%; flex-direction:column; }
+    .search{ width:100%; min-width:auto; }
+    .date-filters{ width:100%; }
   }
 </style>
 
 <div class="page-head">
   <div>
-    <h2>Manage Payments</h2>
-    <p class="page-sub">View and track all payment transactions.</p>
+    <h2>Payment Management</h2>
+    <p class="page-sub">Monitor and manage all payment transactions</p>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon blue"><i class="fas fa-dollar-sign"></i></div>
+    <div>
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-value">$<span id="totalRevenue">0</span></div>
+    </div>
   </div>
 
-  <div class="tools">
-    <div class="search">
-      <i class="fas fa-search muted"></i>
-      <input id="q" type="text" placeholder="Search guest / room / amount / transaction..." onkeyup="filterRows()">
+  <div class="stat-card">
+    <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+    <div>
+      <div class="stat-label">Completed</div>
+      <div class="stat-value"><span id="completedCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+    <div>
+      <div class="stat-label">Pending</div>
+      <div class="stat-value"><span id="pendingCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon purple"><i class="fas fa-undo"></i></div>
+    <div>
+      <div class="stat-label">Refunded</div>
+      <div class="stat-value">$<span id="refundedAmount">0</span></div>
     </div>
   </div>
 </div>
 
 <div class="cardx">
   <div class="cardx-top">
-    <div class="muted">
-      Total: {{ payments|length }} Transactions
+    <div class="tools">
+
+      <div class="search">
+        <i class="fas fa-search"></i>
+        <input id="q" type="text" placeholder="Search by guest, room, or transaction ID..." oninput="applyFilters()">
+      </div>
+
+      <!-- NEW: Start/End Date -->
+      <div class="date-filters">
+        <div class="date-box">
+          <label>Start</label>
+          <input id="startDate" type="date" oninput="applyFilters()">
+        </div>
+        <div class="date-box">
+          <label>End</label>
+          <input id="endDate" type="date" oninput="applyFilters()">
+        </div>
+        <button class="btn-clear" type="button" onclick="clearDates()">
+          <i class="fas fa-eraser"></i> Clear
+        </button>
+      </div>
+
+      <div class="filter-group" id="statusFilters">
+        <button type="button" class="filter-btn active" data-status="all">All Payments</button>
+        <button type="button" class="filter-btn" data-status="Completed"><i class="fas fa-check"></i> Completed</button>
+        <button type="button" class="filter-btn" data-status="Pending"><i class="fas fa-clock"></i> Pending</button>
+        <button type="button" class="filter-btn" data-status="Failed"><i class="fas fa-times"></i> Failed</button>
+        <button type="button" class="filter-btn" data-status="Refunded"><i class="fas fa-undo"></i> Refunded</button>
+      </div>
+
+      <button class="btn-export" type="button" onclick="exportPayments()">
+        <i class="fas fa-download"></i> Export CSV
+      </button>
     </div>
   </div>
 
   {% if payments %}
-    <div style="overflow:auto;">
+    <div class="table-wrapper">
       <table id="paymentTable">
         <thead>
           <tr>
@@ -119,31 +384,50 @@
             <th>Method</th>
             <th>Status</th>
             <th>Transaction ID</th>
-            <th>Payment Date</th>
+            <th>Date</th>
+            <th>Actions</th>
           </tr>
         </thead>
 
         <tbody>
         {% for p in payments %}
-          <tr>
+          <tr
+            data-status="{{ p.payment_status }}"
+            {% if p.payment_date %}data-date="{{ p.payment_date|date:'Y-m-d' }}"{% else %}data-date=""{% endif %}
+          >
             <td>
-              {% if p.reservation and p.reservation.guest %}
-                {{ p.reservation.guest.user.get_full_name|default:p.reservation.guest.user.username }}
+              <div class="guest-info">
+                {% if p.reservation and p.reservation.guest %}
+                  <div class="guest-avatar">
+                    {{ p.reservation.guest.user.get_full_name|first|default:p.reservation.guest.user.username|first|upper }}
+                  </div>
+                  <div>
+                    <div class="guest-name">
+                      {{ p.reservation.guest.user.get_full_name|default:p.reservation.guest.user.username }}
+                    </div>
+                    {% if p.reservation.guest.user.email %}
+                      <div class="guest-email">{{ p.reservation.guest.user.email }}</div>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <span class="muted">No guest info</span>
+                {% endif %}
+              </div>
+            </td>
+
+            <td>
+              {% if p.reservation and p.reservation.room %}
+                <span class="room-badge"><i class="fas fa-door-open"></i> Room {{ p.reservation.room.room_number }}</span>
               {% else %}
                 <span class="muted">-</span>
               {% endif %}
             </td>
-            <td class="muted">
-              {% if p.reservation and p.reservation.room %}
-                {{ p.reservation.room.room_number }}
-              {% else %}
-                -
-              {% endif %}
+
+            <td><span class="amount">${{ p.amount }}</span></td>
+
+            <td>
+              <span class="muted"><i class="fas fa-credit-card"></i> {{ p.payment_method|default:"N/A" }}</span>
             </td>
-
-            <td class="amount">${{ p.amount }}</td>
-
-            <td class="muted">{{ p.payment_method|default:"-" }}</td>
 
             <td>
               {% if p.payment_status == 'Pending' %}
@@ -161,7 +445,7 @@
 
             <td>
               {% if p.transaction_id %}
-                <code style="background:#eef3ff; border:1px solid #dbe6ff; padding:4px 8px; border-radius:6px; font-weight:700; color:#1f2a44;">{{ p.transaction_id }}</code>
+                <span class="transaction-id">{{ p.transaction_id }}</span>
               {% else %}
                 <span class="muted">-</span>
               {% endif %}
@@ -169,32 +453,229 @@
 
             <td class="muted">
               {% if p.payment_date %}
-                {{ p.payment_date|date:"M d, Y • H:i" }}
+                <i class="far fa-calendar"></i> {{ p.payment_date|date:"M d, Y" }}<br>
+                <small style="font-size:11px;">{{ p.payment_date|date:"H:i" }}</small>
               {% else %}
                 <span class="muted">-</span>
               {% endif %}
+            </td>
+
+            <td>
+              <div class="action-btns">
+                <button type="button" class="action-btn js-view" title="View Details"
+                        data-id="{{ p.id }}">
+                  <i class="fas fa-eye"></i>
+                </button>
+
+                <button type="button" class="action-btn js-receipt" title="Download Receipt"
+                        data-id="{{ p.id }}">
+                  <i class="fas fa-receipt"></i>
+                </button>
+
+                {% if p.payment_status == 'Completed' %}
+                  <button type="button" class="action-btn danger js-refund" title="Refund"
+                          data-id="{{ p.id }}">
+                    <i class="fas fa-undo"></i>
+                  </button>
+                {% endif %}
+              </div>
             </td>
           </tr>
         {% endfor %}
         </tbody>
       </table>
     </div>
+
+    <div class="pagination">
+      <div class="pagination-info">
+        Showing <strong id="visibleCount">{{ payments|length }}</strong> of <strong>{{ payments|length }}</strong> transactions
+      </div>
+      <div>
+        <button class="page-btn" disabled><i class="fas fa-chevron-left"></i> Previous</button>
+        <button class="page-btn" disabled>Next <i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>
   {% else %}
-    <div class="empty">No payment transactions found.</div>
+    <div class="empty">
+      <div class="empty-icon"><i class="fas fa-receipt"></i></div>
+      <div class="empty-text">No payment transactions found</div>
+    </div>
   {% endif %}
 </div>
 
 <script>
-  function filterRows(){
-    const q = (document.getElementById("q").value || "").toLowerCase();
+  let currentStatusFilter = 'all';
+
+  function parseISODate(iso){
+    // iso = "YYYY-MM-DD"
+    if(!iso) return null;
+    const [y,m,d] = iso.split('-').map(Number);
+    if(!y || !m || !d) return null;
+    return new Date(y, m-1, d); // local date
+  }
+
+  function applyFilters(){
+    const table = document.getElementById("paymentTable");
+    if(!table) return;
+
+    const q = (document.getElementById("q").value || "").toLowerCase().trim();
+
+    const startVal = document.getElementById("startDate").value; // YYYY-MM-DD
+    const endVal = document.getElementById("endDate").value;
+
+    const startDate = parseISODate(startVal);
+    const endDate = parseISODate(endVal);
+
+    const rows = table.querySelectorAll("tbody tr");
+    let visibleCount = 0;
+
+    rows.forEach(r => {
+      const status = r.getAttribute("data-status") || "";
+      const dateStr = r.getAttribute("data-date") || "";
+      const rowDate = parseISODate(dateStr);
+
+      // 1) Status filter
+      const okStatus = (currentStatusFilter === 'all') || (status === currentStatusFilter);
+
+      // 2) Search filter
+      const okSearch = !q || r.innerText.toLowerCase().includes(q);
+
+      // 3) Date filter (only apply if inputs set and row has date)
+      let okDate = true;
+      if(startDate || endDate){
+        if(!rowDate){
+          okDate = false; // no date => hide when date filter is used
+        } else {
+          if(startDate && rowDate < startDate) okDate = false;
+          if(endDate){
+            // include end date whole day
+            const endPlus = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate(), 23,59,59);
+            if(rowDate > endPlus) okDate = false;
+          }
+        }
+      }
+
+      const show = okStatus && okSearch && okDate;
+      r.style.display = show ? "" : "none";
+      if(show) visibleCount++;
+    });
+
+    updateVisibleCount(visibleCount);
+    calculateStatsVisible();
+  }
+
+  function clearDates(){
+    document.getElementById("startDate").value = "";
+    document.getElementById("endDate").value = "";
+    applyFilters();
+  }
+
+  // Button events for status filter (NO event bug)
+  document.addEventListener("DOMContentLoaded", function(){
+    document.querySelectorAll("#statusFilters .filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#statusFilters .filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentStatusFilter = btn.dataset.status || "all";
+        applyFilters();
+      });
+    });
+
+    // initial
+    applyFilters();
+  });
+
+  function updateVisibleCount(count){
+    const el = document.getElementById("visibleCount");
+    if(el) el.textContent = count;
+  }
+
+  // Stats based on VISIBLE rows (after filters)
+  function calculateStatsVisible(){
     const table = document.getElementById("paymentTable");
     if(!table) return;
 
     const rows = table.querySelectorAll("tbody tr");
-    rows.forEach(r => {
-      const text = r.innerText.toLowerCase();
-      r.style.display = text.includes(q) ? "" : "none";
+    let totalRevenue = 0;
+    let completedCount = 0;
+    let pendingCount = 0;
+    let refundedAmount = 0;
+
+    rows.forEach(row => {
+      if(row.style.display === "none") return;
+
+      const status = row.getAttribute("data-status");
+      const amountText = row.querySelector(".amount")?.textContent || "$0";
+      const amount = parseFloat(amountText.replace("$","").replace(/,/g,"")) || 0;
+
+      if(status === "Completed"){
+        totalRevenue += amount;
+        completedCount++;
+      } else if(status === "Pending"){
+        pendingCount++;
+      } else if(status === "Refunded"){
+        refundedAmount += amount;
+      }
     });
+
+    document.getElementById("totalRevenue").textContent =
+      totalRevenue.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+    document.getElementById("completedCount").textContent = completedCount;
+    document.getElementById("pendingCount").textContent = pendingCount;
+    document.getElementById("refundedAmount").textContent =
+      refundedAmount.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
   }
+
+  // Export to CSV (only visible rows)
+  function exportPayments(){
+    const table = document.getElementById("paymentTable");
+    if(!table) return;
+
+    let csv = [];
+    const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+    csv.push(headers.join(","));
+
+    const rows = table.querySelectorAll("tbody tr");
+    rows.forEach(row => {
+      if(row.style.display !== "none"){
+        const cols = Array.from(row.querySelectorAll("td")).map(td => {
+          let text = td.textContent.trim().replace(/\n/g," ").replace(/\s+/g," ");
+          return `"${text.replace(/"/g,'""')}"`;
+        });
+        csv.push(cols.join(","));
+      }
+    });
+
+    const blob = new Blob([csv.join("\n")], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `payments_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  function viewPayment(id){ alert("View payment details for ID: " + id); }
+  function downloadReceipt(id){ alert("Download receipt for payment ID: " + id); }
+  function initiateRefund(id){
+    if(confirm("Are you sure you want to initiate a refund for this payment?")){
+      alert("Refund initiated for payment ID: " + id);
+    }
+  }
+  document.addEventListener("click", function(e){
+  const viewBtn = e.target.closest(".js-view");
+  const receiptBtn = e.target.closest(".js-receipt");
+  const refundBtn = e.target.closest(".js-refund");
+
+  if(viewBtn){
+    viewPayment(viewBtn.dataset.id);
+  }
+  if(receiptBtn){
+    downloadReceipt(receiptBtn.dataset.id);
+  }
+  if(refundBtn){
+    initiateRefund(refundBtn.dataset.id);
+  }
+});
 </script>
 {% endblock %}

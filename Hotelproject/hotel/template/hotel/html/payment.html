@@ -4,39 +4,185 @@
 {% block title %}Payment - MyHotel{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h3>Complete Your Payment</h3>
-            </div>
-            <div class="card-body">
-                <form method="POST">
-                    {% csrf_token %}
-                    <div class="mb-3">
-                        <label class="form-label">Select Payment Method</label>
-                        {{ form.payment_method }}
+<style>
+  .payment-container {
+    max-width: 1000px;
+    margin: 40px auto;
+  }
+
+  .payment-header {
+    margin-bottom: 30px;
+  }
+
+  .payment-title {
+    font-size: 28px;
+    font-weight: 900;
+    color: #0f172a;
+    margin: 0 0 8px 0;
+  }
+
+  .payment-subtitle {
+    color: #64748b;
+    font-size: 14px;
+  }
+
+  .order-items {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+
+  .order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .order-item:last-child {
+    border-bottom: none;
+  }
+
+  .item-name {
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  .item-details {
+    font-size: 13px;
+    color: #64748b;
+  }
+
+  .item-price {
+    font-weight: 700;
+    color: #3b82f6;
+  }
+
+  .order-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-top: 2px solid #e2e8f0;
+    font-size: 18px;
+    font-weight: 900;
+    color: #0f172a;
+  }
+
+  .total-amount {
+    color: #22c55e;
+  }
+</style>
+
+<div class="payment-container">
+  <div class="payment-header">
+    <h1 class="payment-title">Payment</h1>
+    <p class="payment-subtitle">Select your payment method to complete the booking</p>
+  </div>
+
+  <div class="row">
+    <!-- Payment Form -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-header">
+          <h5>Select Payment Method</h5>
+        </div>
+        <div class="card-body">
+          {% if multiple_items %}
+            <!-- Multiple items (from confirm_information) -->
+            <form method="POST" action="{% url 'payment_process' %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label">Payment Method</label>
+                <select name="payment_method" class="form-control" required>
+                  <option value="">-- Select Payment Method --</option>
+                  <option value="Cash">Cash</option>
+                  <option value="Card">Credit/Debit Card</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Online">Online Payment</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary">Proceed with Payment</button>
+              <a href="{% url 'view_cart' %}" class="btn btn-secondary">Cancel</a>
+            </form>
+          {% else %}
+            <form method="POST">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label class="form-label">Payment Method</label>
+                {% if form %}
+                  {{ form.payment_method }}
+                {% else %}
+                  <select name="payment_method" class="form-control" required>
+                    <option value="">-- Select Payment Method --</option>
+                    <option value="Cash">Cash</option>
+                    <option value="Card">Credit/Debit Card</option>
+                    <option value="Bank Transfer">Bank Transfer</option>
+                    <option value="Online">Online Payment</option>
+                  </select>
+                {% endif %}
+              </div>
+              <button type="submit" class="btn btn-primary">Proceed with Payment</button>
+              {% if reservation %}
+                <a href="{% url 'reservation_detail' reservation.id %}" class="btn btn-secondary">Cancel</a>
+              {% else %}
+                <a href="{% url 'view_cart' %}" class="btn btn-secondary">Cancel</a>
+              {% endif %}
+            </form>
+          {% endif %}
+      </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="col-lg-4">
+      <div class="card">
+        <div class="card-header">
+          <h5>Order Summary</h5>
+        </div>
+        <div class="card-body">
+          {% if multiple_items %}
+            <!-- Multiple items (from confirm_information) -->
+            <div class="order-items">
+              {% for res in reservations %}
+                <div class="order-item">
+                  <div>
+                    <div class="item-name">Room {{ res.room.room_number }}</div>
+                    <div class="item-details">
+                      {{ res.check_in_date|date:"M d - " }}{{ res.check_out_date|date:"M d, Y" }}
+                      ({{ res.number_of_guests|default:1 }} guest{{ res.number_of_guests|add:"-1"|yesno:"s," }})
                     </div>
-                    <button type="submit" class="btn btn-primary">Proceed with Payment</button>
-                    <a href="{% url 'reservation_detail' reservation.id %}" class="btn btn-secondary">Cancel</a>
-                </form>
+                  </div>
+                  <div class="item-price">${{ res.total_price|floatformat:2 }}</div>
+                </div>
+              {% endfor %}
+              {% for sb in service_bookings %}
+                <div class="order-item">
+                  <div>
+                    <div class="item-name">{{ sb.service.name }}</div>
+                    <div class="item-details">Qty: {{ sb.quantity }}</div>
+                  </div>
+                  <div class="item-price">${{ sb.total_price|floatformat:2 }}</div>
+                </div>
+              {% endfor %}
+              <div class="order-total">
+                <span>Total Amount</span>
+                <span class="total-amount">${{ total_amount|floatformat:2 }}</span>
+              </div>
             </div>
+          {% else %}
+            <!-- Single reservation (from direct payment view) -->
+            <p><strong>Room:</strong> {{ reservation.room.room_number }}</p>
+            <p><strong>Check-in:</strong> {{ reservation.check_in_date }}</p>
+            <p><strong>Check-out:</strong> {{ reservation.check_out_date }}</p>
+            <hr>
+            <p><strong>Price/Night:</strong> ${{ reservation.room.category.base_price }}</p>
+            <p class="h5"><strong>Total Amount:</strong> <span class="text-success">${{ payment.amount }}</span></p>
+          {% endif %}
         </div>
+      </div>
     </div>
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h5>Payment Summary</h5>
-            </div>
-            <div class="card-body">
-                <p><strong>Room:</strong> {{ reservation.room.room_number }}</p>
-                <p><strong>Check-in:</strong> {{ reservation.check_in_date }}</p>
-                <p><strong>Check-out:</strong> {{ reservation.check_out_date }}</p>
-                <hr>
-                <p><strong>Price/Night:</strong> ${{ reservation.room.category.base_price }}</p>
-                <p class="h5"><strong>Total Amount:</strong> <span class="text-success">${{ payment.amount }}</span></p>
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
 {% endblock %}

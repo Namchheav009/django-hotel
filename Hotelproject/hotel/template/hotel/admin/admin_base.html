@@ -245,6 +245,52 @@
 
     .messages .alert{ margin-bottom:12px; border-radius:14px; }
 
+    /* Alert Styles */
+    .alert {
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+      border-left: 4px solid;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 600;
+    }
+
+    .alert-success {
+      background-color: rgba(34, 197, 94, 0.1);
+      border-left-color: #22c55e;
+      color: #15803d;
+    }
+
+    .alert-danger, .alert-error {
+      background-color: rgba(239, 68, 68, 0.1);
+      border-left-color: #ef4444;
+      color: #991b1b;
+    }
+
+    .alert-warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      border-left-color: #f59e0b;
+      color: #92400e;
+    }
+
+    .alert-info {
+      background-color: rgba(59, 130, 246, 0.1);
+      border-left-color: #3b82f6;
+      color: #1e40af;
+    }
+
+    .alert i {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .alert .btn-close {
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
     /* Responsive */
     @media (max-width: 1100px){
       .sidebar{ display:none; }
@@ -302,11 +348,7 @@
       <a href="{% url 'manage_bookings' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_bookings' %}active{% endif %}">
         <i class="fa-solid fa-book"></i> Booking
       </a>
-
-      <a href="{% url 'manage_service_bookings' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_service_bookings' %}active{% endif %}">
-        <i class="fa-solid fa-bell"></i> Service Bookings
-      </a>
-
+      
       <a href="{% url 'manage_payment' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_payment' %}active{% endif %}">
         <i class="fa-solid fa-credit-card"></i> Payment
       </a>

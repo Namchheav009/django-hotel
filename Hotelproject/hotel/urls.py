@@ -25,7 +25,20 @@ urlpatterns = [
     path('reservation/<int:reservation_id>/cancel/', views.cancel_reservation, name='cancel_reservation'),
     
     # Payment
-    path('payment/<int:reservation_id>/', views.payment, name='payment'),
+    path('payment/', views.payment, name='payment_checkout'),  # For multiple items from confirm_information
+    path('payment/<int:reservation_id>/', views.payment, name='payment'),  # For single reservation
+    path('payment-success/', views.payment_success, name='payment_success'),  # Success page after payment
+    
+    # Cart
+    path('cart/', views.view_cart, name='view_cart'),
+    path('cart/add-room/<int:room_id>/', views.add_room_to_cart, name='add_room_to_cart'),
+    path('cart/add-service/<int:service_id>/', views.add_service_to_cart, name='add_service_to_cart'),
+    path('cart/remove/<int:item_id>/', views.remove_from_cart, name='remove_from_cart'),
+    path('cart/update-quantity/<int:item_id>/', views.update_cart_item_quantity, name='update_cart_quantity'),
+    path('checkout/', views.checkout, name='checkout'),
+    path('checkout/confirm/', views.confirm_information, name='confirm_information'),
+    path('checkout/payment-process/', views.payment_process, name='payment_process'),
+    path('checkout/payment/', views.checkout_payment, name='checkout_payment'),
     
     # Admin Dashboard (all under dashboard/)
     path('dashboard/', views.admin_dashboard, name='admin_dashboard'),
@@ -46,6 +59,7 @@ urlpatterns = [
     path('dashboard/rooms/add/', views.add_room, name='add_room'),
     path('dashboard/rooms/<int:room_id>/edit/', views.edit_room, name='edit_room'),
     path('dashboard/rooms/<int:room_id>/delete/', views.delete_room, name='delete_room'),
+    path('dashboard/rooms/image/<int:image_id>/delete/', views.delete_room_image, name='delete_room_image'),
     path('dashboard/categories/', views.manage_categories, name='manage_categories'),
     path('dashboard/categories/add/', views.add_category, name='add_category'),
     path('dashboard/categories/<int:category_id>/delete/', views.delete_category, name='delete_category'),
@@ -93,5 +107,8 @@ urlpatterns = [
     path('dashboard/service-bookings/<int:booking_id>/cancel/', views.cancel_service_booking, name='cancel_service_booking'),
     
     path("reviews/", views.reviews_page, name="reviews"),
-   
+    
+    # API Endpoints
+    path('api/pending-bookings/', views.api_pending_bookings, name='api_pending_bookings'),
+    path('api/all-bookings/', views.api_all_bookings, name='api_all_bookings'),
 ]

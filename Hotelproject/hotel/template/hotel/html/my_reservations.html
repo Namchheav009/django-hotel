@@ -190,12 +190,36 @@
                 <i class="fas fa-dollar-sign"></i>
                 ${{ r.total_price }}
               </span>
+
+              <!-- Payment Status -->
+              {% if r.payment %}
+                {% if r.payment.payment_status == 'Completed' %}
+                  <span class="meta-item" style="color: var(--success);">
+                    <i class="fas fa-check-circle"></i> Paid
+                  </span>
+                {% else %}
+                  <span class="meta-item" style="color: var(--danger);">
+                    <i class="fas fa-exclamation-circle"></i> Payment Pending
+                  </span>
+                {% endif %}
+              {% else %}
+                <span class="meta-item" style="color: var(--danger);">
+                  <i class="fas fa-exclamation-circle"></i> Payment Pending
+                </span>
+              {% endif %}
             </div>
 
             <div class="stay-actions">
               <a class="btnx btn-ghost" href="{% url 'reservation_detail' r.id %}">
                 <i class="fas fa-receipt"></i> View Details
               </a>
+
+              <!-- Payment Button if not paid -->
+              {% if r.payment and r.payment.payment_status != 'Completed' %}
+                <a class="btnx btn-dark" href="{% url 'payment' r.id %}">
+                  <i class="fas fa-credit-card"></i> Complete Payment
+                </a>
+              {% endif %}
 
               {% if r.status == 'Checked Out' and r.id not in reviewed_res_ids %}
                 <a class="btnx btn-dark" href="{% url 'rate_room' r.room.id %}">

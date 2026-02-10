@@ -1,0 +1,200 @@
+{% extends 'hotel/html/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container my-5">
+  <!-- STEP 4: CHECKOUT - REVIEW & CONFIRM -->
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <!-- Progress Steps -->
+      <div style="margin-bottom: 40px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+          <div style="text-align: center; flex: 1;">
+            <div style="width: 35px; height: 35px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: 900; font-size: 14px;">✓</div>
+            <small style="color: #047857; font-weight: 700;">Browse & Add</small>
+          </div>
+          <div style="flex: 1; height: 2px; background: #10b981; margin: 15px 8px 0;"></div>
+          <div style="text-align: center; flex: 1;">
+            <div style="width: 35px; height: 35px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: 900; font-size: 14px;">✓</div>
+            <small style="color: #047857; font-weight: 700;">Review Cart</small>
+          </div>
+          <div style="flex: 1; height: 2px; background: #10b981; margin: 15px 8px 0;"></div>
+          <div style="text-align: center; flex: 1;">
+            <div style="width: 35px; height: 35px; background: #10b981; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: 900; font-size: 14px;">4</div>
+            <small style="color: #10b981; font-weight: 700;">Checkout</small>
+          </div>
+          <div style="flex: 1; height: 2px; background: #d1d5db; margin: 15px 8px 0;"></div>
+          <div style="text-align: center; flex: 1;">
+            <div style="width: 35px; height: 35px; background: #d1d5db; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: 900; font-size: 14px;">5→8</div>
+            <small style="color: #6b7280;">Payment</small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <!-- Success Message -->
+      <div style="padding: 20px; background: #ecfdf5; border: 2px solid #10b981; border-radius: 12px; margin-bottom: 30px; text-align: center;">
+        <i class="fas fa-check-circle" style="font-size: 48px; color: #10b981; margin-bottom: 12px;"></i>
+        <h3 style="color: #047857; font-weight: 900; margin: 0;">Booking Confirmed!</h3>
+        <p style="color: #065f46; margin-top: 8px;">Your cart has been successfully converted to bookings</p>
+      </div>
+
+      <h2 style="font-weight: 900; margin-bottom: 20px;">
+        <i class="fas fa-receipt"></i> Payment Summary
+      </h2>
+
+      <!-- Room Reservations -->
+      {% if reservations %}
+        <div style="margin-bottom: 30px;">
+          <h4 style="font-weight: 900; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e5e7eb;">
+            Room Reservations
+          </h4>
+          
+          <div style="display: grid; gap: 16px;">
+            {% for reservation in reservations %}
+              <div style="padding: 16px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                  <div>
+                    <h5 style="font-weight: 900; margin: 0;">Room {{ reservation.room.room_number }}</h5>
+                    <p style="color: var(--muted); margin: 4px 0; font-size: 14px;">{{ reservation.room.category.category_name }}</p>
+                  </div>
+                  <span style="background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px;">
+                    #{{ reservation.id }}
+                  </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; font-size: 14px;">
+                  <div>
+                    <p style="color: var(--muted); margin: 0;">Check-in</p>
+                    <p style="font-weight: 700; margin: 4px 0;">{{ reservation.check_in_date|date:"M d, Y" }}</p>
+                  </div>
+                  <div>
+                    <p style="color: var(--muted); margin: 0;">Check-out</p>
+                    <p style="font-weight: 700; margin: 4px 0;">{{ reservation.check_out_date|date:"M d, Y" }}</p>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                  <span style="color: var(--muted);">Number of Guests: {{ reservation.number_of_guests }}</span>
+                  <span style="font-weight: 900; font-size: 18px; color: #059669;">
+                    ${{ reservation.total_price|floatformat:2 }}
+                  </span>
+                </div>
+
+                <div style="margin-top: 12px; padding: 12px; background: #f0fdf4; border-left: 4px solid #22c55e; border-radius: 6px;">
+                  <p style="margin: 0; color: #166534; font-size: 14px;">
+                    <i class="fas fa-clock"></i> Status: <strong>Pending Confirmation</strong>
+                  </p>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Service Bookings -->
+      {% if service_bookings %}
+        <div style="margin-bottom: 30px;">
+          <h4 style="font-weight: 900; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #e5e7eb;">
+            Service Bookings
+          </h4>
+          
+          <div style="display: grid; gap: 16px;">
+            {% for booking in service_bookings %}
+              <div style="padding: 16px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fff;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px;">
+                  <div>
+                    <h5 style="font-weight: 900; margin: 0;">{{ booking.service.name }}</h5>
+                    <p style="color: var(--muted); margin: 4px 0; font-size: 14px;">{{ booking.service.description|truncatewords:20 }}</p>
+                  </div>
+                  <span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 20px; font-weight: 700; font-size: 12px;">
+                    #{{ booking.id }}
+                  </span>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; font-size: 14px;">
+                  <div>
+                    <p style="color: var(--muted); margin: 0;">Quantity</p>
+                    <p style="font-weight: 700; margin: 4px 0;">{{ booking.quantity }} x</p>
+                  </div>
+                  <div>
+                    <p style="color: var(--muted); margin: 0;">Scheduled</p>
+                    <p style="font-weight: 700; margin: 4px 0;">{{ booking.scheduled_date|date:"M d, Y H:i" }}</p>
+                  </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid #e5e7eb;">
+                  <span style="color: var(--muted);">Service Fee</span>
+                  <span style="font-weight: 900; font-size: 18px; color: #059669;">
+                    ${{ booking.total_price|floatformat:2 }}
+                  </span>
+                </div>
+
+                <div style="margin-top: 12px; padding: 12px; background: #fef3c7; border-left: 4px solid #eab308; border-radius: 6px;">
+                  <p style="margin: 0; color: #713f12; font-size: 14px;">
+                    <i class="fas fa-hourglass"></i> Status: <strong>Pending</strong>
+                  </p>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Total & Payment -->
+      <div style="padding: 20px; background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; margin-bottom: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <span style="font-size: 18px; font-weight: 900;">Total Amount Due</span>
+          <span style="font-size: 28px; font-weight: 900; color: #059669;">
+            ${{ total_amount|floatformat:2 }}
+          </span>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;">
+
+        <div style="padding: 16px; background: #eff6ff; border-left: 4px solid #3b82f6; border-radius: 6px;">
+          <p style="margin: 0; color: #1e40af; font-weight: 700;">
+            <i class="fas fa-info-circle"></i> Next Step: Complete Payment
+          </p>
+          <p style="margin: 8px 0 0 0; color: #1e3a8a; font-size: 14px;">
+            Please proceed to payment to confirm your booking
+          </p>
+        </div>
+
+        <div style="margin-top: 20px; display: flex; gap: 12px;">
+          <a href="{% url 'my_reservations' %}" class="btn btn-outline-secondary" style="font-weight: 700; flex: 1;">
+            <i class="fas fa-list"></i> View My Bookings
+          </a>
+          <form method="post" action="{% url 'checkout_payment' %}" style="flex: 1; margin: 0;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success w-100" style="font-weight: 700;">
+              <i class="fas fa-lock"></i> Proceed to Payment
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Additional Info -->
+      <div style="padding: 16px; background: #f3f4f6; border-radius: 12px;">
+        <h5 style="font-weight: 900; margin-bottom: 12px;">Important Information</h5>
+        <ul style="margin: 0; padding-left: 24px; color: var(--muted); font-size: 14px; line-height: 1.8;">
+          <li>All bookings are pending until payment is received</li>
+          <li>You will receive confirmation emails for each booking</li>
+          <li>Check-in is available from 2:00 PM on your check-in date</li>
+          <li>Cancellations must be made 48 hours before check-in</li>
+          <li>For assistance, contact our customer service</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  :root {
+    --muted: #6b7280;
+  }
+</style>
+{% endblock %}

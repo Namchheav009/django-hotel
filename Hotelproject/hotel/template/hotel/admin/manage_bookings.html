@@ -2,172 +2,958 @@
 
 {% block admin_content %}
 <style>
-  .page-head{
-    display:flex; align-items:flex-end; justify-content:space-between; gap:14px;
-    margin-bottom:14px;
+  :root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #0ea5e9;
+    --purple: #8b5cf6;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg-soft: #f8fafc;
   }
-  .page-head h2{ margin:0; font-weight:900; }
-  .page-sub{ margin:6px 0 0; color:var(--muted); font-weight:700; }
+
+  .page-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:24px;
+    flex-wrap:wrap;
+  }
+  .page-head h2{
+    margin:0;
+    font-weight:900;
+    font-size:28px;
+    color:#0f172a;
+  }
+  .page-sub{
+    margin:6px 0 0;
+    color:var(--muted);
+    font-weight:600;
+    font-size:14px;
+  }
+
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:16px;
+    margin-bottom:24px;
+  }
+  .stat-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    transition:all 0.2s ease;
+    cursor:pointer;
+  }
+  .stat-card:hover{
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    transform:translateY(-2px);
+  }
+  .stat-icon{
+    width:48px;
+    height:48px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    flex-shrink:0;
+  }
+  .stat-icon.blue{ background:#dbeafe; color:#2563eb; }
+  .stat-icon.green{ background:#dcfce7; color:#16a34a; }
+  .stat-icon.orange{ background:#fed7aa; color:#ea580c; }
+  .stat-icon.purple{ background:#ede9fe; color:#7c3aed; }
+  .stat-icon.cyan{ background:#cffafe; color:#0891b2; }
+  .stat-icon.red{ background:#fee2e2; color:#dc2626; }
+
+  .stat-label{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin-bottom:4px;
+  }
+  .stat-value{
+    font-size:24px;
+    font-weight:900;
+    color:#0f172a;
+  }
+
+  .tab-buttons {
+    display:flex;
+    gap:12px;
+    margin-bottom:20px;
+    background:#fff;
+    padding:8px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    flex-wrap:wrap;
+  }
+  .tab-btn {
+    padding:12px 24px;
+    border:none;
+    background:transparent;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:700;
+    color:var(--muted);
+    transition:all 0.2s ease;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:14px;
+  }
+  .tab-btn:hover {
+    background:var(--bg-soft);
+    color:#0f172a;
+  }
+  .tab-btn.active {
+    background:var(--primary);
+    color:#fff;
+    box-shadow:0 2px 8px rgba(59,130,246,0.3);
+  }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
 
   .cardx{
     background:#fff;
-    border:1px solid #eef1f7;
+    border:1px solid var(--border);
     border-radius:16px;
-    box-shadow: 0 10px 24px rgba(10,16,32,.06);
+    box-shadow:0 1px 3px rgba(0,0,0,0.05);
     overflow:hidden;
   }
   .cardx-top{
-    padding:14px 16px;
-    border-bottom:1px solid #eef1f7;
-    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    padding:20px 24px;
+    border-bottom:1px solid var(--border);
+    background:var(--bg-soft);
   }
   .tools{
-    display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
   }
   .search{
-    display:flex; align-items:center; gap:10px;
-    padding:10px 12px;
-    border:1px solid #e9edf7;
-    border-radius:12px;
-    background:#fbfcff;
-    min-width:260px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#fff;
+    min-width:280px;
   }
   .search input{
-    border:none; outline:none; background:transparent;
+    border:none;
+    outline:none;
+    background:transparent;
     width:100%;
-    font-weight:700;
+    font-weight:600;
+    color:#0f172a;
+    font-size:14px;
   }
 
+  .filter-group{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .filter-btn{
+    padding:8px 16px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#fff;
+    font-weight:700;
+    font-size:13px;
+    color:var(--muted);
+    cursor:pointer;
+    transition:all 0.2s ease;
+    white-space:nowrap;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .filter-btn:hover{ background:var(--bg-soft); border-color:#cbd5e1; }
+  .filter-btn.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
+
+  .action-buttons{
+    display:flex;
+    gap:8px;
+  }
+  .btn{
+    padding:10px 18px;
+    border-radius:8px;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    border:none;
+  }
+  .btn-primary{
+    background:var(--primary);
+    color:#fff;
+    border:1px solid var(--primary);
+  }
+  .btn-primary:hover{ background:var(--primary-dark); }
+  .btn-outline{
+    background:#fff;
+    color:var(--muted);
+    border:1px solid var(--border);
+  }
+  .btn-outline:hover{ background:var(--bg-soft); color:#0f172a; }
+
+  .table-wrapper{ overflow-x:auto; }
   table{ width:100%; border-collapse:collapse; }
   thead th{
     text-align:left;
     color:var(--muted);
-    font-weight:900;
-    font-size:13px;
-    padding:12px 16px;
-    background:#fbfcff;
-    border-bottom:1px solid #eef1f7;
+    font-weight:800;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    padding:16px 20px;
+    background:var(--bg-soft);
+    border-bottom:2px solid var(--border);
+    white-space:nowrap;
   }
   tbody td{
-    padding:14px 16px;
-    border-top:1px solid #f0f2f6;
+    padding:16px 20px;
+    border-top:1px solid #f1f5f9;
     vertical-align:middle;
-    font-weight:800;
-    color:#0a1020;
+    font-weight:700;
+    color:#0f172a;
+    font-size:14px;
   }
-  tbody tr:hover{ background:#fbfcff; }
+  tbody tr:hover{ background:#f8fafc; }
 
-  .muted{ color:var(--muted); font-weight:800; }
+  .muted{ color:var(--muted); font-weight:700; }
+
+  .user-info{ display:flex; align-items:center; gap:12px; }
+  .user-avatar{
+    width:36px; height:36px; border-radius:50%;
+    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-weight:900; font-size:14px; flex-shrink:0;
+  }
+  .user-name{ font-weight:800; color:#0f172a; }
+
+  .item-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 12px;
+    border-radius:8px;
+    background:#f1f5f9;
+    font-weight:800;
+    font-size:13px;
+    color:#334155;
+  }
 
   .badge{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:6px 10px;
-    border-radius:999px;
-    font-weight:900;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 12px;
+    border-radius:8px;
+    font-weight:800;
     font-size:12px;
-    border:1px solid #e9edf7;
-    background:#f3f6ff;
   }
-  .dot{ width:8px; height:8px; border-radius:50%; background:#94a3b8; }
+  .dot{ width:6px; height:6px; border-radius:50%; }
+  .b-pending{ background:#fef3c7; color:#92400e; }
   .b-pending .dot{ background:#f59e0b; }
+  .b-confirmed{ background:#dbeafe; color:#1e3a8a; }
   .b-confirmed .dot{ background:#3b82f6; }
+  .b-cancelled{ background:#fee2e2; color:#991b1b; }
   .b-cancelled .dot{ background:#ef4444; }
+  .b-completed{ background:#d1fae5; color:#065f46; }
   .b-completed .dot{ background:#22c55e; }
 
-  .empty{
-    padding:22px;
+  .action-btns{ display:flex; gap:8px; }
+  .action-btn{
+    width:32px; height:32px;
+    border-radius:6px;
+    border:1px solid var(--border);
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:all 0.2s ease;
     color:var(--muted);
-    font-weight:800;
+  }
+  .action-btn:hover{ background:var(--bg-soft); color:var(--primary); border-color:var(--primary); }
+  .action-btn.success:hover{ background:#dcfce7; color:#16a34a; border-color:#16a34a; }
+  .action-btn.danger:hover{ background:#fee2e2; color:#dc2626; border-color:#dc2626; }
+
+  .empty{
+    padding:60px 24px;
+    text-align:center;
+  }
+  .empty-icon{
+    font-size:48px;
+    color:#cbd5e1;
+    margin-bottom:16px;
+  }
+  .empty-text{
+    color:var(--muted);
+    font-weight:700;
+    font-size:16px;
+  }
+
+  .date-range{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#fff;
+    font-size:13px;
+    font-weight:700;
+    color:var(--muted);
+  }
+  .date-range input{
+    border:none;
+    outline:none;
+    background:transparent;
+    font-weight:700;
+    color:#0f172a;
+    width:110px;
+  }
+
+  .summary-bar{
+    padding:16px 24px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#f8fafc;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .summary-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+  }
+  .summary-label{ color:var(--muted); font-weight:700; }
+  .summary-value{ font-weight:900; color:#0f172a; }
+
+  @media (max-width: 768px){
+    .stats-grid{ grid-template-columns:1fr; }
+    .tools{ width:100%; flex-direction:column; }
+    .search{ width:100%; min-width:auto; }
+    .action-buttons{ width:100%; }
+    .btn{ flex:1; justify-content:center; }
   }
 </style>
 
 <div class="page-head">
   <div>
-    <h2>Manage Bookings</h2>
-    <p class="page-sub">View booking history and status.</p>
+    <h2>Booking Management</h2>
+    <p class="page-sub">Manage room reservations and service bookings efficiently</p>
   </div>
 
-  <div class="tools">
-    <div class="search">
-      <i class="fas fa-search muted"></i>
-      <input id="q" type="text" placeholder="Search user / room / confirmation..." onkeyup="filterRows()">
+  <div class="action-buttons">
+    <button type="button" class="btn btn-outline" onclick="exportBookings()">
+      <i class="fas fa-download"></i> Export Data
+    </button>
+    <button type="button" class="btn btn-primary" onclick="window.location.href='#'">
+      <i class="fas fa-plus"></i> New Booking
+    </button>
+  </div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card" onclick="filterStatus('all', null)">
+    <div class="stat-icon blue"><i class="fas fa-calendar-check"></i></div>
+    <div>
+      <div class="stat-label">Total Bookings</div>
+      <div class="stat-value"><span id="totalBookings">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterStatus('Confirmed', null)">
+    <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+    <div>
+      <div class="stat-label">Confirmed</div>
+      <div class="stat-value"><span id="confirmedCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterStatus('Pending', null)">
+    <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
+    <div>
+      <div class="stat-label">Pending</div>
+      <div class="stat-value"><span id="pendingCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterStatus('Completed', null)">
+    <div class="stat-icon purple"><i class="fas fa-star"></i></div>
+    <div>
+      <div class="stat-label">Completed</div>
+      <div class="stat-value"><span id="completedCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterStatus('Cancelled', null)">
+    <div class="stat-icon red"><i class="fas fa-times-circle"></i></div>
+    <div>
+      <div class="stat-label">Cancelled</div>
+      <div class="stat-value"><span id="cancelledCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon cyan"><i class="fas fa-dollar-sign"></i></div>
+    <div>
+      <div class="stat-label">Revenue</div>
+      <div class="stat-value">$<span id="totalRevenue">0</span></div>
     </div>
   </div>
 </div>
 
-<div class="cardx">
-  <div class="cardx-top">
-    <div class="muted">
-      Total: {{ bookings|length }}
+<div class="tab-buttons">
+  <button type="button" class="tab-btn active" onclick="switchTab('room', this)">
+    <i class="fas fa-bed"></i>
+    Room Bookings
+    <span style="background:rgba(255,255,255,0.3); padding:2px 8px; border-radius:12px; font-size:11px;">
+      {{ room_bookings|length }}
+    </span>
+  </button>
+
+  <button type="button" class="tab-btn" onclick="switchTab('service', this)">
+    <i class="fas fa-concierge-bell"></i>
+    Service Bookings
+    <span style="background:rgba(255,255,255,0.3); padding:2px 8px; border-radius:12px; font-size:11px;">
+      {{ service_bookings|length }}
+    </span>
+  </button>
+</div>
+
+<!-- ROOM TAB -->
+<div id="room" class="tab-content active">
+  <div class="cardx">
+    <div class="cardx-top">
+      <div class="tools">
+        <div class="search">
+          <i class="fas fa-search"></i>
+          <input id="q" type="text" placeholder="Search guest, room, or confirmation..." oninput="filterActiveTable()">
+        </div>
+
+        <div class="filter-group">
+          <button type="button" class="filter-btn active" onclick="filterStatus('all', this)">All</button>
+          <button type="button" class="filter-btn" onclick="filterStatus('Confirmed', this)"><i class="fas fa-check"></i> Confirmed</button>
+          <button type="button" class="filter-btn" onclick="filterStatus('Pending', this)"><i class="fas fa-clock"></i> Pending</button>
+          <button type="button" class="filter-btn" onclick="filterStatus('Completed', this)"><i class="fas fa-star"></i> Completed</button>
+          <button type="button" class="filter-btn" onclick="filterStatus('Cancelled', this)"><i class="fas fa-times"></i> Cancelled</button>
+        </div>
+
+        <div class="date-range">
+          <i class="fas fa-calendar"></i>
+          <input type="date" class="dateFrom" oninput="filterActiveTable()">
+          <span>to</span>
+          <input type="date" class="dateTo" oninput="filterActiveTable()">
+        </div>
+      </div>
     </div>
+
+    <div class="summary-bar">
+      <div class="summary-item">
+        <span class="summary-label">Showing:</span>
+        <span class="summary-value" id="roomVisibleCount">{{ room_bookings|length }}</span>
+        <span class="summary-label">of {{ room_bookings|length }} bookings</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Total Revenue:</span>
+        <span class="summary-value">$<span id="roomRevenue">0</span></span>
+      </div>
+    </div>
+
+    {% if room_bookings %}
+      <div class="table-wrapper">
+        <table id="roomBookTable">
+          <thead>
+            <tr>
+              <th>Guest</th>
+              <th>Room</th>
+              <th>Check-in</th>
+              <th>Check-out</th>
+              <th>Nights</th>
+              <th>Confirmation</th>
+              <th>Status</th>
+              <th>Booked On</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+          {% for b in room_bookings %}
+            <tr data-status="{{ b.booking_status }}" data-date="{{ b.booking_date|date:'Y-m-d' }}">
+              <td>
+                <div class="user-info">
+                  <div class="user-avatar">
+                    {{ b.user.get_full_name|first|default:b.user.username|first|upper }}
+                  </div>
+                  <div class="user-name">
+                    {{ b.user.get_full_name|default:b.user.username }}
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <span class="item-badge"><i class="fas fa-door-open"></i> Room {{ b.room.room_number }}</span>
+              </td>
+
+              <td class="muted">
+                {% if b.reservation %}
+                  <i class="far fa-calendar"></i> {{ b.reservation.check_in_date|date:"M d, Y" }}
+                {% else %}-{% endif %}
+              </td>
+
+              <td class="muted">
+                {% if b.reservation %}
+                  <i class="far fa-calendar"></i> {{ b.reservation.check_out_date|date:"M d, Y" }}
+                {% else %}-{% endif %}
+              </td>
+
+              <td class="muted">
+                {% if b.reservation %}
+                  {{ b.reservation.check_out_date|timesince:b.reservation.check_in_date|truncatewords:1 }}
+                {% else %}-{% endif %}
+              </td>
+
+              <td>
+                {% if b.confirmation_number %}
+                  <code style="background:#f0f9ff; border:1px solid #bae6fd; padding:6px 10px; border-radius:6px; font-weight:700; color:#0c4a6e; font-size:12px;">
+                    {{ b.confirmation_number }}
+                  </code>
+                {% else %}
+                  <span class="muted">-</span>
+                {% endif %}
+              </td>
+
+              <td>
+                {% if b.booking_status == 'Pending' %}
+                  <span class="badge b-pending"><span class="dot"></span> Pending</span>
+                {% elif b.booking_status == 'Confirmed' %}
+                  <span class="badge b-confirmed"><span class="dot"></span> Confirmed</span>
+                {% elif b.booking_status == 'Cancelled' %}
+                  <span class="badge b-cancelled"><span class="dot"></span> Cancelled</span>
+                {% elif b.booking_status == 'Completed' %}
+                  <span class="badge b-completed"><span class="dot"></span> Completed</span>
+                {% else %}
+                  <span class="badge"><span class="dot"></span> {{ b.booking_status }}</span>
+                {% endif %}
+              </td>
+
+              <td class="muted">
+                <i class="far fa-clock"></i> {{ b.booking_date|date:"M d, Y" }}
+              </td>
+
+              <td>
+                <div class="action-btns">
+                  <button type="button" class="action-btn btn-view" data-type="room" data-id="{{ b.id }}" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+
+                  {% if b.booking_status == 'Pending' %}
+                    <button type="button" class="action-btn success btn-confirm" data-type="room" data-id="{{ b.id }}" title="Confirm">
+                      <i class="fas fa-check"></i>
+                    </button>
+                  {% endif %}
+
+                  {% if b.booking_status != 'Cancelled' and b.booking_status != 'Completed' %}
+                    <button type="button" class="action-btn danger btn-cancel" data-type="room" data-id="{{ b.id }}" title="Cancel">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  {% endif %}
+
+                  <button type="button" class="action-btn btn-print" data-type="room" data-id="{{ b.id }}" title="Print">
+                    <i class="fas fa-print"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty">
+        <div class="empty-icon"><i class="fas fa-bed"></i></div>
+        <div class="empty-text">No room bookings found</div>
+      </div>
+    {% endif %}
   </div>
+</div>
 
-  {% if bookings %}
-    <div style="overflow:auto;">
-      <table id="bookTable">
-        <thead>
-          <tr>
-            <th>User</th>
-            <th>Room</th>
-            <th>Check-in</th>
-            <th>Check-out</th>
-            <th>Confirmation</th>
-            <th>Status</th>
-            <th>Date</th>
-          </tr>
-        </thead>
+<!-- SERVICE TAB -->
+<div id="service" class="tab-content">
+  <div class="cardx">
+    <div class="cardx-top">
+      <div class="tools">
+        <div class="search">
+          <i class="fas fa-search"></i>
+          <input id="q2" type="text" placeholder="Search guest or service..." oninput="filterActiveTable()">
+        </div>
 
-        <tbody>
-        {% for b in bookings %}
-          <tr>
-            <td>{{ b.user.get_full_name|default:b.user.username }}</td>
-            <td class="muted">{{ b.room.room_number }}</td>
+        <div class="filter-group">
+          <button type="button" class="filter-btn active" onclick="filterStatus('all', this)">All</button>
+          <button type="button" class="filter-btn" onclick="filterStatus('Confirmed', this)"><i class="fas fa-check"></i> Confirmed</button>
+          <button type="button" class="filter-btn" onclick="filterStatus('Pending', this)"><i class="fas fa-clock"></i> Pending</button>
+          <button type="button" class="filter-btn" onclick="filterStatus('Completed', this)"><i class="fas fa-star"></i> Completed</button>
+          <button type="button" class="filter-btn" onclick="filterStatus('Cancelled', this)"><i class="fas fa-times"></i> Cancelled</button>
+        </div>
 
-            <td class="muted">
-              {% if b.reservation %}{{ b.reservation.check_in_date }}{% else %}-{% endif %}
-            </td>
-            <td class="muted">
-              {% if b.reservation %}{{ b.reservation.check_out_date }}{% else %}-{% endif %}
-            </td>
-
-            <td class="muted">{{ b.confirmation_number|default:"-" }}</td>
-
-            <td>
-              {% if b.booking_status == 'Pending' %}
-                <span class="badge b-pending"><span class="dot"></span> Pending</span>
-              {% elif b.booking_status == 'Confirmed' %}
-                <span class="badge b-confirmed"><span class="dot"></span> Confirmed</span>
-              {% elif b.booking_status == 'Cancelled' %}
-                <span class="badge b-cancelled"><span class="dot"></span> Cancelled</span>
-              {% elif b.booking_status == 'Completed' %}
-                <span class="badge b-completed"><span class="dot"></span> Completed</span>
-              {% else %}
-                <span class="badge"><span class="dot"></span> {{ b.booking_status }}</span>
-              {% endif %}
-            </td>
-
-            <td class="muted">{{ b.booking_date|date:"M d, Y" }}</td>
-          </tr>
-        {% endfor %}
-        </tbody>
-      </table>
+        <!-- Date range also for service -->
+        <div class="date-range">
+          <i class="fas fa-calendar"></i>
+          <input type="date" class="dateFrom" oninput="filterActiveTable()">
+          <span>to</span>
+          <input type="date" class="dateTo" oninput="filterActiveTable()">
+        </div>
+      </div>
     </div>
-  {% else %}
-    <div class="empty">No bookings found.</div>
-  {% endif %}
+
+    <div class="summary-bar">
+      <div class="summary-item">
+        <span class="summary-label">Showing:</span>
+        <span class="summary-value" id="serviceVisibleCount">{{ service_bookings|length }}</span>
+        <span class="summary-label">of {{ service_bookings|length }} bookings</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Total Revenue:</span>
+        <span class="summary-value">$<span id="serviceRevenue">0</span></span>
+      </div>
+    </div>
+
+    {% if service_bookings %}
+      <div class="table-wrapper">
+        <table id="serviceBookTable">
+          <thead>
+            <tr>
+              <th>Guest</th>
+              <th>Service</th>
+              <th>Quantity</th>
+              <th>Price</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>Booked On</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+          {% for b in service_bookings %}
+            <tr data-status="{{ b.status }}" data-date="{{ b.booking_date|date:'Y-m-d' }}">
+              <td>
+                <div class="user-info">
+                  <div class="user-avatar">
+                    {{ b.user.get_full_name|first|default:b.user.username|first|upper }}
+                  </div>
+                  <div class="user-name">
+                    {{ b.user.get_full_name|default:b.user.username }}
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <span class="item-badge"><i class="fas fa-concierge-bell"></i> {{ b.service.name }}</span>
+              </td>
+
+              <td class="muted"><strong>{{ b.quantity }}</strong></td>
+              <td class="muted">${{ b.service.price|floatformat:2 }}</td>
+
+              <td>
+                <strong style="color:#0f172a; font-size:15px;">
+                  ${{ b.total_price|floatformat:2 }}
+                </strong>
+              </td>
+
+              <td>
+                {% if b.status == 'Pending' %}
+                  <span class="badge b-pending"><span class="dot"></span> Pending</span>
+                {% elif b.status == 'Confirmed' %}
+                  <span class="badge b-confirmed"><span class="dot"></span> Confirmed</span>
+                {% elif b.status == 'Cancelled' %}
+                  <span class="badge b-cancelled"><span class="dot"></span> Cancelled</span>
+                {% elif b.status == 'Completed' %}
+                  <span class="badge b-completed"><span class="dot"></span> Completed</span>
+                {% else %}
+                  <span class="badge"><span class="dot"></span> {{ b.status }}</span>
+                {% endif %}
+              </td>
+
+              <td class="muted">
+                <i class="far fa-clock"></i> {{ b.booking_date|date:"M d, Y" }}
+              </td>
+
+              <td>
+                <div class="action-btns">
+                  <button type="button" class="action-btn btn-view" data-type="service" data-id="{{ b.id }}" title="View Details">
+                    <i class="fas fa-eye"></i>
+                  </button>
+
+                  {% if b.status == 'Pending' %}
+                    <button type="button" class="action-btn success btn-confirm" data-type="service" data-id="{{ b.id }}" title="Confirm">
+                      <i class="fas fa-check"></i>
+                    </button>
+                  {% endif %}
+
+                  {% if b.status != 'Cancelled' and b.status != 'Completed' %}
+                    <button type="button" class="action-btn danger btn-cancel" data-type="service" data-id="{{ b.id }}" title="Cancel">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  {% endif %}
+
+                  <button type="button" class="action-btn btn-print" data-type="service" data-id="{{ b.id }}" title="Print">
+                    <i class="fas fa-print"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="empty">
+        <div class="empty-icon"><i class="fas fa-concierge-bell"></i></div>
+        <div class="empty-text">No service bookings found</div>
+      </div>
+    {% endif %}
+  </div>
 </div>
 
 <script>
-  function filterRows(){
-    const q = (document.getElementById("q").value || "").toLowerCase();
-    const table = document.getElementById("bookTable");
-    if(!table) return;
+  let currentStatusFilter = 'all';
 
-    const rows = table.querySelectorAll("tbody tr");
-    rows.forEach(r => {
-      const text = r.innerText.toLowerCase();
-      r.style.display = text.includes(q) ? "" : "none";
+  function switchTab(tabName, btnEl) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+    document.getElementById(tabName).classList.add('active');
+    if (btnEl) btnEl.classList.add('active');
+
+    currentStatusFilter = 'all';
+    updateFilterButtons();
+    filterActiveTable();
+    calculateStats();
+  }
+
+  function filterStatus(status, btnEl) {
+    currentStatusFilter = status;
+
+    const activeTab = document.querySelector('.tab-content.active');
+    if (activeTab) {
+      activeTab.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      if (btnEl) btnEl.classList.add('active');
+      else updateFilterButtons();
+    }
+
+    filterActiveTable();
+    calculateStats();
+  }
+
+  function updateFilterButtons() {
+    const activeTab = document.querySelector('.tab-content.active');
+    if (!activeTab) return;
+
+    activeTab.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.classList.remove('active');
+      const t = btn.textContent.trim();
+      if ((currentStatusFilter === 'all' && t === 'All') || t.includes(currentStatusFilter)) {
+        btn.classList.add('active');
+      }
     });
   }
+
+  function filterActiveTable() {
+    const activeTab = document.querySelector('.tab-content.active');
+    if (!activeTab) return;
+
+    if (activeTab.id === 'room') {
+      filterTable('roomBookTable', 'q', 'roomVisibleCount', activeTab);
+      calculateRoomRevenue();
+    } else {
+      filterTable('serviceBookTable', 'q2', 'serviceVisibleCount', activeTab);
+      calculateServiceRevenue();
+    }
+  }
+
+  function filterTable(tableId, searchId, countId, activeTab) {
+    const q = (document.getElementById(searchId)?.value || "").toLowerCase();
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    const dateFrom = activeTab.querySelector('.dateFrom')?.value || "";
+    const dateTo = activeTab.querySelector('.dateTo')?.value || "";
+
+    const rows = table.querySelectorAll("tbody tr");
+    let visibleCount = 0;
+
+    rows.forEach(r => {
+      const text = r.innerText.toLowerCase();
+      const status = r.getAttribute('data-status') || "";
+      const rowDate = r.getAttribute('data-date') || "";
+
+      const matchesSearch = text.includes(q);
+      const matchesStatus = currentStatusFilter === 'all' || status === currentStatusFilter;
+
+      let matchesDate = true;
+      if ((dateFrom || dateTo) && !rowDate) matchesDate = false;
+      if (dateFrom && rowDate && rowDate < dateFrom) matchesDate = false;
+      if (dateTo && rowDate && rowDate > dateTo) matchesDate = false;
+
+      const show = matchesSearch && matchesStatus && matchesDate;
+      r.style.display = show ? "" : "none";
+      if (show) visibleCount++;
+    });
+
+    const el = document.getElementById(countId);
+    if (el) el.textContent = visibleCount;
+  }
+
+  function calculateStats() {
+    const roomRows = document.querySelectorAll("#roomBookTable tbody tr");
+    const serviceRows = document.querySelectorAll("#serviceBookTable tbody tr");
+
+    let total = 0, confirmed = 0, pending = 0, completed = 0, cancelled = 0, revenue = 0;
+
+    roomRows.forEach(row => {
+      total++;
+      const st = row.getAttribute('data-status');
+      if (st === 'Confirmed') confirmed++;
+      if (st === 'Pending') pending++;
+      if (st === 'Completed') completed++;
+      if (st === 'Cancelled') cancelled++;
+    });
+
+    serviceRows.forEach(row => {
+      total++;
+      const st = row.getAttribute('data-status');
+      if (st === 'Confirmed') confirmed++;
+      if (st === 'Pending') pending++;
+      if (st === 'Completed') completed++;
+      if (st === 'Cancelled') cancelled++;
+
+      const priceCell = row.cells[4]?.textContent || '$0';
+      const price = parseFloat(priceCell.replace('$', '').replace(/,/g, '')) || 0;
+      if (st === 'Completed' || st === 'Confirmed') revenue += price;
+    });
+
+    document.getElementById('totalBookings').textContent = total;
+    document.getElementById('confirmedCount').textContent = confirmed;
+    document.getElementById('pendingCount').textContent = pending;
+    document.getElementById('completedCount').textContent = completed;
+    document.getElementById('cancelledCount').textContent = cancelled;
+    document.getElementById('totalRevenue').textContent =
+      revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function calculateRoomRevenue() {
+    // No room price provided in your table yet → keep 0.00
+    const el = document.getElementById('roomRevenue');
+    if (el) el.textContent = "0.00";
+  }
+
+  function calculateServiceRevenue() {
+    const table = document.getElementById('serviceBookTable');
+    if (!table) return;
+
+    let revenue = 0;
+    table.querySelectorAll('tbody tr').forEach(row => {
+      if (row.style.display === 'none') return;
+      const st = row.getAttribute('data-status');
+      if (st === 'Completed' || st === 'Confirmed') {
+        const priceCell = row.cells[4]?.textContent || '$0';
+        revenue += parseFloat(priceCell.replace('$', '').replace(/,/g, '')) || 0;
+      }
+    });
+
+    const el = document.getElementById('serviceRevenue');
+    if (el) el.textContent =
+      revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function exportBookings() {
+    const activeTab = document.querySelector('.tab-content.active');
+    const table = activeTab?.querySelector('table');
+    if (!table) return;
+
+    let csv = [];
+    const headers = Array.from(table.querySelectorAll("thead th")).map(th => th.textContent.trim());
+    csv.push(headers.join(','));
+
+    table.querySelectorAll("tbody tr").forEach(row => {
+      if (row.style.display === 'none') return;
+      const cols = Array.from(row.querySelectorAll("td")).map(td => {
+        let text = td.textContent.trim().replace(/\n/g, ' ').replace(/\s+/g, ' ');
+        return `"${text.replace(/"/g,'""')}"`;
+      });
+      csv.push(cols.join(','));
+    });
+
+    const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const tabName = activeTab.id === 'room' ? 'room_bookings' : 'service_bookings';
+    a.download = `${tabName}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  function viewBooking(type, id) { alert(`View ${type} booking details for ID: ${id}`); }
+  function confirmBooking(type, id) { if(confirm(`Confirm this ${type} booking?`)) alert(`Booking ${id} confirmed!`); }
+  function cancelBooking(type, id) { if(confirm(`Cancel this ${type} booking?`)) alert(`Booking ${id} cancelled!`); }
+  function printBooking(type, id) { alert(`Print ${type} booking ID: ${id}`); }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Event listeners for button actions
+    document.querySelectorAll('.btn-view').forEach(btn => {
+      btn.addEventListener('click', function() {
+        viewBooking(this.dataset.type, this.dataset.id);
+      });
+    });
+
+    document.querySelectorAll('.btn-confirm').forEach(btn => {
+      btn.addEventListener('click', function() {
+        confirmBooking(this.dataset.type, this.dataset.id);
+      });
+    });
+
+    document.querySelectorAll('.btn-cancel').forEach(btn => {
+      btn.addEventListener('click', function() {
+        cancelBooking(this.dataset.type, this.dataset.id);
+      });
+    });
+
+    document.querySelectorAll('.btn-print').forEach(btn => {
+      btn.addEventListener('click', function() {
+        printBooking(this.dataset.type, this.dataset.id);
+      });
+    });
+
+    calculateStats();
+    calculateServiceRevenue();
+    calculateRoomRevenue();
+    filterActiveTable();
+  });
 </script>
 {% endblock %}

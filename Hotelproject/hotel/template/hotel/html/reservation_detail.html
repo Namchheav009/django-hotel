@@ -240,8 +240,22 @@
         </div>
         <div class="rd-card-b">
 
-          {% if reservation.status == 'Pending' %}
-            <a href="{% url 'payment' reservation.id %}" class="btnx btn-success">
+          {% if reservation.payment and reservation.payment.payment_status == 'Completed' %}
+            <div class="alert alert-success" style="margin-bottom:12px;">
+              <i class="fas fa-check-circle"></i> Payment completed successfully!
+            </div>
+          {% elif reservation.payment and reservation.payment.payment_status == 'Pending' %}
+            <div class="alert alert-warning" style="margin-bottom:12px;">
+              <i class="fas fa-exclamation-circle"></i> Payment is still pending. Click the button below to complete it.
+            </div>
+            <a href="{% url 'payment' reservation.id %}" class="btnx btn-success" style="display:block; text-align:center; margin-bottom:12px;">
+              <i class="fas fa-credit-card"></i> Complete Payment
+            </a>
+          {% else %}
+            <div class="alert alert-danger" style="margin-bottom:12px;">
+              <i class="fas fa-exclamation-triangle"></i> No payment record found. Please complete payment to confirm your reservation.
+            </div>
+            <a href="{% url 'payment' reservation.id %}" class="btnx btn-success" style="display:block; text-align:center; margin-bottom:12px;">
               <i class="fas fa-credit-card"></i> Complete Payment
             </a>
           {% endif %}

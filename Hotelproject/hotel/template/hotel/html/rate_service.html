@@ -1,4 +1,5 @@
 {% extends 'hotel/html/base.html' %}
+{% load static %}
 {% block title %}Rate Service - MyHotel{% endblock %}
 
 {% block content %}
@@ -12,11 +13,18 @@
                 
                 <div class="card-body p-4">
                     <!-- Service Info -->
-                    <div class="alert alert-info mb-4">
-                        <h5 class="mb-2">Service Information</h5>
-                        <p class="mb-1"><strong>Service:</strong> {{ service_booking.service.name }}</p>
-                        <p class="mb-1"><strong>Date:</strong> {{ service_booking.scheduled_date }}</p>
-                        <p class="mb-0"><strong>Price:</strong> ${{ service_booking.total_price }}</p>
+                    <div class="alert alert-info mb-4 d-flex gap-3 align-items-center">
+                        {% if service_booking.service.image %}
+                            <img src="{{ service_booking.service.image.url }}" alt="{{ service_booking.service.name }}" style="width:88px; height:88px; object-fit:cover; border-radius:8px;">
+                        {% else %}
+                            <img src="{% static 'hotel/img/hero.png' %}" alt="service" style="width:88px; height:88px; object-fit:cover; border-radius:8px;">
+                        {% endif %}
+                        <div>
+                            <h5 class="mb-2">Service Information</h5>
+                            <p class="mb-1"><strong>Service:</strong> {{ service_booking.service.name }}</p>
+                            <p class="mb-1"><strong>Date:</strong> {{ service_booking.scheduled_date }}</p>
+                            <p class="mb-0"><strong>Price:</strong> ${{ service_booking.total_price }}</p>
+                        </div>
                     </div>
 
                     <form method="POST" id="serviceRatingForm">

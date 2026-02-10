@@ -611,7 +611,7 @@
                             </a>
 
                             {% if user.is_authenticated %}
-                                <a href="{% url 'book_room' room.id %}" class="btn-book">
+                                <a href="{% url 'room_detail' room.id %}" class="btn-book">
                                     Book Now
                                 </a>
                             {% else %}

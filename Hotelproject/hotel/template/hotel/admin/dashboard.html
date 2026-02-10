@@ -92,105 +92,172 @@
     .mini-grid{ grid-template-columns: 1fr; }
   }
 
+  /* Topbar */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:18px;
+  }
+  .top-left{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .page-title{
+    font-weight:1000;
+    margin:0;
+    font-size:20px;
+  }
+  .page-sub{
+    margin:0;
+    font-weight:800;
+    color:var(--muted);
+    font-size:13px;
+  }
 
- /* Topbar */
-    .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:14px;
-      margin-bottom:18px;
-    }
-    .top-left{
-      display:flex;
-      align-items:center;
-      gap:12px;
-    }
-    .page-title{
-      font-weight:1000;
-      margin:0;
-      font-size:20px;
-    }
-    .page-sub{
-      margin:0;
-      font-weight:800;
-      color:var(--muted);
-      font-size:13px;
-    }
+  .top-actions{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
 
-    .top-actions{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:flex-end;
-    }
+  .search{
+    display:flex; align-items:center; gap:10px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:10px 12px;
+    min-width:260px;
+    box-shadow: 0 8px 20px rgba(11,18,32,.05);
+  }
+  .search i{ color:#98a2b3; }
+  .search input{
+    border:none; outline:none; width:100%;
+    font-weight:800;
+    color:var(--text);
+  }
 
-    .search{
-      display:flex; align-items:center; gap:10px;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:14px;
-      padding:10px 12px;
-      min-width:260px;
-      box-shadow: 0 8px 20px rgba(11,18,32,.05);
-    }
-    .search i{ color:#98a2b3; }
-    .search input{
-      border:none; outline:none; width:100%;
-      font-weight:800;
-      color:var(--text);
-    }
+  .chip{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 12px;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    font-weight:900;
+    color:#111827;
+    box-shadow: 0 8px 20px rgba(11,18,32,.05);
+    text-decoration:none;
+    cursor:pointer;
+  }
 
-    .chip{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:10px 12px;
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:14px;
-      font-weight:900;
-      color:#111827;
-      box-shadow: 0 8px 20px rgba(11,18,32,.05);
-      text-decoration:none;
-      cursor:pointer;
-    }
+  /* Notification */
+  .notify-btn{ position:relative; }
 
+  .notify-badge{
+    position:absolute;
+    top:6px;
+    right:6px;
+    background:#ef4444;
+    color:#fff;
+    font-size:10px;
+    font-weight:1000;
+    padding:2px 6px;
+    border-radius:999px;
+    line-height:1;
+  }
 
+  .notify-menu{
+    width:340px;
+    padding:0;
+    border-radius:14px;
+    overflow:hidden;
+  }
+
+  .notify-header{
+    padding:12px 14px;
+    font-weight:1000;
+    border-bottom:1px solid var(--line);
+    background:#f9fafb;
+  }
+
+  .notify-item{
+    display:flex;
+    gap:10px;
+    padding:12px 14px;
+    text-decoration:none;
+    border-bottom:1px solid var(--line);
+  }
+
+  .notify-item:last-child{ border-bottom:none; }
+  .notify-item:hover{ background:#f9fafb; }
+
+  .notify-dot{
+    width:9px;height:9px;border-radius:999px;margin-top:6px;background:#22c55e;
+  }
+
+  .notify-text{ font-weight:900; color:#111827; }
+  .notify-sub{ font-size:12px; font-weight:800; color:var(--muted); }
 </style>
 
-
-
 <div class="topbar">
-        <div class="top-left">
-          <div>
-            <h1 class="page-title">Dashboard</h1>
-            <p class="page-sub">Overview of hotel performance</p>
-          </div>
-        </div>
+  <div class="top-left">
+    <div>
+      <h1 class="page-title">Dashboard</h1>
+      <p class="page-sub">Overview of hotel performance</p>
+    </div>
+  </div>
 
-        <div class="top-actions">
-          <div class="search d-none d-md-flex">
-            <i class="fa-solid fa-magnifying-glass"></i>
-            <input type="text" placeholder="Search..." />
-          </div>
+  <div class="top-actions">
+    <div class="search d-none d-md-flex">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" placeholder="Search..." />
+    </div>
 
-          <div class="dropdown">
-            <button class="chip dropdown-toggle" data-bs-toggle="dropdown">
-              <i class="fa-regular fa-calendar"></i> Time period
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end">
-              <li><a class="dropdown-item" href="#">Today</a></li>
-              <li><a class="dropdown-item" href="#">Last 7 days</a></li>
-              <li><a class="dropdown-item" href="#">Last 30 days</a></li>
-              <li><a class="dropdown-item" href="#">This year</a></li>
-            </ul>
-          </div>
+    <!-- Notifications -->
+    <div class="dropdown notify-btn">
+      <button class="chip dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fa-regular fa-bell"></i>
+        <span class="notify-badge">{{ total_notifications|default:"0" }}</span>
+      </button>
 
-          <a class="chip" href="{% url 'manage_reservations' %}">
-            <i class="fa-solid fa-plus"></i> Add data
-          </a>
-        </div>
-      </div>
+      <ul class="dropdown-menu dropdown-menu-end notify-menu">
+        <li class="notify-header">All Bookings ({{ total_notifications|default:"0" }})</li>
+
+        {% if total_notifications == 0 %}
+          <li class="text-center">
+            <p style="padding:14px; color:var(--muted); font-weight:800; margin:0;">No bookings</p>
+          </li>
+        {% else %}
+          <li class="text-center">
+            <a href="{% url 'manage_bookings' %}" class="dropdown-item" style="font-weight:1000;">
+              View all bookings →
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+
+    <div class="dropdown">
+      <button class="chip dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fa-regular fa-calendar"></i> Time period
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item" href="#">Today</a></li>
+        <li><a class="dropdown-item" href="#">Last 7 days</a></li>
+        <li><a class="dropdown-item" href="#">Last 30 days</a></li>
+        <li><a class="dropdown-item" href="#">This year</a></li>
+      </ul>
+    </div>
+
+    <a class="chip" href="{% url 'manage_reservations' %}">
+      <i class="fa-solid fa-plus"></i> Add data
+    </a>
+  </div>
+</div>
 
 <!-- KPI cards -->
 <div class="kpi-grid">
@@ -243,9 +310,9 @@
     <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:10px;">
       <div>
         <div class="card-title">Reservation activity</div>
-        <div class="card-sub">Bookings and revenue trend (sample chart)</div>
+        <div class="card-sub">Bookings and revenue trend</div>
       </div>
-      <span class="badge text-bg-light" style="border:1px solid var(--line);">Last 12 days</span>
+      <span class="badge text-bg-light" style="border:1px solid var(--line);">Last days</span>
     </div>
 
     <div class="chart-wrap">
@@ -258,27 +325,25 @@
     <div class="card-sub">Important notes and tasks</div>
 
     <ul class="list">
-      <li>
-        <div class="dot"></div>
-        <div>
-          <strong>Room cleaning required</strong>
-          <div class="small">Guest checked out — housekeeping needed</div>
-        </div>
-      </li>
-      <li>
-        <div class="dot blue"></div>
-        <div>
-          <strong>New booking request</strong>
-          <div class="small">Family suite — pending confirmation</div>
-        </div>
-      </li>
-      <li>
-        <div class="dot orange"></div>
-        <div>
-          <strong>VIP arrival</strong>
-          <div class="small">Prepare welcome pack & priority check-in</div>
-        </div>
-      </li>
+      {% if today_activities %}
+        {% for activity in today_activities %}
+          <li>
+            <div class="dot {% if activity.type == 'booking' %}blue{% elif activity.type == 'checkout' %}orange{% endif %}"></div>
+            <div>
+              <strong>{{ activity.title }}</strong>
+              <div class="small">{{ activity.subtitle }}</div>
+            </div>
+          </li>
+        {% endfor %}
+      {% else %}
+        <li>
+          <div class="dot" style="background:#d1d5db;"></div>
+          <div>
+            <strong>No activities today</strong>
+            <div class="small">All systems operating normally</div>
+          </div>
+        </li>
+      {% endif %}
     </ul>
 
     <div style="margin-top:12px;display:flex;justify-content:center;">
@@ -295,7 +360,7 @@
     <div style="display:flex;justify-content:space-between;align-items:end;gap:12px;margin-bottom:10px;">
       <div>
         <div class="card-title">Sales by room category</div>
-        <div class="card-sub">Distribution (sample donut)</div>
+        <div class="card-sub">Distribution</div>
       </div>
     </div>
 
@@ -354,56 +419,206 @@
   </div>
 </div>
 
+{# ===== SAFE JSON to JS (NO VSCode error) ===== #}
+{{ chart_labels|json_script:"chart-labels" }}
+{{ reservation_counts|json_script:"reservation-counts" }}
+{{ revenue_by_day|json_script:"revenue-by-day" }}
+{{ category_names|json_script:"category-names" }}
+{{ category_counts|json_script:"category-counts" }}
+
 <script>
-  // ===== Bar chart (sample UI like your screenshot) =====
-  const barCtx = document.getElementById('barChart');
-  new Chart(barCtx, {
-    type: 'bar',
-    data: {
-      labels: ['1 Jul','2 Jul','3 Jul','4 Jul','5 Jul','6 Jul','7 Jul','8 Jul','9 Jul','10 Jul','11 Jul','12 Jul'],
-      datasets: [
-        {
-          label: 'Reservations',
-          data: [22, 28, 18, 30, 44, 25, 19, 29, 24, 41, 33, 47],
-          borderRadius: 10,
-        },
-        {
-          label: 'Revenue',
-          data: [35, 42, 30, 55, 60, 48, 36, 52, 39, 58, 50, 63],
-          borderRadius: 10,
+  // ===== SAFE Notification Updates =====
+  const notifyBadge = document.querySelector('.notify-badge');
+  const notifyMenu  = document.querySelector('.notify-menu');
+
+  const URL_ALL_BOOKINGS = "{% url 'api_all_bookings' %}";
+  const URL_ROOM_MANAGE  = "{% url 'manage_reservations' %}";
+  const URL_SERV_MANAGE  = "{% url 'manage_service_bookings' %}";
+  const URL_ALL_MANAGE   = "{% url 'manage_bookings' %}";
+
+  function esc(s){
+    return String(s ?? "").replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  function fmtDate(d){
+    if(!d) return "—";
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return esc(d);
+    return dt.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "2-digit" });
+  }
+
+  function updateNotifications(){
+    fetch(URL_ALL_BOOKINGS, { headers: { "Accept": "application/json" } })
+      .then(r => {
+        if(!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      })
+      .then(data => {
+        const total = Number(data?.total ?? 0);
+
+        if (notifyBadge){
+          notifyBadge.textContent = total;
+          notifyBadge.style.display = total > 0 ? "inline-block" : "none";
         }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { position: 'top' } },
-      scales: {
-        y: { beginAtZero: true, grid: { color: '#eef2f7' } },
-        x: { grid: { display: false } }
+
+        if (!notifyMenu) return;
+
+        const pendingRoom   = Array.isArray(data?.pending_room_bookings) ? data.pending_room_bookings : [];
+        const pendingServ   = Array.isArray(data?.pending_service_bookings) ? data.pending_service_bookings : [];
+        const confirmedRoom = Array.isArray(data?.confirmed_room_bookings) ? data.confirmed_room_bookings : [];
+        const confirmedServ = Array.isArray(data?.confirmed_service_bookings) ? data.confirmed_service_bookings : [];
+
+        const pendingTotal   = Number(data?.total_pending ?? (pendingRoom.length + pendingServ.length));
+        const confirmedTotal = Number(data?.total_confirmed ?? (confirmedRoom.length + confirmedServ.length));
+
+        let html = `<li class="notify-header">All Bookings (${total})</li>`;
+
+        if (pendingTotal > 0){
+          html += `<li style="padding:8px 14px; font-weight:800; font-size:12px; color:#ef4444; background:#fef2f2;">⚠️ PENDING BOOKINGS</li>`;
+
+          pendingRoom.forEach(b => {
+            const roomNo = esc(b?.room__room_number ?? "");
+            const cat    = esc(b?.room__category__category_name ?? "");
+            const guest  = esc(b?.guest_name ?? b?.guest__user__first_name ?? "Guest");
+            html += `
+              <li>
+                <a href="${URL_ROOM_MANAGE}" class="notify-item">
+                  <span class="notify-dot" style="background:#ef4444;"></span>
+                  <div>
+                    <div class="notify-text">Room ${roomNo} - ${guest}</div>
+                    <div class="notify-sub">Check-in: ${fmtDate(b?.check_in_date)} · ${cat}</div>
+                  </div>
+                </a>
+              </li>
+            `;
+          });
+
+          pendingServ.forEach(b => {
+            const service = esc(b?.service__name ?? "Service");
+            const user    = esc(b?.user_name ?? b?.user__first_name ?? "User");
+            html += `
+              <li>
+                <a href="${URL_SERV_MANAGE}" class="notify-item">
+                  <span class="notify-dot" style="background:#f59e0b;"></span>
+                  <div>
+                    <div class="notify-text">${service} - ${user}</div>
+                    <div class="notify-sub">Scheduled: ${fmtDate(b?.scheduled_date)}</div>
+                  </div>
+                </a>
+              </li>
+            `;
+          });
+        }
+
+        if (confirmedTotal > 0){
+          if (pendingTotal > 0){
+            html += `<li style="border-bottom:1px solid var(--line); padding:4px 0; margin:4px 0;"></li>`;
+          }
+          html += `<li style="padding:8px 14px; font-weight:800; font-size:12px; color:#16a34a; background:#f0fdf4;">✓ CONFIRMED BOOKINGS</li>`;
+
+          confirmedRoom.forEach(b => {
+            const roomNo = esc(b?.room__room_number ?? "");
+            const cat    = esc(b?.room__category__category_name ?? "");
+            const guest  = esc(b?.guest_name ?? b?.guest__user__first_name ?? "Guest");
+            html += `
+              <li>
+                <a href="${URL_ROOM_MANAGE}" class="notify-item">
+                  <span class="notify-dot" style="background:#22c55e;"></span>
+                  <div>
+                    <div class="notify-text">Room ${roomNo} - ${guest}</div>
+                    <div class="notify-sub">Check-in: ${fmtDate(b?.check_in_date)} · ${cat}</div>
+                  </div>
+                </a>
+              </li>
+            `;
+          });
+
+          confirmedServ.forEach(b => {
+            const service = esc(b?.service__name ?? "Service");
+            const user    = esc(b?.user_name ?? b?.user__first_name ?? "User");
+            html += `
+              <li>
+                <a href="${URL_SERV_MANAGE}" class="notify-item">
+                  <span class="notify-dot" style="background:#06b6d4;"></span>
+                  <div>
+                    <div class="notify-text">${service} - ${user}</div>
+                    <div class="notify-sub">Scheduled: ${fmtDate(b?.scheduled_date)}</div>
+                  </div>
+                </a>
+              </li>
+            `;
+          });
+        }
+
+        if (total === 0){
+          html += `<li class="text-center"><p style="padding:14px; color:var(--muted); font-weight:800; margin:0;">No bookings</p></li>`;
+        } else {
+          html += `<li class="text-center"><a href="${URL_ALL_MANAGE}" class="dropdown-item" style="font-weight:1000;">View all bookings →</a></li>`;
+        }
+
+        notifyMenu.innerHTML = html;
+      })
+      .catch(err => console.warn("Failed to update notifications:", err));
+  }
+
+  updateNotifications();
+  setInterval(updateNotifications, 30000);
+
+  // ===== SAFE Chart Data (NO {% templatetag openvariable %}{% templatetag closevariable %} INSIDE JS) =====
+  const chartLabels = JSON.parse(document.getElementById('chart-labels').textContent || "[]");
+  const reservationCounts = JSON.parse(document.getElementById('reservation-counts').textContent || "[]");
+  const revenueByDay = JSON.parse(document.getElementById('revenue-by-day').textContent || "[]");
+
+  const categoryNames = JSON.parse(document.getElementById('category-names').textContent || "[]");
+  const categoryCounts = JSON.parse(document.getElementById('category-counts').textContent || "[]");
+
+  // ===== Bar chart =====
+  const barCtx = document.getElementById('barChart');
+  if (barCtx) {
+    new Chart(barCtx, {
+      type: 'bar',
+      data: {
+        labels: chartLabels,
+        datasets: [
+          { label: 'Reservations', data: reservationCounts, borderRadius: 10 },
+          { label: 'Revenue', data: revenueByDay, borderRadius: 10 }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'top' } },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#eef2f7' } },
+          x: { grid: { display: false } }
+        }
       }
-    }
-  });
+    });
+  }
 
   // ===== Donut chart =====
   const donutCtx = document.getElementById('donutChart');
-  new Chart(donutCtx, {
-    type: 'doughnut',
-    data: {
-      labels: ['Deluxe', 'Standard', 'Suite', 'Family', 'VIP'],
-      datasets: [{
-        data: [25, 20, 18, 22, 15],
-        borderWidth: 2,
-        hoverOffset: 6
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '70%',
-      plugins: { legend: { position: 'left' } }
-    }
-  });
+  if (donutCtx) {
+    new Chart(donutCtx, {
+      type: 'doughnut',
+      data: {
+        labels: categoryNames,
+        datasets: [{
+          data: categoryCounts,
+          borderWidth: 2,
+          hoverOffset: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '70%',
+        plugins: { legend: { position: 'left' } }
+      }
+    });
+  }
 </script>
 
 {% endblock %}

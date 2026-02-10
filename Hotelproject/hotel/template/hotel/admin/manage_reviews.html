@@ -1,60 +1,109 @@
 {% extends 'hotel/admin/admin_base.html' %}
 {% block admin_content %}
 
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+{% if messages %}
+<div style="margin-bottom: 20px;">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" role="alert">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
   <div>
     <h2 style="margin:0;font-weight:900;">Manage Reviews & Ratings</h2>
-    <div style="color:var(--muted);font-weight:700;margin-top:6px;">Room reviews with details (reservation-based).</div>
+    <div style="color:var(--muted);font-weight:700;margin-top:6px;">Room & Service reviews with details.</div>
   </div>
 
-  <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addReviewModal">
-    <i class="fas fa-plus"></i> New Review
-  </button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn btn-outline-secondary btn-sm" id="toggleRoomReviews" style="font-weight:900;">
+      <i class="fas fa-bed"></i> Room Reviews
+    </button>
+    <button class="btn btn-outline-secondary btn-sm" id="toggleServiceReviews" style="font-weight:900;">
+      <i class="fas fa-concierge-bell"></i> Service Reviews
+    </button>
+  </div>
 </div>
 
 <div class="admin-card">
-  {% if reviews %}
-    <div style="display:grid;gap:12px;">
-      {% for r in reviews %}
-        <div style="padding:14px;border-radius:12px;border:1px solid #eef2f7;background:#fff;position:relative;">
+  <!-- Room Reviews Section -->
+  <div id="roomReviewsSection">
+    <h4 style="margin-bottom:16px;font-weight:900;color:#0f172a;">Room Reviews</h4>
+    {% if reviews %}
+      {% with room_reviews=reviews|dictsort:"created_at" %}
+        {% if room_reviews %}
+          <div style="display:grid;gap:12px;">
+            {% for r in reviews %}
+              {% if r.room %}
+        <div style="padding:14px;border-radius:12px;border:1px solid #eef2f7;background:#fff;">
           <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
-            <div>
-              <div style="font-weight:900;">
-                {{ r.user.get_full_name|default:r.user.username }}
-                <span style="color:var(--muted);font-weight:800;">• Room {{ r.room.room_number }}</span>
-              </div>
+            <div style="display:flex;gap:12px;align-items:flex-start;">
+              {% if r.room.image %}
+                  <img src="{{ r.room.image.url }}" alt="Room {{ r.room.room_number }}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">
+                {% else %}
+                  <div style="width:64px;height:64px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;">
+                    <i class="fas fa-bed"></i>
+                  </div>
+                {% endif %}
 
-              <div style="margin-top:6px;color:#111827;">
-                {% for i in "12345" %}
-                  {% if forloop.counter <= r.rating %}
-                    <i class="fas fa-star" style="color:#f4b63a;"></i>
-                  {% else %}
-                    <i class="fas fa-star" style="color:#e5e7eb;"></i>
-                  {% endif %}
-                {% endfor %}
-                <span style="color:var(--muted);font-weight:800;margin-left:8px;">{{ r.rating }}/5</span>
-              </div>
+              <div>
+                <div style="font-weight:900;">
+                  {{ r.user.get_full_name|default:r.user.username }}
+                  <a href="{% url 'room_detail' r.room.id %}" style="color:var(--muted);font-weight:800;margin-left:8px;">• Room {{ r.room.room_number }}</a>
+                </div>
 
-              <div style="margin-top:8px;color:var(--muted);font-weight:800;">
-                Cleanliness: {{ r.cleanliness }}/5 • Comfort: {{ r.comfort }}/5 • Amenities: {{ r.amenities }}/5
-              </div>
+                <div style="margin-top:6px;color:#111827;">
+                  {% for i in "12345" %}
+                    {% if forloop.counter <= r.rating %}
+                      <i class="fas fa-star" style="color:#f4b63a;"></i>
+                    {% else %}
+                      <i class="fas fa-star" style="color:#e5e7eb;"></i>
+                    {% endif %}
+                  {% endfor %}
+                  <span style="color:var(--muted);font-weight:800;margin-left:8px;">{{ r.rating }}/5</span>
+                </div>
 
-              {% if r.review %}
-                <div style="margin-top:8px;color:#374151;line-height:1.6;">{{ r.review|truncatechars:180 }}</div>
-              {% else %}
-                <div style="margin-top:8px;color:var(--muted);">No written review.</div>
-              {% endif %}
+                {% if r.cleanliness or r.comfort or r.amenities %}
+                  <div style="margin-top:8px;color:var(--muted);font-weight:800;">
+                    Cleanliness: {{ r.cleanliness }}/5 • Comfort: {{ r.comfort }}/5 • Amenities: {{ r.amenities }}/5
+                  </div>
+                {% endif %}
+
+                {% if r.review %}
+                  <div style="margin-top:8px;color:#374151;line-height:1.6;">{{ r.review|truncatechars:180 }}</div>
+                {% else %}
+                  <div style="margin-top:8px;color:var(--muted);">No written review.</div>
+                {% endif %}
+              </div>
             </div>
 
             <div style="text-align:right;">
               <div style="color:var(--muted);font-size:12px;font-weight:800;">{{ r.created_at|date:"M d, Y" }}</div>
+
               <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
-                <a class="btn btn-sm btn-warning" href="{% url 'edit_review' r.id %}">
-                  <i class="fas fa-edit"></i> Edit
-                </a>
+                <!-- EDIT (use data attributes instead of inline JS strings) -->
+                <button
+                  type="button"
+                  class="btn btn-sm btn-warning btn-edit-review"
+                  data-id="{{ r.id }}"
+                  data-rating="{{ r.rating }}"
+                  data-review="{{ r.review|default:''|escapejs }}"
+                  data-cleanliness="{{ r.cleanliness|default:'' }}"
+                  data-comfort="{{ r.comfort|default:'' }}"
+                  data-amenities="{{ r.amenities|default:'' }}"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+
+                <!-- DELETE -->
                 <form method="post" action="{% url 'delete_review' r.id %}">
                   {% csrf_token %}
-                  <button class="btn btn-sm btn-danger" onclick="return confirm('Delete this review?');">
+                  <button type="submit" class="btn btn-sm btn-danger"
+                          onclick="return confirm('Delete this review?');">
                     <i class="fas fa-trash"></i> Delete
                   </button>
                 </form>
@@ -62,20 +111,115 @@
             </div>
           </div>
         </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div style="padding:18px;color:var(--muted);">No reviews found.</div>
-  {% endif %}
+              {% endif %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <div style="padding:18px;color:var(--muted);">No room reviews found.</div>
+        {% endif %}
+      {% endwith %}
+    {% else %}
+      <div style="padding:18px;color:var(--muted);">No room reviews found.</div>
+    {% endif %}
+  </div>
+
+  <!-- Service Reviews Section -->
+  <div id="serviceReviewsSection" style="display:none;">
+    <h4 style="margin-bottom:16px;font-weight:900;color:#0f172a;">Service Reviews</h4>
+    {% if reviews %}
+      <div style="display:grid;gap:12px;">
+        {% for r in reviews %}
+          {% if r.service %}
+            <div style="padding:14px;border-radius:12px;border:1px solid #eef2f7;background:#fff;">
+              <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
+                <div style="display:flex;gap:12px;align-items:flex-start;">
+                  {% if r.service.image %}
+                    <img src="{{ r.service.image.url }}" alt="{{ r.service.name }}" style="width:64px;height:64px;object-fit:cover;border-radius:8px;">
+                  {% else %}
+                    <div style="width:64px;height:64px;background:#f1f5f9;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#cbd5e1;">
+                      <i class="fas fa-concierge-bell"></i>
+                    </div>
+                  {% endif %}
+
+                  <div>
+                    <div style="font-weight:900;">
+                      {{ r.user.get_full_name|default:r.user.username }}
+                      <a href="{% url 'book_service' r.service.id %}" style="color:var(--muted);font-weight:800;margin-left:8px;">• Service: {{ r.service.name }}</a>
+                    </div>
+
+                    <div style="margin-top:6px;color:#111827;">
+                      {% for i in "12345" %}
+                        {% if forloop.counter <= r.rating %}
+                          <i class="fas fa-star" style="color:#f4b63a;"></i>
+                        {% else %}
+                          <i class="fas fa-star" style="color:#e5e7eb;"></i>
+                        {% endif %}
+                      {% endfor %}
+                      <span style="color:var(--muted);font-weight:800;margin-left:8px;">{{ r.rating }}/5</span>
+                    </div>
+
+                    {% if r.quality or r.timeliness or r.value_for_money %}
+                      <div style="margin-top:8px;color:var(--muted);font-weight:800;">
+                        Quality: {{ r.quality }}/5 • Timeliness: {{ r.timeliness }}/5 • Value: {{ r.value_for_money }}/5
+                      </div>
+                    {% endif %}
+
+                    {% if r.review %}
+                      <div style="margin-top:8px;color:#374151;line-height:1.6;">{{ r.review|truncatechars:180 }}</div>
+                    {% else %}
+                      <div style="margin-top:8px;color:var(--muted);">No written review.</div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <div style="text-align:right;">
+                  <div style="color:var(--muted);font-size:12px;font-weight:800;">{{ r.created_at|date:"M d, Y" }}</div>
+
+                  <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
+                    <!-- EDIT (use data attributes instead of inline JS strings) -->
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-warning btn-edit-review"
+                      data-id="{{ r.id }}"
+                      data-rating="{{ r.rating }}"
+                      data-review="{{ r.review|default:''|escapejs }}"
+                      data-quality="{{ r.quality|default:'' }}"
+                      data-timeliness="{{ r.timeliness|default:'' }}"
+                      data-value="{{ r.value_for_money|default:'' }}"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+
+                    <!-- DELETE -->
+                    <form method="post" action="{% url 'delete_review' r.id %}">
+                      {% csrf_token %}
+                      <button type="submit" class="btn btn-sm btn-danger"
+                              onclick="return confirm('Delete this review?');">
+                        <i class="fas fa-trash"></i> Delete
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% if not reviews %}
+        <div style="padding:18px;color:var(--muted);">No service reviews found.</div>
+      {% endif %}
+    {% else %}
+      <div style="padding:18px;color:var(--muted);">No service reviews found.</div>
+    {% endif %}
+  </div>
 </div>
 
-
 <!-- Add Review Modal -->
-<div class="modal fade" id="addReviewModal" tabindex="-1">
+<div class="modal fade" id="addReviewModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" style="font-weight:900;">Add Room Review (Reservation Based)</h5>
+        <h5 class="modal-title" style="font-weight:900;"><i class="fas fa-plus"></i> Add Room Review</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
@@ -139,5 +283,106 @@
     </div>
   </div>
 </div>
+
+<!-- Edit Review Modal -->
+<div class="modal fade" id="editReviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" style="font-weight:900;"><i class="fas fa-edit"></i> Edit Review</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form id="editReviewForm" method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" id="editReviewId" name="id" value="">
+        <div class="modal-body">
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Overall Rating</label>
+              <input type="number" id="editReviewRating" name="rating" class="form-control" min="1" max="5" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Cleanliness</label>
+              <input type="number" id="editReviewCleanliness" name="cleanliness" class="form-control" min="1" max="5" required>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Comfort</label>
+              <input type="number" id="editReviewComfort" name="comfort" class="form-control" min="1" max="5" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:900;">Amenities</label>
+              <input type="number" id="editReviewAmenities" name="amenities" class="form-control" min="1" max="5" required>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:900;">Review (optional)</label>
+            <textarea id="editReviewText" name="review" class="form-control" rows="3" placeholder="Write guest feedback..."></textarea>
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" style="font-weight:900;">
+            <i class="fas fa-check"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Toggle between Room and Service Reviews
+document.getElementById('toggleRoomReviews').addEventListener('click', function() {
+  document.getElementById('roomReviewsSection').style.display = 'block';
+  document.getElementById('serviceReviewsSection').style.display = 'none';
+  document.getElementById('toggleRoomReviews').classList.add('btn-primary');
+  document.getElementById('toggleRoomReviews').classList.remove('btn-outline-secondary');
+  document.getElementById('toggleServiceReviews').classList.add('btn-outline-secondary');
+  document.getElementById('toggleServiceReviews').classList.remove('btn-primary');
+});
+
+document.getElementById('toggleServiceReviews').addEventListener('click', function() {
+  document.getElementById('roomReviewsSection').style.display = 'none';
+  document.getElementById('serviceReviewsSection').style.display = 'block';
+  document.getElementById('toggleServiceReviews').classList.add('btn-primary');
+  document.getElementById('toggleServiceReviews').classList.remove('btn-outline-secondary');
+  document.getElementById('toggleRoomReviews').classList.add('btn-outline-secondary');
+  document.getElementById('toggleRoomReviews').classList.remove('btn-primary');
+});
+
+(function () {
+  const modalEl = document.getElementById('editReviewModal');
+  const modal = new bootstrap.Modal(modalEl);
+
+  const form = document.getElementById('editReviewForm');
+
+  // This creates a correct URL like /dashboard/reviews/123/edit/
+  const editUrlTemplate = "{% url 'edit_review' 0 %}";
+
+  document.querySelectorAll('.btn-edit-review').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.id;
+
+      document.getElementById('editReviewId').value = id;
+      document.getElementById('editReviewRating').value = btn.dataset.rating || 5;
+      document.getElementById('editReviewCleanliness').value = btn.dataset.cleanliness || 5;
+      document.getElementById('editReviewComfort').value = btn.dataset.comfort || 5;
+      document.getElementById('editReviewAmenities').value = btn.dataset.amenities || 5;
+      document.getElementById('editReviewText').value = btn.dataset.review || '';
+
+      form.action = editUrlTemplate.replace('/0/', '/' + id + '/');
+      modal.show();
+    });
+  });
+})();
+</script>
 
 {% endblock %}

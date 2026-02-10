@@ -63,6 +63,23 @@ class Room(models.Model):
         return self.room_number
 
 
+class RoomImage(models.Model):
+    """Model to store multiple images for each room (up to 6)"""
+    id = models.AutoField(primary_key=True)
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='rooms/')
+    alt_text = models.CharField(max_length=200, blank=True, null=True)
+    order = models.IntegerField(default=0, help_text="Order in gallery (1-6)")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ['room', 'order']
+        unique_together = ('room', 'order')
+
+    def __str__(self):
+        return f"{self.room.room_number} - Image {self.order}"
+
+
 class Guest(models.Model):
     id = models.AutoField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -311,3 +328,68 @@ class ServiceRating(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.service.name} ({self.rating}/5)"
 
+
+class Cart(models.Model):
+    """Shopping cart for users before checkout"""
+    id = models.AutoField(primary_key=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='cart')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def get_total_price(self):
+        """Calculate total price of all items in cart"""
+        total = sum(item.get_item_total() for item in self.items.all())
+        return total
+
+    def __str__(self):
+        return f"Cart - {self.user.username}"
+
+
+class CartItem(models.Model):
+    """Individual items in the shopping cart"""
+    ITEM_TYPE_CHOICES = [
+        ('Room', 'Room'),
+        ('Service', 'Service'),
+    ]
+
+    id = models.AutoField(primary_key=True)
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
+    item_type = models.CharField(max_length=10, choices=ITEM_TYPE_CHOICES)
+    
+    # For Room bookings
+    room = models.ForeignKey(Room, on_delete=models.CASCADE, null=True, blank=True, related_name='cart_items')
+    check_in_date = models.DateField(null=True, blank=True)
+    check_out_date = models.DateField(null=True, blank=True)
+    number_of_guests = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(1)])
+    
+    # For Service bookings
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, null=True, blank=True, related_name='cart_items')
+    service_quantity = models.IntegerField(default=1, validators=[MinValueValidator(1)])
+    scheduled_date = models.DateTimeField(null=True, blank=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def number_of_nights(self):
+        """Calculate number of nights for room bookings"""
+        if self.item_type == 'Room' and self.check_in_date and self.check_out_date:
+            nights = (self.check_out_date - self.check_in_date).days
+            return max(1, nights)  # Minimum 1 night
+        return 0
+
+    def get_item_total(self):
+        """Calculate total price for this cart item"""
+        if self.item_type == 'Room' and self.room and self.check_in_date and self.check_out_date:
+            nights = (self.check_out_date - self.check_in_date).days
+            if nights > 0:
+                price = self.room.price if self.room.price is not None else 0
+                return price * nights
+        elif self.item_type == 'Service' and self.service:
+            return self.service.price * self.service_quantity
+        return 0
+
+    def __str__(self):
+        if self.item_type == 'Room':
+            return f"Cart Item - {self.room.room_number}"
+        else:
+            return f"Cart Item - {self.service.name}"

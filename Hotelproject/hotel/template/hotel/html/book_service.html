@@ -88,6 +88,12 @@
             </div>
           {% endif %}
 
+          {% if service.image %}
+            <div class="text-center mb-3">
+              <img src="{{ service.image.url }}" alt="{{ service.name }}" style="max-width:360px; width:100%; border-radius:8px; object-fit:cover;">
+            </div>
+          {% endif %}
+
           <div class="service-desc">
             <strong>{{ service.name }}</strong><br>
             <small class="text-muted">{{ service.description }}</small>
@@ -124,6 +130,22 @@
               </a>
             </div>
           </form>
+
+          <!-- Add to Cart Alternative Section -->
+          <div style="margin-top: 24px; padding-top: 24px; border-top: 1px dashed rgba(255,255,255,.18);">
+            <p style="color: rgba(255,255,255,.7); font-size: 13px; margin-bottom: 12px;">
+              <i class="fas fa-info-circle"></i> Or add this service to your shopping cart
+            </p>
+            <form method="POST" action="{% url 'add_service_to_cart' service.id %}" style="display: flex; gap: 8px;">
+              {% csrf_token %}
+              <div style="flex: 1;">
+                <input type="number" name="quantity" class="form-control form-control-sm" value="1" min="1" required style="border-radius: 8px;">
+              </div>
+              <button type="submit" class="btn btn-outline-success btn-round" style="white-space: nowrap;">
+                <i class="fas fa-shopping-cart"></i> Add to Cart
+              </button>
+            </form>
+          </div>
 
           <div class="mt-4 text-muted" style="font-size: 13px;">
             Your service booking will be confirmed by our team and you'll receive updates via email.

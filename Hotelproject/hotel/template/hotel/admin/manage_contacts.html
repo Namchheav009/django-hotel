@@ -2,12 +2,28 @@
 {% block title %}Manage Contacts - Admin Panel{% endblock %}
 
 {% block admin_content %}
+
+<!-- Alert Messages -->
+{% if messages %}
+<div style="margin-bottom: 20px;">
+    {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" role="alert">
+            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
 <div class="admin-content-title">
     <h1><i class="fas fa-envelope"></i> Contact Messages</h1>
 </div>
 
 <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">New Contact</button>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">
+        <i class="fas fa-plus"></i> New Contact
+    </button>
 </div>
 
 <!-- Filter Section -->
@@ -28,45 +44,78 @@
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>From</th>
-                    <th>Email</th>
-                    <th>Subject</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th><i class="fas fa-user"></i> From</th>
+                    <th><i class="fas fa-envelope"></i> Email</th>
+                    <th><i class="fas fa-heading"></i> Subject</th>
+                    <th><i class="fas fa-calendar"></i> Date</th>
+                    <th><i class="fas fa-flag"></i> Status</th>
+                    <th><i class="fas fa-cogs"></i> Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for contact in contacts %}
-                    <tr style="{% if not contact.is_read %}font-weight: bold;{% endif %}">
+                    <tr {% if not contact.is_read %}class="unread-message"{% endif %}>
                         <td>{{ contact.name }}</td>
                         <td><a href="mailto:{{ contact.email }}">{{ contact.email }}</a></td>
                         <td>{{ contact.subject }}</td>
                         <td>{{ contact.created_at|date:"M d, Y H:i" }}</td>
                         <td>
                             {% if contact.is_read %}
-                                <span class="badge badge-success">Read</span>
+                                <span class="badge" style="background-color: #22c55e; color: white;">Read</span>
                             {% else %}
-                                <span class="badge badge-warning">Unread</span>
+                                <span class="badge" style="background-color: #f59e0b; color: white;">Unread</span>
                             {% endif %}
                         </td>
-                        <td>
-                            <button class="btn btn-sm btn-info" onclick="viewMessage({{ contact.id }}, '{{ contact.name }}', '{{ contact.email }}', '{{ contact.subject }}', `{{ contact.message }}`)">
-                                <i class="fas fa-eye"></i> View
+
+                        <td style="display: flex; gap: 6px;">
+                            <!-- VIEW -->
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-info btn-view"
+                                data-id="{{ contact.id }}"
+                                data-name="{{ contact.name|escapejs }}"
+                                data-email="{{ contact.email|escapejs }}"
+                                data-subject="{{ contact.subject|default:''|escapejs }}"
+                                data-message="{{ contact.message|default:''|escapejs }}"
+                            >
+                                <i class="fas fa-eye"></i>
                             </button>
-                            {% if not contact.is_read %}
-                                <form method="POST" action="{% url 'mark_contact_read' contact.id %}" style="display: inline;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-success">Mark Read</button>
-                                </form>
-                            {% endif %}
-                            <a class="btn btn-sm btn-warning" href="{% url 'edit_contact' contact.id %}"><i class="fas fa-edit"></i> Edit</a>
+
+                            <!-- EDIT -->
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-warning btn-edit"
+                                data-id="{{ contact.id }}"
+                                data-name="{{ contact.name|escapejs }}"
+                                data-email="{{ contact.email|escapejs }}"
+                                data-phone="{{ contact.phone|default:''|escapejs }}"
+                                data-subject="{{ contact.subject|default:''|escapejs }}"
+                                data-message="{{ contact.message|default:''|escapejs }}"
+                                data-isread="{% if contact.is_read %}true{% else %}false{% endif %}"
+                            >
+                                <i class="fas fa-edit"></i>
+                            </button>
+
+                            <!-- DELETE -->
                             <form method="post" action="{% url 'delete_contact' contact.id %}" style="display:inline;">
                                 {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Delete this message?')">
-                                    <i class="fas fa-trash"></i> Delete
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Delete this message?')">
+                                    <i class="fas fa-trash"></i>
                                 </button>
                             </form>
+
+                            {# OPTIONAL: Mark as read button if you have this url #}
+                            {#
+                            {% if not contact.is_read %}
+                            <form method="post" action="{% url 'mark_contact_read' contact.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success" title="Mark as read">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                            #}
                         </td>
                     </tr>
                 {% endfor %}
@@ -78,7 +127,7 @@
 </div>
 
 <!-- View Message Modal -->
-<div class="modal fade" id="viewMessageModal" tabindex="-1">
+<div class="modal fade" id="viewMessageModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -99,27 +148,8 @@
     </div>
 </div>
 
-<script>
-    function viewMessage(id, name, email, subject, message) {
-        document.getElementById('messageName').textContent = name;
-        document.getElementById('messageFrom').textContent = name;
-        document.getElementById('messageEmail').textContent = email;
-        document.getElementById('messageSubject').textContent = subject;
-        document.getElementById('messageBody').textContent = message;
-        new bootstrap.Modal(document.getElementById('viewMessageModal')).show();
-    }
-    
-    function deleteMessage(contactId) {
-        if (confirm('Are you sure you want to delete this message?')) {
-            alert('Delete functionality - Contact ID: ' + contactId);
-        }
-    }
-</script>
-{% endblock %}
-
-
 <!-- Add Contact Modal -->
-<div class="modal fade" id="addContactModal" tabindex="-1">
+<div class="modal fade" id="addContactModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -158,3 +188,104 @@
         </div>
     </div>
 </div>
+
+<!-- Edit Contact Modal -->
+<div class="modal fade" id="editContactModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Contact</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            {# IMPORTANT: you need a URL like update_contact #}
+            <form method="post" id="editContactForm" action="">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Name</label>
+                            <input class="form-control" name="name" id="editName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email</label>
+                            <input class="form-control" name="email" type="email" id="editEmail" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone</label>
+                            <input class="form-control" name="phone" id="editPhone">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Subject</label>
+                            <input class="form-control" name="subject" id="editSubject">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" name="message" rows="5" id="editMessage"></textarea>
+                    </div>
+
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_read" id="editIsRead">
+                        <label class="form-check-label" for="editIsRead">Mark as read</label>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-warning">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .unread-message { font-weight: bold; }
+</style>
+
+<script>
+(function() {
+    const viewModalEl = document.getElementById('viewMessageModal');
+    const editModalEl = document.getElementById('editContactModal');
+
+    const viewModal = new bootstrap.Modal(viewModalEl);
+    const editModal = new bootstrap.Modal(editModalEl);
+
+    // VIEW
+    document.querySelectorAll('.btn-view').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('messageName').textContent = btn.dataset.name || '';
+            document.getElementById('messageFrom').textContent = btn.dataset.name || '';
+            document.getElementById('messageEmail').textContent = btn.dataset.email || '';
+            document.getElementById('messageSubject').textContent = btn.dataset.subject || '';
+            document.getElementById('messageBody').textContent = btn.dataset.message || '';
+            viewModal.show();
+        });
+    });
+
+    // EDIT
+    document.querySelectorAll('.btn-edit').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('editName').value = btn.dataset.name || '';
+            document.getElementById('editEmail').value = btn.dataset.email || '';
+            document.getElementById('editPhone').value = btn.dataset.phone || '';
+            document.getElementById('editSubject').value = btn.dataset.subject || '';
+            document.getElementById('editMessage').value = btn.dataset.message || '';
+            document.getElementById('editIsRead').checked = (btn.dataset.isread === 'true');
+
+            // Set form action dynamically
+            const form = document.getElementById('editContactForm');
+            form.action = "{% url 'edit_contact' 0 %}".replace('/0/', '/' + btn.dataset.id + '/');
+
+            editModal.show();
+        });
+    });
+})();
+</script>
+
+{% endblock %}

@@ -3,351 +3,668 @@
 
 {% block admin_content %}
 <style>
-  .page-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    gap: 16px;
+  :root {
+    --primary: #3b82f6;
+    --primary-dark: #2563eb;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #0ea5e9;
+    --purple: #8b5cf6;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg-soft: #f8fafc;
   }
 
-  .page-head h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #0f172a;
-    margin: 0 0 4px 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+  .page-head{
+    display:flex; 
+    align-items:flex-end; 
+    justify-content:space-between; 
+    gap:14px;
+    margin-bottom:24px;
+    flex-wrap:wrap;
+  }
+  .page-head h2{ 
+    margin:0; 
+    font-weight:900; 
+    font-size:28px;
+    color:#0f172a;
+  }
+  .page-sub{ 
+    margin:6px 0 0; 
+    color:var(--muted); 
+    font-weight:600;
+    font-size:14px;
   }
 
-  .page-head p {
-    color: #64748b;
-    margin: 0;
-    font-size: 0.95rem;
+  /* Statistics Cards */
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+    gap:16px;
+    margin-bottom:24px;
   }
-
-  .badge {
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-weight: 600;
-    font-size: 0.8rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
+  .stat-card{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    transition:all 0.2s ease;
+    cursor:pointer;
   }
+  .stat-card:hover{
+    box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    transform:translateY(-2px);
+  }
+  .stat-icon{
+    width:48px;
+    height:48px;
+    border-radius:10px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:20px;
+    flex-shrink:0;
+  }
+  .stat-icon.blue{ background:#dbeafe; color:#2563eb; }
+  .stat-icon.green{ background:#dcfce7; color:#16a34a; }
+  .stat-icon.orange{ background:#fed7aa; color:#ea580c; }
+  .stat-icon.purple{ background:#ede9fe; color:#7c3aed; }
+  .stat-icon.cyan{ background:#cffafe; color:#0891b2; }
+  .stat-icon.red{ background:#fee2e2; color:#dc2626; }
   
-  .badge-online { 
-    background: #dbeafe; 
-    color: #1e40af; 
+  .stat-details{
+    flex:1;
   }
-  
-  .badge-walkin { 
-    background: #f1f5f9; 
-    color: #475569;
+  .stat-label{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    margin-bottom:4px;
   }
-
-  .cardx {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    overflow: hidden;
-  }
-
-  .toolbar {
-    padding: 20px;
-    background: #f8fafc;
-    border-bottom: 1px solid #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
+  .stat-value{
+    font-size:24px;
+    font-weight:900;
+    color:#0f172a;
   }
 
-  .toolbar .left {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
+  /* Toolbar */
+  .toolbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    margin-bottom:24px;
+    flex-wrap:wrap;
   }
 
-  .toolbar .sub {
-    color: #64748b;
-    font-size: 0.9rem;
-    padding: 8px 12px;
-    background: #fff;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
+  .toolbar-left{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
+    flex:1;
   }
 
-  .inputx, .selectx {
-    padding: 10px 14px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    transition: all 0.2s;
-    background: #fff;
+  .search{
+    display:flex; 
+    align-items:center; 
+    gap:10px;
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:#fff;
+    min-width:280px;
+    transition:all 0.2s ease;
+  }
+  .search:focus-within{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(59,130,246,0.1);
+  }
+  .search input{
+    border:none; 
+    outline:none; 
+    background:transparent;
+    width:100%;
+    font-weight:600;
+    color:#0f172a;
+    font-size:14px;
+  }
+  .search input::placeholder{
+    color:#94a3b8;
   }
 
-  .inputx {
-    min-width: 240px;
+  /* Filter Buttons */
+  .filter-group{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .filter-btn{
+    padding:8px 16px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#fff;
+    font-weight:700;
+    font-size:13px;
+    color:var(--muted);
+    cursor:pointer;
+    transition:all 0.2s ease;
+    white-space:nowrap;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .filter-btn:hover{
+    background:var(--bg-soft);
+    border-color:#cbd5e1;
+  }
+  .filter-btn.active{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
   }
 
-  .inputx:focus, .selectx:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  /* Action Button */
+  .btn-action{
+    padding:12px 24px;
+    border:none;
+    border-radius:10px;
+    background:var(--primary);
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    text-decoration:none;
+  }
+  .btn-action:hover{
+    background:var(--primary-dark);
+    box-shadow:0 4px 12px rgba(59,130,246,0.3);
+    color:#fff;
   }
 
-  .btnx {
-    padding: 10px 18px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s;
-    border: none;
-    cursor: pointer;
+  /* Main Card */
+  .cardx{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:16px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.05);
+    overflow:hidden;
   }
 
-  .btn-dark {
-    background: #0f172a;
-    color: #fff;
+  /* Card Toolbar */
+  .card-toolbar{
+    padding:20px 24px;
+    border-bottom:1px solid var(--border);
+    background:var(--bg-soft);
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:center;
   }
 
-  .btn-dark:hover {
-    background: #1e293b;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+  .selectx{
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#fff;
+    font-weight:600;
+    font-size:14px;
+    color:#0f172a;
+    cursor:pointer;
+    transition:all 0.2s ease;
+  }
+  .selectx:focus{
+    border-color:var(--primary);
+    box-shadow:0 0 0 3px rgba(59,130,246,0.1);
+    outline:none;
   }
 
-  .btn-ghost {
-    background: #fff;
-    color: #0f172a;
-    border: 1px solid #e2e8f0;
+  .btn-search{
+    padding:10px 18px;
+    border:none;
+    border-radius:8px;
+    background:var(--primary);
+    color:#fff;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .btn-search:hover{
+    background:var(--primary-dark);
   }
 
-  .btn-ghost:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
+  .btn-clear{
+    padding:10px 18px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#fff;
+    color:#0f172a;
+    font-weight:700;
+    font-size:14px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    text-decoration:none;
+  }
+  .btn-clear:hover{
+    background:var(--bg-soft);
   }
 
-  .table-wrap {
-    overflow-x: auto;
+  /* Summary Bar */
+  .summary-bar{
+    padding:16px 24px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:#f8fafc;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .summary-item{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13px;
+  }
+  .summary-label{
+    color:var(--muted);
+    font-weight:700;
+  }
+  .summary-value{
+    font-weight:900;
+    color:#0f172a;
   }
 
-  .clean-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.9rem;
+  /* Table */
+  .table-wrapper{
+    overflow-x:auto;
+  }
+  .clean-table{ 
+    width:100%; 
+    border-collapse:collapse; 
+  }
+  .clean-table thead th{
+    text-align:left;
+    color:var(--muted);
+    font-weight:800;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:0.5px;
+    padding:16px 20px;
+    background:var(--bg-soft);
+    border-bottom:2px solid var(--border);
+    white-space:nowrap;
+  }
+  .clean-table tbody td{
+    padding:16px 20px;
+    border-top:1px solid #f1f5f9;
+    vertical-align:middle;
+    font-weight:700;
+    color:#0f172a;
+    font-size:14px;
+  }
+  .clean-table tbody tr{
+    transition:all 0.15s ease;
+  }
+  .clean-table tbody tr:hover{ 
+    background:#f8fafc;
   }
 
-  .clean-table thead {
-    background: #f8fafc;
-    border-bottom: 2px solid #e2e8f0;
+  /* Guest Info */
+  .guest-info{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .guest-avatar{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    font-weight:900;
+    font-size:16px;
+    flex-shrink:0;
+  }
+  .guest-details{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .guest-name{
+    font-weight:800;
+    color:#0f172a;
+    font-size:15px;
+  }
+  .guest-email{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:600;
   }
 
-  .clean-table th {
-    padding: 14px 20px;
-    text-align: left;
-    font-weight: 600;
-    color: #475569;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  /* Room Badge */
+  .room-badge{
+    display:inline-flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .room-number{
+    font-weight:900;
+    color:#0f172a;
+    font-size:15px;
+  }
+  .room-category{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:600;
   }
 
-  .clean-table td {
-    padding: 16px 20px;
-    border-bottom: 1px solid #f1f5f9;
-    color: #0f172a;
+  /* Date Display */
+  .date-range{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .date-in{
+    font-weight:800;
+    color:#0f172a;
+    font-size:14px;
+  }
+  .date-out{
+    font-size:12px;
+    color:var(--muted);
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:6px;
   }
 
-  .clean-table tbody tr {
-    transition: background 0.15s;
+  /* Type Badge */
+  .type-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:6px 12px;
+    border-radius:8px;
+    font-weight:800;
+    font-size:12px;
+  }
+  .type-badge.online{
+    background:#dbeafe;
+    color:#1e3a8a;
+  }
+  .type-badge.walkin{
+    background:#f1f5f9;
+    color:#475569;
   }
 
-  .clean-table tbody tr:hover {
-    background: #f8fafc;
+  /* Status Pills */
+  .pill{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 12px;
+    border-radius:8px;
+    font-weight:800;
+    font-size:12px;
+    text-transform:capitalize;
+  }
+  .dot{
+    width:6px;
+    height:6px;
+    border-radius:50%;
   }
 
-  .sub {
-    font-size: 0.85rem;
-    color: #64748b;
-    margin-top: 2px;
+  .pill.pending{ background:#fef3c7; color:#92400e; }
+  .pill.pending .dot{ background:#f59e0b; }
+
+  .pill.confirmed{ background:#d1fae5; color:#065f46; }
+  .pill.confirmed .dot{ background:#22c55e; }
+
+  .pill.checked-in{ background:#dbeafe; color:#1e3a8a; }
+  .pill.checked-in .dot{ background:#3b82f6; }
+
+  .pill.checked-out{ background:#f3f4f6; color:#374151; }
+  .pill.checked-out .dot{ background:#6b7280; }
+
+  .pill.cancelled{ background:#fee2e2; color:#991b1b; }
+  .pill.cancelled .dot{ background:#ef4444; }
+
+  /* Total Price */
+  .total-price{
+    font-weight:900;
+    color:var(--primary);
+    font-size:16px;
   }
 
-  .pill {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-transform: capitalize;
+  /* Action Buttons */
+  .actions{
+    display:flex;
+    gap:8px;
+  }
+  .btn-mini{
+    padding:8px 14px;
+    border-radius:8px;
+    font-weight:700;
+    font-size:13px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    text-decoration:none;
+    border:none;
+  }
+  .btn-mini.warn{
+    background:#fef3c7;
+    color:#92400e;
+    border:1px solid #fde68a;
+  }
+  .btn-mini.warn:hover{
+    background:#fbbf24;
+    color:#fff;
+  }
+  .btn-mini.info{
+    background:#dbeafe;
+    color:#1e3a8a;
+    border:1px solid #bfdbfe;
+  }
+  .btn-mini.info:hover{
+    background:#3b82f6;
+    color:#fff;
   }
 
-  .pill.pending {
-    background: #fef3c7;
-    color: #92400e;
+  /* Empty State */
+  .empty{
+    padding:60px 24px;
+    text-align:center;
+  }
+  .empty-icon{
+    font-size:64px;
+    color:#cbd5e1;
+    margin-bottom:16px;
+  }
+  .empty-text{
+    color:var(--muted);
+    font-weight:700;
+    font-size:16px;
+    margin-bottom:8px;
+  }
+  .empty-subtext{
+    color:#94a3b8;
+    font-size:14px;
   }
 
-  .pill.confirmed {
-    background: #d1fae5;
-    color: #065f46;
+  /* Pagination */
+  .pagination{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+    background:var(--bg-soft);
+    border-top:1px solid var(--border);
+  }
+  .pagination a, .pagination span{
+    padding:10px 16px;
+    border-radius:8px;
+    font-weight:700;
+    font-size:14px;
+    text-decoration:none;
+    border:1px solid var(--border);
+    color:#0f172a;
+    transition:all 0.2s;
+    background:#fff;
+    min-width:44px;
+    text-align:center;
+  }
+  .pagination a:hover{
+    background:var(--bg-soft);
+    border-color:#cbd5e1;
+    transform:translateY(-1px);
+  }
+  .pagination .active{
+    background:var(--primary);
+    color:#fff;
+    border-color:var(--primary);
   }
 
-  .pill.checked-in {
-    background: #dbeafe;
-    color: #1e40af;
-  }
-
-  .pill.checked-out {
-    background: #f3f4f6;
-    color: #374151;
-  }
-
-  .pill.cancelled {
-    background: #fee2e2;
-    color: #991b1b;
-  }
-
-  .actions {
-    display: flex;
-    gap: 8px;
-  }
-
-  .btn-mini {
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    transition: all 0.2s;
-  }
-
-  .btn-mini.warn {
-    background: #fef3c7;
-    color: #92400e;
-  }
-
-  .btn-mini.warn:hover {
-    background: #fde68a;
-  }
-
-  .btn-mini.info {
-    background: #dbeafe;
-    color: #1e40af;
-  }
-
-  .btn-mini.info:hover {
-    background: #bfdbfe;
-  }
-
-  .pagination {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    padding: 20px;
-    background: #f8fafc;
-  }
-
-  .pagination a, .pagination span {
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.9rem;
-    text-decoration: none;
-    border: 1px solid #e2e8f0;
-    color: #0f172a;
-    transition: all 0.2s;
-    background: #fff;
-  }
-
-  .pagination a:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-    transform: translateY(-1px);
-  }
-
-  .pagination .active {
-    background: #0f172a;
-    color: #fff;
-    border-color: #0f172a;
-  }
-
-  .empty-state {
-    padding: 60px 20px;
-    text-align: center;
-  }
-
-  .empty-state i {
-    font-size: 3rem;
-    color: #cbd5e1;
-    margin-bottom: 16px;
-  }
-
-  .empty-state h3 {
-    color: #475569;
-    margin: 0 0 8px 0;
-    font-size: 1.1rem;
-  }
-
-  .empty-state p {
-    color: #94a3b8;
-    margin: 0;
-  }
-
-  @media (max-width: 768px) {
-    .page-head {
-      flex-direction: column;
-      align-items: flex-start;
+  /* Responsive */
+  @media (max-width: 768px){
+    .page-head{
+      flex-direction:column;
+      align-items:flex-start;
     }
-
-    .toolbar {
-      flex-direction: column;
-      align-items: stretch;
+    .toolbar{
+      flex-direction:column;
+      align-items:stretch;
     }
-
-    .toolbar .left {
-      width: 100%;
+    .toolbar-left{
+      flex-direction:column;
     }
-
-    .inputx {
-      min-width: 100%;
+    .search{
+      width:100%;
     }
-
-    .actions {
-      flex-direction: column;
+    .stats-grid{
+      grid-template-columns:1fr;
+    }
+    .card-toolbar{
+      flex-direction:column;
+      align-items:stretch;
+    }
+    .actions{
+      flex-direction:column;
     }
   }
 </style>
 
 <div class="page-head">
   <div>
-    <h1><i class="fas fa-calendar-alt"></i> Reservation Management</h1>
-    <p>Manage online & walk-in reservations</p>
+    <h2>Reservation Management</h2>
+    <p class="page-sub">Manage online and walk-in reservations</p>
   </div>
 
-  <a href="{% url 'add_reservation_page' %}" class="btnx btn-dark">
-    <i class="fas fa-plus"></i> New Reservation
+  <a href="{% url 'add_reservation_page' %}" class="btn-action">
+    <i class="fas fa-plus"></i>
+    New Reservation
   </a>
 </div>
 
+<!-- Statistics Overview -->
+<div class="stats-grid">
+  <div class="stat-card" onclick="filterByStatus('all')">
+    <div class="stat-icon blue">
+      <i class="fas fa-calendar-check"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Total Reservations</div>
+      <div class="stat-value"><span id="totalReservations">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterByStatus('pending')">
+    <div class="stat-icon orange">
+      <i class="fas fa-clock"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Pending</div>
+      <div class="stat-value"><span id="pendingCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterByStatus('confirmed')">
+    <div class="stat-icon green">
+      <i class="fas fa-check-circle"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Confirmed</div>
+      <div class="stat-value"><span id="confirmedCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterByStatus('checked-in')">
+    <div class="stat-icon cyan">
+      <i class="fas fa-sign-in-alt"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Checked In</div>
+      <div class="stat-value"><span id="checkedInCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card" onclick="filterByStatus('checked-out')">
+    <div class="stat-icon purple">
+      <i class="fas fa-sign-out-alt"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Checked Out</div>
+      <div class="stat-value"><span id="checkedOutCount">0</span></div>
+    </div>
+  </div>
+
+  <div class="stat-card">
+    <div class="stat-icon red">
+      <i class="fas fa-dollar-sign"></i>
+    </div>
+    <div class="stat-details">
+      <div class="stat-label">Total Revenue</div>
+      <div class="stat-value">$<span id="totalRevenue">0</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Main Card -->
 <div class="cardx">
+  <!-- Search & Filter Toolbar -->
+  <div class="card-toolbar">
+    <form method="GET" style="display:flex; gap:12px; flex-wrap:wrap; flex:1; align-items:center;">
+      <div class="search">
+        <i class="fas fa-search"></i>
+        <input type="text" name="search" value="{{ search|default:'' }}" id="searchInput"
+               placeholder="Search guest, room, or email..." onkeyup="filterReservations()">
+      </div>
 
-  <!-- 🔍 SEARCH + FILTER -->
-  <div class="toolbar">
-    <form method="GET" class="left">
-      <input type="text" name="search" value="{{ search|default:'' }}"
-             class="inputx" placeholder="🔍 Search guest or room...">
-
-      <select name="status" class="selectx">
+      <select name="status" class="selectx" id="statusFilter" onchange="this.form.submit()">
         <option value="">All Statuses</option>
         {% for key,label in status_choices %}
           <option value="{{ key }}" {% if request.GET.status == key %}selected{% endif %}>
@@ -356,32 +673,41 @@
         {% endfor %}
       </select>
 
-      <button type="submit" class="btnx btn-ghost">
+      <button type="submit" class="btn-search">
         <i class="fas fa-search"></i> Search
       </button>
 
       {% if search or request.GET.status %}
-        <a href="{% url 'manage_reservations' %}" class="btnx btn-ghost">
+        <a href="{% url 'manage_reservations' %}" class="btn-clear">
           <i class="fas fa-times"></i> Clear
         </a>
       {% endif %}
     </form>
+  </div>
 
-    <div class="sub">
-      <i class="fas fa-list"></i> Total: <strong>{{ page_obj.paginator.count }}</strong>
+  <!-- Summary Bar -->
+  <div class="summary-bar">
+    <div class="summary-item">
+      <span class="summary-label">Showing:</span>
+      <span class="summary-value" id="visibleCount">{{ reservations|length }}</span>
+      <span class="summary-label">of {{ page_obj.paginator.count|default:reservations|length }} reservations</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Page Revenue:</span>
+      <span class="summary-value">$<span id="pageRevenue">0</span></span>
     </div>
   </div>
 
-  <!-- TABLE -->
-  <div class="table-wrap">
+  <!-- Table -->
+  <div class="table-wrapper">
     {% if reservations %}
-    <table class="clean-table">
+    <table class="clean-table" id="reservationsTable">
       <thead>
         <tr>
           <th>ID</th>
           <th>Guest</th>
           <th>Room</th>
-          <th>Dates</th>
+          <th>Check-In / Check-Out</th>
           <th>Type</th>
           <th>Status</th>
           <th>Total</th>
@@ -391,65 +717,266 @@
 
       <tbody>
         {% for r in reservations %}
-        <tr>
-          <td><strong>#{{ r.id }}</strong></td>
+        <tr data-status="{{ r.status|lower }}" data-total="{{ r.total_price }}">
+          <td>
+            <strong style="color:var(--primary);">#{{ r.id }}</strong>
+          </td>
 
           <td>
-            <div style="font-weight: 600;">
-              {{ r.guest.user.get_full_name|default:r.guest.user.username }}
-            </div>
-            <div class="sub">
-              <i class="fas fa-envelope" style="font-size: 0.75rem;"></i>
-              {{ r.guest.user.email }}
+            <div class="guest-info">
+              <div class="guest-avatar">
+                {{ r.guest.user.get_full_name|first|default:r.guest.user.username|first|upper }}
+              </div>
+              <div class="guest-details">
+                <div class="guest-name">
+                  {{ r.guest.user.get_full_name|default:r.guest.user.username }}
+                </div>
+                <div class="guest-email">
+                  <i class="fas fa-envelope"></i>
+                  {{ r.guest.user.email }}
+                </div>
+              </div>
             </div>
           </td>
 
           <td>
-            <div style="font-weight: 600;">Room {{ r.room.room_number }}</div>
-            <div class="sub">{{ r.room.category.category_name }}</div>
+            <div class="room-badge">
+              <div class="room-number">
+                <i class="fas fa-door-open"></i>
+                Room {{ r.room.room_number }}
+              </div>
+              <div class="room-category">
+                {{ r.room.category.category_name }}
+              </div>
+            </div>
           </td>
 
           <td>
-            <div style="font-weight: 600;">{{ r.check_in_date|date:"M d, Y" }}</div>
-            <div class="sub">
-              <i class="fas fa-arrow-right" style="font-size: 0.7rem;"></i>
-              {{ r.check_out_date|date:"M d, Y" }}
+            <div class="date-range">
+              <div class="date-in">
+                <i class="fas fa-calendar-check"></i>
+                {{ r.check_in_date|date:"M d, Y" }}
+              </div>
+              <div class="date-out">
+                <i class="fas fa-arrow-right"></i>
+                {{ r.check_out_date|date:"M d, Y" }}
+              </div>
             </div>
           </td>
 
           <td>
             {% if r.is_online_booking %}
-              <span class="badge badge-online">
-                <i class="fas fa-globe"></i> Online
+              <span class="type-badge online">
+                <i class="fas fa-globe"></i>
+                Online
               </span>
             {% else %}
-              <span class="badge badge-walkin">
-                <i class="fas fa-walking"></i> Walk-in
+              <span class="type-badge walkin">
+                <i class="fas fa-walking"></i>
+                Walk-in
               </span>
             {% endif %}
           </td>
 
           <td>
-            <span class="pill {{ r.status|lower }}">{{ r.status }}</span>
+            {% if r.status|lower == 'pending' %}
+              <span class="pill pending">
+                <span class="dot"></span>
+                Pending
+              </span>
+            {% elif r.status|lower == 'confirmed' %}
+              <span class="pill confirmed">
+                <span class="dot"></span>
+                Confirmed
+              </span>
+            {% elif r.status|lower == 'checked-in' or r.status|lower == 'checked_in' %}
+              <span class="pill checked-in">
+                <span class="dot"></span>
+                Checked In
+              </span>
+            {% elif r.status|lower == 'checked-out' or r.status|lower == 'checked_out' %}
+              <span class="pill checked-out">
+                <span class="dot"></span>
+                Checked Out
+              </span>
+            {% elif r.status|lower == 'cancelled' %}
+              <span class="pill cancelled">
+                <span class="dot"></span>
+                Cancelled
+              </span>
+            {% else %}
+              <span class="pill">
+                <span class="dot"></span>
+                {{ r.status }}
+              </span>
+            {% endif %}
           </td>
 
-          <td><strong>${{ r.total_price }}</strong></td>
+          <td>
+            <div class="total-price">${{ r.total_price }}</div>
+          </td>
 
-          <td class="actions">
-            <a href="{% url 'edit_reservation' r.id %}" class="btn-mini warn" title="Edit Reservation">
-              <i class="fas fa-edit"></i> Edit
-            </a>
+          <td>
+            <div class="actions">
+              <a href="{% url 'edit_reservation' r.id %}" class="btn-mini warn" title="Edit Reservation">
+                <i class="fas fa-edit"></i> Edit
+              </a>
 
-            <a href="{% url 'reservation_detail' r.id %}" class="btn-mini info" title="View Details">
-              <i class="fas fa-eye"></i> View
-            </a>
+              <a href="{% url 'reservation_detail' r.id %}" class="btn-mini info" title="View Details">
+                <i class="fas fa-eye"></i> View
+              </a>
+
+              {% comment %} Check-in / Check-out actions for admins {% endcomment %}
+              {% if r.status == 'Pending' or r.status == 'Confirmed' %}
+                <form method="post" action="{% url 'update_reservation_status' r.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="status" value="Checked In">
+                  <button type="submit" class="btn-mini info" onclick="return confirm('Mark reservation #{{ r.id }} as Checked In?');" title="Check In">
+                    <i class="fas fa-sign-in-alt"></i> Check In
+                  </button>
+                </form>
+              {% elif r.status == 'Checked In' %}
+                <form method="post" action="{% url 'update_reservation_status' r.id %}" style="display:inline;">
+                  {% csrf_token %}
+                  <input type="hidden" name="status" value="Checked Out">
+                  <button type="submit" class="btn-mini warn" onclick="return confirm('Mark reservation #{{ r.id }} as Checked Out?');" title="Check Out">
+                    <i class="fas fa-sign-out-alt"></i> Check Out
+                  </button>
+                </form>
+              {% endif %}
+            </div>
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
-  {% else %}
-    <p style="color:#7f8c8d; text-align:center; padding:20px;">No reservations found.</p>
+    {% else %}
+    <div class="empty">
+      <div class="empty-icon">
+        <i class="fas fa-calendar-times"></i>
+      </div>
+      <div class="empty-text">No reservations found</div>
+      <div class="empty-subtext">
+        {% if search or request.GET.status %}
+          Try adjusting your search or filters
+        {% else %}
+          Create your first reservation to get started
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Pagination -->
+  {% if reservations and page_obj.paginator.num_pages > 1 %}
+  <div class="pagination">
+    {% if page_obj.has_previous %}
+      <a href="?page=1{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+        <i class="fas fa-angle-double-left"></i>
+      </a>
+      <a href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+        <i class="fas fa-angle-left"></i>
+      </a>
+    {% endif %}
+
+    {% for num in page_obj.paginator.page_range %}
+      {% if page_obj.number == num %}
+        <span class="active">{{ num }}</span>
+      {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+        <a href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+          {{ num }}
+        </a>
+      {% endif %}
+    {% endfor %}
+
+    {% if page_obj.has_next %}
+      <a href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+        <i class="fas fa-angle-right"></i>
+      </a>
+      <a href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+        <i class="fas fa-angle-double-right"></i>
+      </a>
+    {% endif %}
+  </div>
   {% endif %}
 </div>
+
+<script>
+  let currentStatusFilter = 'all';
+
+  // Calculate statistics
+  function calculateStats() {
+    const rows = document.querySelectorAll('#reservationsTable tbody tr');
+    let pendingCount = 0;
+    let confirmedCount = 0;
+    let checkedInCount = 0;
+    let checkedOutCount = 0;
+    let totalRevenue = 0;
+    let pageRevenue = 0;
+
+    rows.forEach(row => {
+      const status = row.getAttribute('data-status');
+      const total = parseFloat(row.getAttribute('data-total')) || 0;
+
+      if (status === 'pending') pendingCount++;
+      if (status === 'confirmed') confirmedCount++;
+      if (status === 'checked-in' || status === 'checked_in') checkedInCount++;
+      if (status === 'checked-out' || status === 'checked_out') checkedOutCount++;
+
+      totalRevenue += total;
+      if (row.style.display !== 'none') {
+        pageRevenue += total;
+      }
+    });
+
+    document.getElementById('totalReservations').textContent = rows.length;
+    document.getElementById('pendingCount').textContent = pendingCount;
+    document.getElementById('confirmedCount').textContent = confirmedCount;
+    document.getElementById('checkedInCount').textContent = checkedInCount;
+    document.getElementById('checkedOutCount').textContent = checkedOutCount;
+    document.getElementById('totalRevenue').textContent = totalRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    document.getElementById('pageRevenue').textContent = pageRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
+  // Filter by status (from stat card clicks)
+  function filterByStatus(status) {
+    currentStatusFilter = status;
+    
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+      statusFilter.value = status === 'all' ? '' : status;
+      statusFilter.form.submit();
+    }
+  }
+
+  // Client-side filter
+  function filterReservations() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const rows = document.querySelectorAll('#reservationsTable tbody tr');
+    let visibleCount = 0;
+    let pageRevenue = 0;
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      const total = parseFloat(row.getAttribute('data-total')) || 0;
+      
+      const shouldShow = text.includes(searchTerm);
+      row.style.display = shouldShow ? '' : 'none';
+      
+      if (shouldShow) {
+        visibleCount++;
+        pageRevenue += total;
+      }
+    });
+
+    document.getElementById('visibleCount').textContent = visibleCount;
+    document.getElementById('pageRevenue').textContent = pageRevenue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    calculateStats();
+  });
+</script>
+
 {% endblock %}

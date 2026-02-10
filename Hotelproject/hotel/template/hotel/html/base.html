@@ -453,6 +453,16 @@
                     </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'view_cart' %}active{% endif %}" href="{% url 'view_cart' %}" style="position: relative;">
+                                <i class="fas fa-shopping-cart"></i> Cart
+                                {% with cart_count=user.cart.items.count %}
+                                    {% if cart_count %}
+                                        <span style="position: absolute; top: -8px; right: -8px; background: #ef4444; color: white; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">{{ cart_count }}</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'my_reservations' %}active{% endif %}" href="{% url 'my_reservations' %}">My Bookings</a>
                         </li>
                         <li class="nav-item">
