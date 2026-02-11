@@ -126,10 +126,64 @@
     margin-left:auto;
   }
 
+  .stay-details{
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .detail-item{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .detail-label{
+    font-weight: 700;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .detail-value{
+    font-weight: 900;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+
+  .special-requests{
+    grid-column: 1 / -1;
+    padding: 10px 12px;
+    background: #f7f9ff;
+    border-radius: 8px;
+    border-left: 3px solid var(--warn);
+  }
+
+  .special-requests .detail-label{
+    color: var(--warn);
+  }
+
+  .payment-info{
+    grid-column: 1 / -1;
+    padding: 10px 12px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    border-left: 3px solid var(--success);
+  }
+
+  .payment-info .detail-label{
+    color: var(--success);
+  }
+
   @media(max-width: 992px){
     .stay-inner{ grid-template-columns: 1fr; }
     .stay-media{ height: 220px; }
     .reviewed{ margin-left:0; }
+    .stay-details{ grid-template-columns: 1fr; }
   }
   
 </style>
@@ -209,17 +263,19 @@
               {% endif %}
             </div>
 
-            <div class="stay-actions">
-              <a class="btnx btn-ghost" href="{% url 'reservation_detail' r.id %}">
-                <i class="fas fa-receipt"></i> View Details
-              </a>
-
-              <!-- Payment Button if not paid -->
-              {% if r.payment and r.payment.payment_status != 'Completed' %}
-                <a class="btnx btn-dark" href="{% url 'payment' r.id %}">
+            <!-- Complete Payment Call-to-Action (always show if not completed) -->
+            {% if not r.payment or r.payment.payment_status != 'Completed' %}
+              <div class="stay-actions" style="padding-top: 0; border-top: 0; margin-top: 0;">
+                <a href="{% url 'payment' r.id %}" class="btnx btn-pay">
                   <i class="fas fa-credit-card"></i> Complete Payment
                 </a>
-              {% endif %}
+              </div>
+            {% endif %}            
+        
+            <div class="stay-actions">
+              <a class="btnx btn-dark" href="{% url 'reservation_detail' r.id %}">
+                <i class="fas fa-receipt"></i> View Details
+              </a>
 
               {% if r.status == 'Checked Out' and r.id not in reviewed_res_ids %}
                 <a class="btnx btn-dark" href="{% url 'rate_room' r.room.id %}">

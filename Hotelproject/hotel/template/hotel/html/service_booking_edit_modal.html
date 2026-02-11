@@ -1,35 +1,397 @@
+<style>
+  /* Enhanced Modal Styles */
+  .modal-content {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+    overflow: hidden;
+  }
+
+  .modal-header {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border: none;
+    padding: 24px 28px;
+    position: relative;
+  }
+
+  .modal-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.4;
+  }
+
+  .modal-title {
+    color: #fff;
+    font-weight: 900;
+    font-size: 22px;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .modal-title i {
+    font-size: 24px;
+  }
+
+  .btn-close {
+    filter: brightness(0) invert(1);
+    opacity: 0.8;
+    position: relative;
+    z-index: 1;
+  }
+
+  .btn-close:hover {
+    opacity: 1;
+  }
+
+  .modal-body {
+    padding: 32px 28px;
+    background: #fafbfc;
+  }
+
+  .form-group-enhanced {
+    margin-bottom: 24px;
+    position: relative;
+  }
+
+  .form-label-enhanced {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-label-enhanced i {
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%);
+    border-radius: 4px;
+    color: #fff;
+    font-size: 10px;
+  }
+
+  .form-control-enhanced {
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-weight: 600;
+    font-size: 15px;
+    color: #111827;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background: #fff;
+    width: 100%;
+  }
+
+  .form-control-enhanced:focus {
+    outline: none;
+    border-color: #06b6d4;
+    box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.1);
+    transform: translateY(-1px);
+  }
+
+  .form-control-enhanced:disabled {
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    color: #6b7280;
+    cursor: not-allowed;
+    border-color: #d1d5db;
+  }
+
+  textarea.form-control-enhanced {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+  }
+
+  .input-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 600;
+  }
+
+  .input-hint i {
+    font-size: 11px;
+  }
+
+  .service-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    border-radius: 12px;
+    border: 2px solid #334155;
+  }
+
+  .service-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 20px;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+  }
+
+  .service-info {
+    flex: 1;
+  }
+
+  .service-name {
+    font-weight: 800;
+    color: #f8fafc;
+    font-size: 16px;
+    margin: 0;
+  }
+
+  .service-label {
+    font-size: 11px;
+    color: #94a3b8;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+  }
+
+  .modal-footer {
+    background: #fff;
+    border-top: 2px solid #f3f4f6;
+    padding: 20px 28px;
+    display: flex;
+    gap: 12px;
+  }
+
+  .btn-modal {
+    flex: 1;
+    padding: 14px 24px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-modal-cancel {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .btn-modal-cancel:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .btn-modal-submit {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-modal-submit::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.3), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-modal-submit:hover::before {
+    left: 100%;
+  }
+
+  .btn-modal-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(6, 182, 212, 0.4);
+  }
+
+  .btn-modal-submit:active {
+    transform: translateY(0);
+  }
+
+  /* Quantity Input Special Styling */
+  .quantity-wrapper {
+    position: relative;
+  }
+
+  .quantity-wrapper::after {
+    content: 'items';
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+    font-weight: 600;
+    font-size: 13px;
+    pointer-events: none;
+  }
+
+  .quantity-wrapper input {
+    padding-right: 60px;
+  }
+
+  /* Date Input Enhancement */
+  input[type="datetime-local"].form-control-enhanced {
+    padding-right: 16px;
+  }
+
+  /* Animation */
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .modal.show .modal-content {
+    animation: slideInUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Success State (optional) */
+  .form-control-enhanced.is-valid {
+    border-color: #10b981;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='%2310b981' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+    padding-right: 40px;
+  }
+</style>
+
 <div class="modal fade" id="editBookingModal{{ booking.id }}" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Edit Service Booking</h5>
+        <h5 class="modal-title">
+          <i class="fas fa-edit"></i>
+          Edit Service Booking
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="POST" action="{% url 'book_service' booking.service.id %}">
+      
+      <form method="POST" action="{% url 'update_service_booking' booking.id %}">
         {% csrf_token %}
+        
         <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Service</label>
-            <input type="text" class="form-control" value="{{ booking.service.name }}" disabled>
+          <!-- Service Display -->
+          <div class="form-group-enhanced">
+            <label class="form-label-enhanced">
+              <i class="fas fa-concierge-bell"></i>
+              Service
+            </label>
+            <div class="service-display">
+              <div class="service-icon">
+                <i class="fas fa-concierge-bell"></i>
+              </div>
+              <div class="service-info">
+                <div class="service-label">Selected Service</div>
+                <div class="service-name">{{ booking.service.name }}</div>
+              </div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Scheduled Date</label>
-            <input type="datetime-local" class="form-control" name="scheduled_date" 
-                   value="{{ booking.scheduled_date|date:'Y-m-d\TH:i' }}" required>
+
+          <!-- Scheduled Date -->
+          <div class="form-group-enhanced">
+            <label class="form-label-enhanced">
+              <i class="fas fa-calendar-alt"></i>
+              Scheduled Date & Time
+            </label>
+            <input type="datetime-local" 
+                   class="form-control-enhanced" 
+                   name="scheduled_date"
+                   value="{{ booking.scheduled_date|date:'Y-m-d\TH:i' }}" 
+                   required>
+            <div class="input-hint">
+              <i class="fas fa-info-circle"></i>
+              Select when you'd like this service
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Quantity</label>
-            <input type="number" class="form-control" name="quantity" 
-                   value="{{ booking.quantity }}" min="1" required>
+
+          <!-- Quantity -->
+          <div class="form-group-enhanced">
+            <label class="form-label-enhanced">
+              <i class="fas fa-sort-numeric-up"></i>
+              Quantity
+            </label>
+            <div class="quantity-wrapper">
+              <input type="number" 
+                     class="form-control-enhanced" 
+                     name="quantity"
+                     value="{{ booking.quantity }}" 
+                     min="1" 
+                     max="99"
+                     required>
+            </div>
+            <div class="input-hint">
+              <i class="fas fa-info-circle"></i>
+              Minimum quantity: 1
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Notes</label>
-            <textarea class="form-control" name="notes" rows="3">{{ booking.notes }}</textarea>
+
+          <!-- Notes -->
+          <div class="form-group-enhanced">
+            <label class="form-label-enhanced">
+              <i class="fas fa-comment-alt"></i>
+              Additional Notes
+            </label>
+            <textarea class="form-control-enhanced" 
+                      name="notes" 
+                      rows="4"
+                      placeholder="Any special requests or instructions...">{{ booking.notes }}</textarea>
+            <div class="input-hint">
+              <i class="fas fa-info-circle"></i>
+              Optional: Add any special requirements
+            </div>
           </div>
         </div>
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Update Booking</button>
+          <button type="button" class="btn-modal btn-modal-cancel" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i>
+            Cancel
+          </button>
+          <button type="submit" class="btn-modal btn-modal-submit">
+            <i class="fas fa-check"></i>
+            Update Booking
+          </button>
         </div>
       </form>
     </div>

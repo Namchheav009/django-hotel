@@ -148,7 +148,8 @@ class Payment(models.Model):
         ('Refunded', 'Refunded'),
     ]
 
-    reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE, related_name='payment')
+    reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE, related_name='payment', null=True, blank=True)
+    service_booking = models.OneToOneField('ServiceBooking', on_delete=models.CASCADE, related_name='payment', null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(0)])
     processed_by = models.ForeignKey('Staff', on_delete=models.SET_NULL, null=True, blank=True, related_name='processed_payments')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES)

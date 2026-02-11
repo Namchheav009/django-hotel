@@ -102,6 +102,8 @@ urlpatterns = [
     # Service Booking
     path('services/<int:service_id>/book/', views.book_service, name='book_service'),
     path('my-service-bookings/', views.my_service_bookings, name='my_service_bookings'),
+    path('service-payment/<int:booking_id>/', views.service_payment, name='service_payment'),
+    path('my-service-bookings/<int:booking_id>/update/', views.update_service_booking, name='update_service_booking'),
     path('dashboard/service-bookings/', views.manage_service_bookings, name='manage_service_bookings'),
     path('dashboard/service-bookings/<int:booking_id>/status/', views.update_service_booking_status, name='update_service_booking_status'),
     path('dashboard/service-bookings/<int:booking_id>/cancel/', views.cancel_service_booking, name='cancel_service_booking'),

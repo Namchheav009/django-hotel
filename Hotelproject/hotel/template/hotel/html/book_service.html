@@ -54,6 +54,18 @@
     margin-bottom: 16px;
     font-size: 14px;
   }
+  .btn-cancel-red{
+    background: #ef4444;
+    color: #fff;
+    border: none;
+  }
+
+  .btn-cancel-red:hover{
+    background: #dc2626;
+    color: #fff;
+  }
+
+  
 </style>
 
 <div class="booking-wrap">
@@ -122,12 +134,10 @@
             </div>
 
             <div class="d-flex gap-2 mt-4">
-              <button type="submit" class="btn btn-primary btn-round">
-                Confirm Booking
-              </button>
-              <a href="{% url 'service' %}" class="btn btn-outline-secondary btn-round">
+              <a href="{% url 'service' %}" class="btn btn-cancel-red btn-round">
                 Cancel
               </a>
+
             </div>
           </form>
 

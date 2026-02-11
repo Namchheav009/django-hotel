@@ -463,7 +463,9 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'my_reservations' %}active{% endif %}" href="{% url 'my_reservations' %}">My Bookings</a>
+                            <a class="nav-link {% if request.resolver_match.url_name == 'my_reservations' %}active{% endif %}" href="{% url 'my_reservations' %}">
+                                My Bookings
+                            </a>
                         </li>
                         <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'reviews' %}active{% endif %}"

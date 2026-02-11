@@ -496,6 +496,15 @@
     </div>
   {% endif %}
 
+  <!-- Pending Payment Alert -->
+  {% if pending_reservations %}
+    <div class="alert alert-danger" role="alert">
+      <i class="fas fa-exclamation-circle"></i>
+      <span><strong>⚠️ Pending Payments:</strong> You have {{ pending_reservations|length }} unpaid booking(s). Please complete payment to confirm your reservations. <a href="{% url 'my_reservations' %}" style="color: #991b1b; text-decoration: underline; font-weight: 600;">View My Bookings</a></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endif %}
+
   {% if cart_items %}
     <div class="cart-layout">
       <!-- Cart Items Section -->

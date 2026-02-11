@@ -14,6 +14,7 @@
     --success:#22c55e;
     --warn:#f59e0b;
     --danger:#ef4444;
+    --blue:#3b82f6;
     --radius:16px;
   }
 
@@ -26,52 +27,74 @@
     background:var(--card);
     border:1px solid var(--line);
     border-radius:var(--radius);
-    box-shadow: 0 10px 24px rgba(10,16,32,.06);
+    box-shadow: 0 10px 24px rgba(10,16,32,.08);
     overflow:hidden;
     margin-bottom: 18px;
   }
 
   .booking-inner{
     display:grid;
-    grid-template-columns: 1fr;
-    gap: 18px;
+    gap: 14px;
     padding: 18px;
   }
 
-  .pill{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:6px 12px;
-    border-radius:999px;
-    font-weight:900;
-    font-size:.85rem;
-    border:1px solid transparent;
-    color:#fff;
-    width: fit-content;
+  .top-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
   }
-  .pill.pending { background: rgba(245,158,11,.2); color: #f59e0b; border: 1px solid rgba(245,158,11,.3); }
-  .pill.confirmed { background: rgba(59,130,246,.2); color: #3b82f6; border: 1px solid rgba(59,130,246,.3); }
-  .pill.completed { background: rgba(34,197,94,.2); color: #22c55e; border: 1px solid rgba(34,197,94,.3); }
-  .pill.cancelled { background: rgba(239,68,68,.2); color: #ef4444; border: 1px solid rgba(239,68,68,.3); }
 
   .booking-title{
     font-weight:900;
     color:var(--text);
-    margin: 4px 0 8px;
+    margin: 2px 0 8px;
     font-size: 1.25rem;
   }
 
   .booking-meta{
-    display:flex; flex-wrap:wrap; gap:16px;
+    display:flex; flex-wrap:wrap; gap:14px;
     color:var(--muted);
     font-weight:800;
     align-items:center;
-    margin-bottom: 12px;
   }
   .meta-item{ display:inline-flex; align-items:center; gap:8px; }
   .meta-item i{ color:#99a3b7; }
 
+  /* status badges */
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:7px 12px;
+    border-radius:999px;
+    font-weight:900;
+    font-size:.85rem;
+    border:1px solid transparent;
+    width: fit-content;
+    white-space: nowrap;
+  }
+
+  .badge-status.pending   { background: rgba(245,158,11,.12); color: var(--warn);   border-color: rgba(245,158,11,.25); }
+  .badge-status.confirmed { background: rgba(59,130,246,.12); color: var(--blue);   border-color: rgba(59,130,246,.25); }
+  .badge-status.completed { background: rgba(34,197,94,.12);  color: var(--success);border-color: rgba(34,197,94,.25); }
+  .badge-status.cancelled { background: rgba(239,68,68,.12);  color: var(--danger); border-color: rgba(239,68,68,.25); }
+
+  .badge-pay.paid     { background: rgba(34,197,94,.12);  color: var(--success); border-color: rgba(34,197,94,.25); }
+  .badge-pay.unpaid   { background: rgba(239,68,68,.10);  color: var(--danger);  border-color: rgba(239,68,68,.20); }
+
+  .notes{
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: #f7f9ff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 700;
+  }
+
   .booking-actions{
-    margin-top: 10px;
+    margin-top: 6px;
     padding-top: 14px;
     border-top: 1px solid var(--line);
     display:flex;
@@ -87,27 +110,48 @@
     font-weight:900;
     text-decoration:none;
     border:1px solid transparent;
-    transition: transform .15s ease;
-    background: var(--card);
+    transition: transform .15s ease, background .15s ease;
+    background: #fff;
     color: var(--text);
     border: 1px solid var(--line);
+    cursor:pointer;
   }
   .btnx:hover{ transform: translateY(-2px); color: var(--text); }
 
+  .btn-pay{
+    background: var(--danger);
+    color: #fff;
+    border-color: rgba(0,0,0,.08);
+  }
+  .btn-pay:hover{ color:#fff; }
+
+  .btn-edit{
+    background: rgba(59,130,246,.10);
+    color: var(--blue);
+    border-color: rgba(59,130,246,.20);
+  }
+  .btn-edit:hover{ color: var(--blue); }
+
   .btn-danger{
-    background: rgba(239,68,68,.1);
+    background: rgba(239,68,68,.10);
     color: var(--danger);
-    border: 1px solid rgba(239,68,68,.2);
+    border: 1px solid rgba(239,68,68,.20);
   }
   .btn-danger:hover{
-    background: rgba(239,68,68,.2);
+    background: rgba(239,68,68,.16);
     color: var(--danger);
   }
 
-  @media(max-width: 992px){
-    .booking-inner{ grid-template-columns: 1fr; }
+  .btn-rate{
+    background: rgba(34,197,94,.10);
+    color: var(--success);
+    border: 1px solid rgba(34,197,94,.20);
   }
-  
+  .btn-rate:hover{ color: var(--success); }
+
+  @media(max-width: 992px){
+    .top-row{ flex-direction: column; align-items: flex-start; }
+  }
 </style>
 {% endblock %}
 
@@ -116,20 +160,18 @@
 
   <div class="bookings-head">
     <h1>My Service Bookings</h1>
-    <p>Manage your service bookings and track their status.</p>
+    <p>Manage your service bookings, payment status, and actions.</p>
   </div>
 
-  {% if bookings %}
-    {% for booking in bookings %}
-
+  {% comment %} Show unpaid bookings first (view provides `unpaid_bookings`) {% endcomment %}
+  {% if unpaid_bookings %}
+    <h3>Unpaid Bookings</h3>
+    {% for booking in unpaid_bookings %}
       <div class="booking-card">
         <div class="booking-inner">
-
-          <div style="display: flex; justify-content: space-between; align-items: start;">
+          <div class="top-row">
             <div>
-              <div class="booking-title">
-                {{ booking.service.name }}
-              </div>
+              <div class="booking-title">{{ booking.service.name }}</div>
 
               <div class="booking-meta">
                 <span class="meta-item">
@@ -146,32 +188,40 @@
                   <i class="fas fa-dollar-sign"></i>
                   ${{ booking.total_price }}
                 </span>
+
+                <span class="badge badge-pay unpaid">
+                  <i class="fas fa-exclamation-circle"></i> Unpaid
+                </span>
               </div>
 
               {% if booking.notes %}
-                <div style="margin-top: 8px; color: var(--muted); font-size: 14px;">
-                  <strong>Notes:</strong> {{ booking.notes }}
+                <div class="notes">
+                  <i class="fas fa-sticky-note" style="margin-right:8px;"></i>
+                  {{ booking.notes }}
                 </div>
               {% endif %}
             </div>
 
-            <span class="pill {% if booking.status == 'Pending' %}pending{% elif booking.status == 'Confirmed' %}confirmed{% elif booking.status == 'Completed' %}completed{% else %}cancelled{% endif %}">
-              {{ booking.status }}
+            <span class="badge badge-status
+              {% if booking.status == 'Pending' %}pending
+              {% elif booking.status == 'Confirmed' %}confirmed
+              {% elif booking.status == 'Completed' %}completed
+              {% else %}cancelled{% endif %}
+            ">
+              <i class="fas fa-tag"></i> {{ booking.status }}
             </span>
           </div>
 
           <div class="booking-actions">
+            <a href="{% url 'service_payment' booking.id %}" class="btnx btn-pay">
+              <i class="fas fa-credit-card"></i> Complete Payment
+            </a>
+
             {% if booking.status == 'Pending' %}
-              <button type="button" class="btnx" data-bs-toggle="modal" data-bs-target="#editBookingModal{{ booking.id }}" title="Edit Booking">
+              <button type="button" class="btnx btn-edit" data-bs-toggle="modal" data-bs-target="#editBookingModal{{ booking.id }}">
                 <i class="fas fa-edit"></i> Edit
               </button>
               {% include "hotel/html/service_booking_edit_modal.html" with booking=booking %}
-            {% endif %}
-
-            {% if booking.status == 'Completed' %}
-              <a href="{% url 'rate_service' booking.service.id %}" class="btnx" style="background: rgba(34,197,94,.1); color: #22c55e; border: 1px solid rgba(34,197,94,.2);">
-                <i class="fas fa-star"></i> Rate Service
-              </a>
             {% endif %}
 
             {% if booking.status != 'Cancelled' and booking.status != 'Completed' %}
@@ -183,12 +233,73 @@
               </form>
             {% endif %}
           </div>
-
         </div>
       </div>
-
     {% endfor %}
-  {% else %}
+  {% endif %}
+
+  {% comment %} Show paid bookings (view provides `paid_bookings`) {% endcomment %}
+  {% if paid_bookings %}
+    <h3>Paid Bookings</h3>
+    {% for booking in paid_bookings %}
+      <div class="booking-card">
+        <div class="booking-inner">
+          <div class="top-row">
+            <div>
+              <div class="booking-title">{{ booking.service.name }}</div>
+
+              <div class="booking-meta">
+                <span class="meta-item">
+                  <i class="fas fa-calendar"></i>
+                  {{ booking.scheduled_date|date:"M d, Y" }}
+                </span>
+
+                <span class="meta-item">
+                  <i class="fas fa-cubes"></i>
+                  Qty: {{ booking.quantity }}
+                </span>
+
+                <span class="meta-item">
+                  <i class="fas fa-dollar-sign"></i>
+                  ${{ booking.total_price }}
+                </span>
+
+                <span class="badge badge-pay paid">
+                  <i class="fas fa-check-circle"></i> Paid
+                </span>
+              </div>
+
+              {% if booking.notes %}
+                <div class="notes">
+                  <i class="fas fa-sticky-note" style="margin-right:8px;"></i>
+                  {{ booking.notes }}
+                </div>
+              {% endif %}
+            </div>
+
+            <span class="badge badge-status
+              {% if booking.status == 'Pending' %}pending
+              {% elif booking.status == 'Confirmed' %}confirmed
+              {% elif booking.status == 'Completed' %}completed
+              {% else %}cancelled{% endif %}
+            ">
+              <i class="fas fa-tag"></i> {{ booking.status }}
+            </span>
+          </div>
+
+          <div class="booking-actions">
+            {% if booking.status == 'Completed' %}
+              <a href="{% url 'rate_service' booking.service.id %}" class="btnx btn-rate">
+                <i class="fas fa-star"></i> Rate Service
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  {% if not unpaid_bookings and not paid_bookings %}
     <div class="alert alert-info">
       <i class="fas fa-info-circle"></i> You don't have any service bookings yet.
       <a href="{% url 'service' %}" class="btn btn-sm btn-primary">Browse Services</a>

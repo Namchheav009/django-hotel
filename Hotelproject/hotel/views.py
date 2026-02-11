@@ -11,6 +11,7 @@ from django.db import models
 from django.db.models import Q
 from django.core.paginator import Paginator
 from datetime import datetime, timedelta
+from decimal import Decimal
 from django.utils import timezone
 import uuid
 from .models import (
@@ -458,13 +459,18 @@ def my_reservations(request):
             RoomRating.objects.filter(user=request.user, reservation__guest=guest)
             .values_list("reservation_id", flat=True)
         )
+        
+        # Get pending reservations
+        pending_reservations = guest.reservations.exclude(payment__payment_status__in=['Completed', 'Refunded'])
     except Guest.DoesNotExist:
         reservations = []
         reviewed_res_ids = set()
+        pending_reservations = None
 
     context = {
         "reservations": reservations,
         "reviewed_res_ids": reviewed_res_ids,
+        "pending_reservations": pending_reservations,
     }
     return render(request, "hotel/html/my_reservations.html", context)
 
@@ -1381,24 +1387,38 @@ def rate_service(request, service_id):
 def book_service(request, service_id):
     """Book a service"""
     service = get_object_or_404(Service, id=service_id)
-    
+    try:
+        guest = request.user.guest
+    except Guest.DoesNotExist:
+        messages.error(request, "Please complete your profile before booking a service.")
+        return redirect('complete_profile')
+
     if request.method == 'POST':
         form = ServiceBookingForm(request.POST)
         if form.is_valid():
             booking = form.save(commit=False)
             booking.user = request.user
             booking.service = service
-            booking.total_price = float(service.price) * booking.quantity
+            # calculate total price using Decimal to avoid float issues
+            booking.total_price = Decimal(service.price) * Decimal(booking.quantity)
+            booking.status = 'Pending'
             booking.save()
-            messages.success(request, f"Service '{service.name}' booked successfully! Confirmation will be sent to your email.")
-            return redirect('my_service_bookings')
+
+            # Prepare session for checkout flow (single service booking)
+            request.session['checkout_service_booking_ids'] = [booking.id]
+            # ensure reservation ids key exists (empty)
+            request.session['checkout_reservation_ids'] = []
+            request.session['checkout_total'] = float(booking.total_price)
+
+            messages.success(request, f"Service '{service.name}' added to checkout. Please complete payment.")
+            return redirect('checkout_payment')
         else:
             for field, errors in form.errors.items():
                 for error in errors:
                     messages.error(request, f"{field}: {error}")
     else:
         form = ServiceBookingForm()
-    
+
     context = {
         'service': service,
         'form': form,
@@ -1407,13 +1427,74 @@ def book_service(request, service_id):
 
 
 @login_required(login_url='login')
+@login_required(login_url='login')
 def my_service_bookings(request):
     """View user's service bookings"""
-    bookings = ServiceBooking.objects.filter(user=request.user).select_related('service').order_by('-booking_date')
+    bookings = ServiceBooking.objects.filter(user=request.user).select_related('service', 'reservation').order_by('-booking_date')
+    
+    # Separate paid and unpaid bookings
+    unpaid_bookings = []
+    paid_bookings = []
+    
+    for booking in bookings:
+        # Consider booking paid if:
+        # 1) it has a direct Payment record with status 'Completed'
+        # 2) OR it's attached to a Reservation that has a completed Payment
+        is_paid = False
+        # check direct payment on the service booking
+        try:
+            payment = booking.payment
+            if payment and payment.payment_status == 'Completed':
+                is_paid = True
+        except Exception:
+            is_paid = False
+
+        # fallback: check payment on linked reservation (some older records may store payment there)
+        if not is_paid and booking.reservation and hasattr(booking.reservation, 'payment'):
+            try:
+                res_pay = booking.reservation.payment
+                if res_pay and res_pay.payment_status == 'Completed':
+                    is_paid = True
+            except Exception:
+                is_paid = is_paid
+
+        if is_paid:
+            paid_bookings.append(booking)
+        else:
+            unpaid_bookings.append(booking)
+    
     context = {
         'bookings': bookings,
+        'unpaid_bookings': unpaid_bookings,
+        'paid_bookings': paid_bookings,
     }
     return render(request, 'hotel/html/my_service_bookings.html', context)
+
+
+@login_required(login_url='login')
+@require_http_methods(["POST"])
+def update_service_booking(request, booking_id):
+    """Update an existing service booking"""
+    booking = get_object_or_404(ServiceBooking, id=booking_id, user=request.user)
+    
+    scheduled_date = request.POST.get('scheduled_date')
+    quantity = request.POST.get('quantity')
+    notes = request.POST.get('notes')
+    
+    if scheduled_date:
+        booking.scheduled_date = scheduled_date
+    if quantity:
+        try:
+            booking.quantity = int(quantity)
+        except (ValueError, TypeError):
+            messages.error(request, "Invalid quantity.")
+            return redirect('my_service_bookings')
+    if notes is not None:
+        booking.notes = notes
+    
+    booking.save()
+    messages.success(request, f"Service booking for '{booking.service.name}' updated successfully.")
+    return redirect('my_service_bookings')
 
 
 @admin_login_required
@@ -1983,10 +2064,20 @@ def view_cart(request):
     Shows order summary with total amount.
     """
     cart, created = Cart.objects.get_or_create(user=request.user)
+    
+    # Get pending reservations for the user
+    pending_reservations = None
+    try:
+        guest = request.user.guest
+        pending_reservations = guest.reservations.exclude(payment__payment_status__in=['Completed', 'Refunded'])
+    except:
+        pending_reservations = None
+    
     context = {
         'cart': cart,
         'cart_items': cart.items.all(),
         'total_price': cart.get_total_price(),
+        'pending_reservations': pending_reservations,
     }
     return render(request, 'hotel/html/cart.html', context)
 
@@ -2482,8 +2573,25 @@ def checkout_payment(request):
                     booking.booking_status = 'Confirmed'
                     booking.save()
             
-            # Confirm service bookings
+            # Process payment for each service booking
             for service_booking in service_bookings:
+                payment_obj, _ = Payment.objects.get_or_create(
+                    service_booking=service_booking,
+                    defaults={
+                        'amount': service_booking.total_price,
+                        'payment_method': payment_method,
+                        'payment_status': 'Pending',
+                    }
+                )
+                
+                # Mark as completed
+                payment_obj.payment_status = 'Completed'
+                payment_obj.payment_date = timezone.now()
+                payment_obj.transaction_id = f"SVC-{service_booking.id}-{int(datetime.now().timestamp())}"
+                payment_obj.payment_method = payment_method
+                payment_obj.save()
+                
+                # Confirm service booking
                 service_booking.status = 'Confirmed'
                 service_booking.save()
             
@@ -2506,11 +2614,29 @@ def checkout_payment(request):
             messages.error(request, f'Error processing payment: {str(e)}')
             return redirect('view_cart')
     
-    return render(request, 'hotel/html/checkout_payment.html', {
+    return render(request, 'hotel/html/payment.html', {
         'reservations': reservations,
         'service_bookings': service_bookings,
         'total_amount': total_amount,
+        'multiple_items': True,
     })
+
+
+@login_required(login_url='login')
+def service_payment(request, booking_id):
+    """Initiate payment flow for a single ServiceBooking by setting session and redirecting to checkout."""
+    booking = get_object_or_404(ServiceBooking, id=booking_id, user=request.user)
+
+    # Set session keys expected by checkout_payment
+    request.session['checkout_service_booking_ids'] = [booking.id]
+    # Clear reservation ids for this flow
+    request.session['checkout_reservation_ids'] = []
+    try:
+        request.session['checkout_total'] = float(booking.total_price)
+    except Exception:
+        request.session['checkout_total'] = None
+
+    return redirect('checkout_payment')
 
 
 @login_required(login_url='login')
