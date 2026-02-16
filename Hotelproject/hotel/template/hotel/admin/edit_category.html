@@ -6,7 +6,7 @@
   <h2>Edit Category</h2>
 </div>
 <div class="admin-card">
-  <form method="post">
+  <form method="post" action="{% url 'edit_category' category.id %}" action="" data-swal="save">
     {% csrf_token %}
     <div class="mb-3">
       <label class="form-label">Name</label>

@@ -35,7 +35,9 @@ from django.shortcuts import redirect
 from django.db.models import Q , Count, Sum, Avg
 
 
-
+def my_view(request):
+    messages.success(request, "Saved successfully!")
+    return redirect("admin_dashboard")
 
 # Decorator for admin-only access (checks UserProfile role and superuser)
 def admin_login_required(view_func):
@@ -145,7 +147,11 @@ def manage_bookings(request):
 @admin_login_required
 def manage_payment(request):
     """Manage payments"""
-    payments = Payment.objects.select_related('reservation', 'reservation__guest', 'reservation__room').all().order_by('-payment_date', '-id')[:200]
+    # include both reservation and service booking relationships so service payments also show relevant info
+    payments = Payment.objects.select_related(
+        'reservation', 'reservation__guest', 'reservation__room',
+        'service_booking', 'service_booking__user', 'service_booking__service'
+    ).all().order_by('-payment_date', '-id')[:200]
     return render(request, 'hotel/admin/manage_payment.html', {'payments': payments})
 
 
@@ -551,7 +557,7 @@ def payment(request, reservation_id=None):
                             "payment_method": payment_method,
                             "payment_status": "Completed",
                             "payment_date": timezone.now(),
-                            "transaction_id": f"TXN-{res.id}-{int(datetime.now().timestamp())}"
+                            "transaction_id": f"TXN-{res.id}-{uuid.uuid4().hex[:10]}"
                         }
                     )
                     
@@ -559,7 +565,7 @@ def payment(request, reservation_id=None):
                         payment_obj.payment_status = "Completed"
                         payment_obj.payment_method = payment_method
                         payment_obj.payment_date = timezone.now()
-                        payment_obj.transaction_id = f"TXN-{res.id}-{int(datetime.now().timestamp())}"
+                        payment_obj.transaction_id = f"TXN-{res.id}-{uuid.uuid4().hex[:10]}"
                         payment_obj.save()
                     
                     # Confirm reservation
@@ -647,7 +653,7 @@ def payment(request, reservation_id=None):
                     "payment_method": payment_method,
                     "payment_status": "Completed",
                     "payment_date": timezone.now(),
-                    "transaction_id": f"TXN-{reservation.id}-{int(datetime.now().timestamp())}"
+                    "transaction_id": f"TXN-{reservation.id}-{uuid.uuid4().hex[:10]}"
                 }
             )
             
@@ -655,7 +661,7 @@ def payment(request, reservation_id=None):
                 payment_obj.payment_status = "Completed"
                 payment_obj.payment_method = payment_method
                 payment_obj.payment_date = timezone.now()
-                payment_obj.transaction_id = f"TXN-{reservation.id}-{int(datetime.now().timestamp())}"
+                payment_obj.transaction_id = f"TXN-{reservation.id}-{uuid.uuid4().hex[:10]}"
                 payment_obj.save()
             
             # Confirm reservation
@@ -1023,6 +1029,7 @@ def add_reservation(request):
     return redirect("manage_reservations")
 
 
+
 @admin_login_required
 @require_http_methods(["POST"])
 def delete_reservation(request, reservation_id):
@@ -1044,13 +1051,26 @@ def update_reservation_status(request, reservation_id):
     if new_status in dict(Reservation.STATUS_CHOICES):
         reservation.status = new_status
 
-        # optional: update room status
+        # optional: update room status and associated Booking record
         if new_status in ['Checked Out', 'Cancelled']:
             reservation.room.status = 'Available'
             reservation.room.save(update_fields=['status'])
+            # mark booking complete or cancelled
+            try:
+                book = reservation.booking
+                book.booking_status = 'Completed' if new_status == 'Checked Out' else 'Cancelled'
+                book.save(update_fields=['booking_status'])
+            except Exception:
+                pass
         elif new_status in ['Checked In', 'Confirmed']:
             reservation.room.status = 'Booked'
             reservation.room.save(update_fields=['status'])
+            try:
+                book = reservation.booking
+                book.booking_status = 'Confirmed'
+                book.save(update_fields=['booking_status'])
+            except Exception:
+                pass
 
         reservation.save(update_fields=['status'])
         messages.success(request, f"Reservation status updated to {new_status}.")
@@ -1476,7 +1496,22 @@ def my_service_bookings(request):
 def update_service_booking(request, booking_id):
     """Update an existing service booking"""
     booking = get_object_or_404(ServiceBooking, id=booking_id, user=request.user)
-    
+
+    # don't allow edits if payment already completed
+    is_paid = False
+    if hasattr(booking, 'payment') and booking.payment:
+        if booking.payment.payment_status == 'Completed':
+            is_paid = True
+    # fallback to reservation payment for older records
+    if not is_paid and booking.reservation and hasattr(booking.reservation, 'payment'):
+        res_pay = booking.reservation.payment
+        if res_pay and res_pay.payment_status == 'Completed':
+            is_paid = True
+
+    if is_paid:
+        messages.info(request, "Cannot modify a service booking that has already been paid.")
+        return redirect('my_service_bookings')
+
     scheduled_date = request.POST.get('scheduled_date')
     quantity = request.POST.get('quantity')
     notes = request.POST.get('notes')
@@ -1489,6 +1524,11 @@ def update_service_booking(request, booking_id):
         except (ValueError, TypeError):
             messages.error(request, "Invalid quantity.")
             return redirect('my_service_bookings')
+        # update price when quantity changes
+        try:
+            booking.total_price = booking.service.price * booking.quantity
+        except Exception:
+            pass
     if notes is not None:
         booking.notes = notes
     
@@ -2444,13 +2484,8 @@ def confirm_information(request):
             cart.items.all().delete()
             
             messages.success(request, 'Information confirmed. Proceed to payment.')
-            # Redirect to payment with all reservations and service bookings
-            return render(request, 'hotel/html/payment.html', {
-                'reservations': reservations,
-                'service_bookings': service_bookings,
-                'total_amount': total_amount,
-                'multiple_items': True,
-            })
+            # Redirect to the checkout payment view which handles both rooms and services
+            return redirect('checkout_payment')
         
         except Exception as e:
             messages.error(request, f'Error during confirmation: {str(e)}')
@@ -2551,7 +2586,7 @@ def checkout_payment(request):
                 # Mark as completed
                 payment_obj.payment_status = 'Completed'
                 payment_obj.payment_date = timezone.now()
-                payment_obj.transaction_id = f"TXN-{reservation.id}-{int(datetime.now().timestamp())}"
+                payment_obj.transaction_id = f"TXN-{reservation.id}-{uuid.uuid4().hex[:10]}"
                 payment_obj.payment_method = payment_method
                 payment_obj.save()
                 
@@ -2587,7 +2622,7 @@ def checkout_payment(request):
                 # Mark as completed
                 payment_obj.payment_status = 'Completed'
                 payment_obj.payment_date = timezone.now()
-                payment_obj.transaction_id = f"SVC-{service_booking.id}-{int(datetime.now().timestamp())}"
+                payment_obj.transaction_id = f"SVC-{service_booking.id}-{uuid.uuid4().hex[:10]}"
                 payment_obj.payment_method = payment_method
                 payment_obj.save()
                 
@@ -2677,7 +2712,7 @@ def payment_process(request):
                     'amount': reservation.total_price,
                     'payment_method': payment_method,
                     'payment_status': 'Completed',
-                    'transaction_id': f"TXN-{reservation.id}-{timezone.now().timestamp()}",
+                    'transaction_id': f"TXN-{reservation.id}-{uuid.uuid4().hex[:10]}",
                 }
             )
             if created:
@@ -2685,7 +2720,7 @@ def payment_process(request):
             else:
                 payment_obj.payment_method = payment_method
                 payment_obj.payment_status = 'Completed'
-                payment_obj.transaction_id = f"TXN-{reservation.id}-{timezone.now().timestamp()}"
+                payment_obj.transaction_id = f"TXN-{reservation.id}-{uuid.uuid4().hex[:10]}"
                 payment_obj.save()
             
             # Update reservation status to Confirmed

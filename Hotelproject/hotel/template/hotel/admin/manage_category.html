@@ -143,13 +143,13 @@
                     <i class="fas fa-pen"></i> Edit
                   </a>
 
-                  <form method="post" action="{% url 'delete_category' c.id %}" style="display:inline;">
+                  <form method="post" action="{% url 'delete_category' c.id %}" class="delete-form" style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit" class="danger-btn"
-                      onclick="return confirm('Delete this category?');">
+                    <button type="submit" class="danger-btn">
                       <i class="fas fa-trash"></i> Delete
                     </button>
                   </form>
+
                 </div>
               </td>
             </tr>
@@ -187,8 +187,10 @@
     </div>
   </div>
 </div>
-
 <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  // ---------- Helpers ----------
   function filterRows(){
     const q = (document.getElementById("q").value || "").toLowerCase();
     const table = document.getElementById("catTable");
@@ -198,15 +200,18 @@
       r.style.display = r.innerText.toLowerCase().includes(q) ? "" : "none";
     });
   }
+  window.filterRows = filterRows;
 
   function openAddCategoryModal(){
     document.getElementById("category_name").value = "";
     const err = document.getElementById("catError");
     err.style.display = "none";
+    err.innerText = "";
 
     const modal = new bootstrap.Modal(document.getElementById("addCategoryModal"));
     modal.show();
   }
+  window.openAddCategoryModal = openAddCategoryModal;
 
   function getCookie(name) {
     let cookieValue = null;
@@ -223,6 +228,20 @@
     return cookieValue;
   }
 
+  const hasSwal = typeof Swal !== "undefined";
+  // if the page loads before the global mixin was created (it should
+  // always exist now, but be defensive) then create it ourselves.
+  if (hasSwal && typeof swalWithBootstrapButtons === "undefined") {
+    window.swalWithBootstrapButtons = Swal.mixin({
+      customClass: {
+        confirmButton: "btn btn-success me-2",
+        cancelButton: "btn btn-danger"
+      },
+      buttonsStyling: false
+    });
+  }
+
+  // ---------- Add Category (AJAX) ----------
   function submitCategory(){
     const name = document.getElementById("category_name").value.trim();
     const err = document.getElementById("catError");
@@ -245,17 +264,82 @@
     .then(data => {
       if(data.success){
         bootstrap.Modal.getInstance(document.getElementById("addCategoryModal")).hide();
-        location.reload();
+
+        // SweetAlert success
+        if (hasSwal) {
+          swalWithBootstrapButtons.fire({
+            title: "Added!",
+            text: "Category has been added successfully.",
+            icon: "success"
+          }).then(() => location.reload());
+        } else {
+          location.reload();
+        }
+
       } else {
-        err.innerText = data.error || "Failed to add category.";
-        err.style.display = "block";
+        // SweetAlert error
+        if (hasSwal) {
+          swalWithBootstrapButtons.fire({
+            title: "Failed!",
+            text: data.error || "Failed to add category.",
+            icon: "error"
+          });
+        } else {
+          err.innerText = data.error || "Failed to add category.";
+          err.style.display = "block";
+        }
       }
     })
     .catch(() => {
-      err.innerText = "Server error. Try again.";
-      err.style.display = "block";
+      if (hasSwal) {
+        swalWithBootstrapButtons.fire({
+          title: "Server error!",
+          text: "Try again.",
+          icon: "error"
+        });
+      } else {
+        err.innerText = "Server error. Try again.";
+        err.style.display = "block";
+      }
     });
   }
+  window.submitCategory = submitCategory;
+
+  // ---------- Delete Category Confirm ----------
+  document.querySelectorAll(".delete-form").forEach(form => {
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+
+      if (!hasSwal) {
+        // fallback
+        if (confirm("Delete this category?")) form.submit();
+        return;
+      }
+
+      swalWithBootstrapButtons.fire({
+        title: "Are you sure?",
+        text: "You want to delete this category!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "No, cancel!",
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        } else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalWithBootstrapButtons.fire({
+            title: "Cancelled",
+            text: "Your category is safe 🙂",
+            icon: "error"
+          });
+        }
+      });
+    });
+  });
+
+});
 </script>
+
 
 {% endblock %}

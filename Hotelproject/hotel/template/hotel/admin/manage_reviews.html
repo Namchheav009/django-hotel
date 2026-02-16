@@ -1,17 +1,6 @@
 {% extends 'hotel/admin/admin_base.html' %}
 {% block admin_content %}
 
-{% if messages %}
-<div style="margin-bottom: 20px;">
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}" role="alert">
-            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    {% endfor %}
-</div>
-{% endif %}
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
   <div>
@@ -100,13 +89,13 @@
                 </button>
 
                 <!-- DELETE -->
-                <form method="post" action="{% url 'delete_review' r.id %}">
+                <form method="post" action="{% url 'delete_review' r.id %}" class="delete-form">
                   {% csrf_token %}
-                  <button type="submit" class="btn btn-sm btn-danger"
-                          onclick="return confirm('Delete this review?');">
+                  <button type="submit" class="btn btn-sm btn-danger">
                     <i class="fas fa-trash"></i> Delete
                   </button>
                 </form>
+
               </div>
             </div>
           </div>
@@ -384,5 +373,38 @@ document.getElementById('toggleServiceReviews').addEventListener('click', functi
   });
 })();
 </script>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  document.querySelectorAll(".delete-form").forEach(function(form) {
+
+    form.addEventListener("submit", function(e) {
+      e.preventDefault();
+
+      Swal.fire({
+        title: "Delete this review?",
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
+
+    });
+
+  });
+
+});
+</script>
+
 
 {% endblock %}

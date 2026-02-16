@@ -717,7 +717,8 @@
 
       <tbody>
         {% for r in reservations %}
-        <tr data-status="{{ r.status|lower }}" data-total="{{ r.total_price }}">
+        {% comment %} normalize status by slugifying for JS filters (spaces→hyphens) {% endcomment %}
+        <tr data-status="{{ r.status|lower|slugify }}" data-total="{{ r.total_price }}">
           <td>
             <strong style="color:var(--primary);">#{{ r.id }}</strong>
           </td>

@@ -92,6 +92,12 @@
       top:0;
       height:100vh;
     }
+    .sidebar .user-name,
+    .sidebar .user-role,
+    .sidebar .user-email{
+      color: #e5e7eb;
+    }
+
 
     .brand{
       display:flex; gap:12px; align-items:center;
@@ -380,9 +386,10 @@
           <div class="user-role">Manager</div>
         </div>
       </div>
-      <a class="logout" href="{% url 'logout' %}">
+      <a class="logout" href="{% url 'logout' %}" id="logoutBtn">
         <i class="fa-solid fa-right-from-bracket"></i> Logout
       </a>
+
     </div>
   </aside>
 
@@ -390,13 +397,7 @@
   <main class="content">
     <div class="content-inner">
 
-      {% if messages %}
-        <div class="messages">
-          {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
-          {% endfor %}
-        </div>
-      {% endif %}
+     
 
       <!-- Topbar -->
       <!-- <div class="topbar">
@@ -436,5 +437,73 @@
   </main>
 
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", function (e) {
+      e.preventDefault();   // stop normal logout
+
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You will be logged out of the system.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#6b7280",
+        confirmButtonText: "Yes, Logout",
+        cancelButtonText: "Cancel"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          window.location.href = logoutBtn.href;
+        }
+      });
+    });
+  }
+
+});
+</script>
+
+
+
 </body>
+
+<!-- SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- reusable confirmation handler -->
+<script src="{% static 'hotel/script/sweetalert.js' %}"></script>
+
+{% if messages %}
+<script>
+(function () {
+  // If SweetAlert2 failed to load, stop (prevents console error)
+  if (typeof Swal === "undefined") {
+    console.error("SweetAlert2 (Swal) is not loaded. Check CDN/network.");
+    return;
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end",
+      showConfirmButton: false,
+      timer: 9000,
+      timerProgressBar: true,
+      showCloseButton: true
+    });
+    {% for message in messages %}
+      Toast.fire({
+        icon: "{% if 'success' in message.tags %}success{% elif 'error' in message.tags %}error{% elif 'danger' in message.tags %}error{% elif 'warning' in message.tags %}warning{% else %}info{% endif %}",
+        title: "{{ message|escapejs }}"
+      });
+    {% endfor %}
+  });
+})();
+</script>
+{% endif %}
+
 </html>

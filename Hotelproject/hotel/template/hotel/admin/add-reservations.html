@@ -118,11 +118,52 @@
          ========================= -->
     <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:12px;">
       <a href="{% url 'manage_reservations' %}" class="btn btn-light">Cancel</a>
-      <button type="submit" class="btn btn-primary" style="font-weight:900;">
-        <i class="fas fa-check"></i> Create Reservation
-      </button>
+      <button type="submit"
+        class="btn btn-primary"
+        style="font-weight:900;"
+        data-swal="create">
+  <i class="fas fa-check"></i> Create Reservation
+</button>
+
     </div>
 
   </form>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const createBtn = document.querySelector('[data-swal="create"]');
+  if (!createBtn) return;
+
+  createBtn.addEventListener("click", function (e) {
+    e.preventDefault();
+
+    Swal.fire({
+      title: "Create Reservation?",
+      text: "Please confirm reservation details before creating.",
+      icon: "question",
+      
+      showCancelButton: true,
+      confirmButtonColor: "#3b82f6",
+      cancelButtonColor: "#ef4444",
+      confirmButtonText: "Yes, Create",
+      cancelButtonText: "Cancel"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.closest("form").submit();
+        Swal.fire({
+            title: "Created!",
+            text: "The reservation has been created.",
+            icon: "success",
+            timer: 100,
+            showConfirmButton: false
+          });
+      }
+    });
+  });
+
+});
+</script>
+
 {% endblock %}

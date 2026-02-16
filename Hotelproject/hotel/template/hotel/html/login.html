@@ -8,21 +8,7 @@
             <h3 class="mb-0"><i class="fas fa-sign-in-alt"></i> Login</h3>
         </div>
         <div class="card-body p-4">
-            {% if messages %}
-                {% for message in messages %}
-                    {% if 'success' in message.tags or 'info' in message.tags %}
-                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% elif 'error' in message.tags %}
-                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endif %}
-                {% endfor %}
-            {% endif %}
+            
 
             <form method="POST" novalidate>
                 {% csrf_token %}

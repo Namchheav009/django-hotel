@@ -92,7 +92,7 @@
         <div class="card-body">
           {% if multiple_items %}
             <!-- Multiple items (from confirm_information) -->
-            <form method="POST" action="{% url 'payment_process' %}">
+            <form method="POST" action="{% url 'checkout_payment' %}">
               {% csrf_token %}
               <div class="mb-3">
                 <label class="form-label">Payment Method</label>
@@ -108,7 +108,7 @@
               <a href="{% url 'view_cart' %}" class="btn btn-secondary">Cancel</a>
             </form>
           {% else %}
-            <form method="POST">
+            <form method="POST" action="{% if reservation %}{% url 'payment' reservation.id %}{% endif %}">
               {% csrf_token %}
               <div class="mb-3">
                 <label class="form-label">Payment Method</label>

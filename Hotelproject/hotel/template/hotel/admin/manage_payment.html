@@ -379,7 +379,7 @@
         <thead>
           <tr>
             <th>Guest</th>
-            <th>Room</th>
+            <th>Item</th>
             <th>Amount</th>
             <th>Method</th>
             <th>Status</th>
@@ -409,6 +409,18 @@
                       <div class="guest-email">{{ p.reservation.guest.user.email }}</div>
                     {% endif %}
                   </div>
+                {% elif p.service_booking and p.service_booking.user %}
+                  <div class="guest-avatar">
+                    {{ p.service_booking.user.get_full_name|first|default:p.service_booking.user.username|first|upper }}
+                  </div>
+                  <div>
+                    <div class="guest-name">
+                      {{ p.service_booking.user.get_full_name|default:p.service_booking.user.username }}
+                    </div>
+                    {% if p.service_booking.user.email %}
+                      <div class="guest-email">{{ p.service_booking.user.email }}</div>
+                    {% endif %}
+                  </div>
                 {% else %}
                   <span class="muted">No guest info</span>
                 {% endif %}
@@ -418,6 +430,8 @@
             <td>
               {% if p.reservation and p.reservation.room %}
                 <span class="room-badge"><i class="fas fa-door-open"></i> Room {{ p.reservation.room.room_number }}</span>
+              {% elif p.service_booking and p.service_booking.service %}
+                <span class="room-badge"><i class="fas fa-concierge-bell"></i> Service {{ p.service_booking.service.name }}</span>
               {% else %}
                 <span class="muted">-</span>
               {% endif %}

@@ -1,4 +1,6 @@
 {% extends 'hotel/admin/admin_base.html' %}
+{% load static %}
+
 {% block admin_content %}
 <style>
   :root {
@@ -7,35 +9,32 @@
     --success: #22c55e;
     --warning: #f59e0b;
     --danger: #ef4444;
-    --info: #0ea5e9;
-    --purple: #8b5cf6;
     --muted: #64748b;
     --border: #e2e8f0;
     --bg-soft: #f8fafc;
   }
 
   .page-head{
-    display:flex; 
-    align-items:flex-end; 
-    justify-content:space-between; 
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
     gap:14px;
     margin-bottom:24px;
     flex-wrap:wrap;
   }
-  .page-head h2{ 
-    margin:0; 
-    font-weight:900; 
+  .page-head h2{
+    margin:0;
+    font-weight:900;
     font-size:28px;
     color:#0f172a;
   }
-  .page-sub{ 
-    margin:6px 0 0; 
-    color:var(--muted); 
+  .page-sub{
+    margin:6px 0 0;
+    color:var(--muted);
     font-weight:600;
     font-size:14px;
   }
 
-  /* Statistics Cards */
   .stats-grid{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
@@ -57,64 +56,34 @@
     transform:translateY(-2px);
   }
   .stat-icon{
-    width:48px;
-    height:48px;
-    border-radius:10px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:20px;
-    flex-shrink:0;
+    width:48px;height:48px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;flex-shrink:0;
   }
   .stat-icon.blue{ background:#dbeafe; color:#2563eb; }
   .stat-icon.green{ background:#dcfce7; color:#16a34a; }
   .stat-icon.orange{ background:#fed7aa; color:#ea580c; }
   .stat-icon.purple{ background:#ede9fe; color:#7c3aed; }
-  
-  .stat-details{
-    flex:1;
-  }
+
+  .stat-details{ flex:1; }
   .stat-label{
-    font-size:12px;
-    color:var(--muted);
-    font-weight:700;
-    text-transform:uppercase;
-    letter-spacing:0.5px;
-    margin-bottom:4px;
+    font-size:12px;color:var(--muted);font-weight:700;
+    text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;
   }
-  .stat-value{
-    font-size:24px;
-    font-weight:900;
-    color:#0f172a;
-  }
+  .stat-value{ font-size:24px;font-weight:900;color:#0f172a; }
 
-  /* Toolbar */
   .toolbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:16px;
-    margin-bottom:24px;
-    flex-wrap:wrap;
+    display:flex;justify-content:space-between;align-items:center;
+    gap:16px;margin-bottom:24px;flex-wrap:wrap;
   }
-
   .toolbar-left{
-    display:flex;
-    gap:12px;
-    flex-wrap:wrap;
-    align-items:center;
-    flex:1;
+    display:flex;gap:12px;flex-wrap:wrap;align-items:center;flex:1;
   }
 
   .search{
-    display:flex; 
-    align-items:center; 
-    gap:10px;
-    padding:10px 14px;
-    border:1px solid var(--border);
-    border-radius:10px;
-    background:#fff;
-    min-width:280px;
+    display:flex;align-items:center;gap:10px;
+    padding:10px 14px;border:1px solid var(--border);
+    border-radius:10px;background:#fff;min-width:280px;
     transition:all 0.2s ease;
   }
   .search:focus-within{
@@ -122,94 +91,36 @@
     box-shadow:0 0 0 3px rgba(59,130,246,0.1);
   }
   .search input{
-    border:none; 
-    outline:none; 
-    background:transparent;
-    width:100%;
-    font-weight:600;
-    color:#0f172a;
-    font-size:14px;
+    border:none;outline:none;background:transparent;width:100%;
+    font-weight:600;color:#0f172a;font-size:14px;
   }
-  .search input::placeholder{
-    color:#94a3b8;
-  }
+  .search input::placeholder{ color:#94a3b8; }
 
-  /* View Toggle */
   .view-toggle{
-    display:flex;
-    gap:4px;
-    background:#fff;
-    padding:4px;
-    border-radius:8px;
-    border:1px solid var(--border);
+    display:flex;gap:4px;background:#fff;padding:4px;
+    border-radius:8px;border:1px solid var(--border);
   }
   .view-btn{
-    padding:8px 12px;
-    border:none;
-    background:transparent;
-    border-radius:6px;
-    cursor:pointer;
-    color:var(--muted);
-    transition:all 0.2s ease;
-    font-size:16px;
+    padding:8px 12px;border:none;background:transparent;border-radius:6px;
+    cursor:pointer;color:var(--muted);transition:all 0.2s ease;font-size:16px;
   }
-  .view-btn:hover{
-    color:#0f172a;
-  }
-  .view-btn.active{
-    background:var(--primary);
-    color:#fff;
-  }
+  .view-btn.active{ background:var(--primary); color:#fff; }
 
-  /* Filter Buttons */
-  .filter-group{
-    display:flex;
-    gap:8px;
-    flex-wrap:wrap;
-  }
+  .filter-group{ display:flex;gap:8px;flex-wrap:wrap; }
   .filter-btn{
-    padding:8px 16px;
-    border:1px solid var(--border);
-    border-radius:8px;
-    background:#fff;
-    font-weight:700;
-    font-size:13px;
-    color:var(--muted);
-    cursor:pointer;
-    transition:all 0.2s ease;
-    white-space:nowrap;
+    padding:8px 16px;border:1px solid var(--border);border-radius:8px;
+    background:#fff;font-weight:700;font-size:13px;color:var(--muted);
+    cursor:pointer;transition:all 0.2s ease;white-space:nowrap;
   }
-  .filter-btn:hover{
-    background:var(--bg-soft);
-    border-color:#cbd5e1;
-  }
-  .filter-btn.active{
-    background:var(--primary);
-    color:#fff;
-    border-color:var(--primary);
-  }
+  .filter-btn.active{ background:var(--primary); color:#fff; border-color:var(--primary); }
 
-  /* Action Button */
   .btn-action{
-    padding:12px 24px;
-    border:none;
-    border-radius:10px;
-    background:var(--primary);
-    color:#fff;
-    font-weight:700;
-    font-size:14px;
-    cursor:pointer;
-    transition:all 0.2s ease;
-    display:flex;
-    align-items:center;
-    gap:8px;
+    padding:12px 24px;border:none;border-radius:10px;
+    background:var(--primary);color:#fff;font-weight:700;font-size:14px;
+    cursor:pointer;transition:all 0.2s ease;display:flex;align-items:center;gap:8px;
   }
-  .btn-action:hover{
-    background:var(--primary-dark);
-    box-shadow:0 4px 12px rgba(59,130,246,0.3);
-  }
+  .btn-action:hover{ background:var(--primary-dark); box-shadow:0 4px 12px rgba(59,130,246,0.3); }
 
-  /* Grid View */
   .services-grid{
     display:grid;
     grid-template-columns:repeat(auto-fill, minmax(280px, 1fr));
@@ -217,314 +128,118 @@
   }
 
   .service-card{
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:12px;
-    overflow:hidden;
-    transition:all 0.2s ease;
-    position:relative;
+    background:#fff;border:1px solid var(--border);border-radius:12px;
+    overflow:hidden;transition:all 0.2s ease;position:relative;
   }
   .service-card:hover{
     box-shadow:0 8px 24px rgba(0,0,0,0.1);
     transform:translateY(-4px);
   }
 
-  .service-image{
-    width:100%;
-    height:180px;
-    object-fit:cover;
-    background:#f1f5f9;
-  }
+  .service-image{ width:100%; height:180px; object-fit:cover; background:#f1f5f9; }
   .service-image.placeholder{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#cbd5e1;
-    font-size:48px;
+    display:flex;align-items:center;justify-content:center;
+    color:#cbd5e1;font-size:48px;
   }
 
-  .service-content{
-    padding:16px;
-  }
-
+  .service-content{ padding:16px; }
   .service-header{
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    margin-bottom:8px;
+    display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;
   }
-
-  .service-name{
-    font-weight:900;
-    font-size:16px;
-    color:#0f172a;
-    margin-bottom:4px;
-  }
-
+  .service-name{ font-weight:900;font-size:16px;color:#0f172a;margin-bottom:4px; }
   .service-status{
-    display:inline-flex;
-    align-items:center;
-    gap:6px;
-    padding:4px 10px;
-    border-radius:6px;
-    font-size:11px;
-    font-weight:800;
-    text-transform:uppercase;
+    display:inline-flex;align-items:center;gap:6px;
+    padding:4px 10px;border-radius:6px;font-size:11px;font-weight:800;text-transform:uppercase;
   }
-  .service-status.active{
-    background:#d1fae5;
-    color:#065f46;
-  }
-  .service-status.inactive{
-    background:#fee2e2;
-    color:#991b1b;
-  }
-  .service-status .dot{
-    width:6px;
-    height:6px;
-    border-radius:50%;
-  }
-  .service-status.active .dot{
-    background:#22c55e;
-  }
-  .service-status.inactive .dot{
-    background:#ef4444;
-  }
+  .service-status.active{ background:#d1fae5; color:#065f46; }
+  .service-status.inactive{ background:#fee2e2; color:#991b1b; }
+  .service-status .dot{ width:6px;height:6px;border-radius:50%; }
+  .service-status.active .dot{ background:#22c55e; }
+  .service-status.inactive .dot{ background:#ef4444; }
 
   .service-description{
-    color:var(--muted);
-    font-size:13px;
-    line-height:1.5;
-    margin-bottom:12px;
-    font-weight:600;
+    color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:12px;font-weight:600;
   }
+  .service-price{ font-size:24px;font-weight:900;color:var(--primary);margin-bottom:12px; }
 
-  .service-price{
-    font-size:24px;
-    font-weight:900;
-    color:var(--primary);
-    margin-bottom:12px;
-  }
-
-  .service-actions{
-    display:flex;
-    gap:8px;
-  }
-
+  .service-actions{ display:flex; gap:8px; }
   .action-btn{
-    flex:1;
-    padding:8px 12px;
-    border-radius:8px;
-    font-weight:700;
-    font-size:13px;
-    cursor:pointer;
-    transition:all 0.2s ease;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:6px;
+    flex:1;padding:8px 12px;border-radius:8px;font-weight:700;font-size:13px;
+    cursor:pointer;transition:all 0.2s ease;display:flex;align-items:center;justify-content:center;gap:6px;
+    border:1px solid transparent;background:#fff;
   }
-  .action-btn.edit{
-    background:#fff3cd;
-    color:#856404;
-    border:1px solid #ffeeba;
-  }
-  .action-btn.edit:hover{
-    background:#ffc107;
-    color:#fff;
-  }
-  .action-btn.delete{
-    background:#fee2e2;
-    color:#991b1b;
-    border:1px solid #fecaca;
-  }
-  .action-btn.delete:hover{
-    background:#ef4444;
-    color:#fff;
-  }
+  .action-btn.edit{ background:#fff3cd;color:#856404;border:1px solid #ffeeba; }
+  .action-btn.edit:hover{ background:#ffc107;color:#fff; }
+  .action-btn.delete{ background:#fee2e2;color:#991b1b;border:1px solid #fecaca; }
+  .action-btn.delete:hover{ background:#ef4444;color:#fff; }
 
-  /* List View */
   .services-list{
-    display:none;
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:12px;
-    overflow:hidden;
+    display:none;background:#fff;border:1px solid var(--border);
+    border-radius:12px;overflow:hidden;
   }
-  .services-list.active{
-    display:block;
-  }
+  .services-list.active{ display:block; }
 
   .list-header{
     display:grid;
     grid-template-columns:80px 1fr 200px 120px 100px 180px;
-    gap:16px;
-    padding:16px 20px;
-    background:var(--bg-soft);
+    gap:16px;padding:16px 20px;background:var(--bg-soft);
     border-bottom:2px solid var(--border);
-    font-weight:800;
-    font-size:12px;
-    text-transform:uppercase;
-    color:var(--muted);
-    letter-spacing:0.5px;
+    font-weight:800;font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:0.5px;
   }
 
   .list-item{
     display:grid;
     grid-template-columns:80px 1fr 200px 120px 100px 180px;
-    gap:16px;
-    padding:16px 20px;
-    border-bottom:1px solid #f1f5f9;
-    align-items:center;
+    gap:16px;padding:16px 20px;border-bottom:1px solid #f1f5f9;align-items:center;
     transition:all 0.15s ease;
   }
-  .list-item:hover{
-    background:#f8fafc;
-  }
-
-  .list-image{
-    width:60px;
-    height:60px;
-    border-radius:8px;
-    object-fit:cover;
-    background:#f1f5f9;
-  }
+  .list-item:hover{ background:#f8fafc; }
+  .list-image{ width:60px;height:60px;border-radius:8px;object-fit:cover;background:#f1f5f9; }
   .list-image.placeholder{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color:#cbd5e1;
-    font-size:24px;
+    display:flex;align-items:center;justify-content:center;color:#cbd5e1;font-size:24px;
   }
 
-  .list-info{
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-  }
-  .list-name{
-    font-weight:800;
-    color:#0f172a;
-    font-size:15px;
-  }
-  .list-description{
-    color:var(--muted);
-    font-size:13px;
-    font-weight:600;
-  }
+  .list-info{ display:flex;flex-direction:column;gap:4px; }
+  .list-name{ font-weight:800;color:#0f172a;font-size:15px; }
+  .list-description{ color:var(--muted);font-size:13px;font-weight:600; }
 
-  .list-price{
-    font-size:18px;
-    font-weight:900;
-    color:var(--primary);
-  }
+  .list-price{ font-size:18px;font-weight:900;color:var(--primary); }
+  .list-actions{ display:flex; gap:8px; }
 
-  .list-actions{
-    display:flex;
-    gap:8px;
-  }
-
-  /* Empty State */
   .empty{
-    padding:60px 24px;
-    text-align:center;
-    background:#fff;
-    border:1px solid var(--border);
-    border-radius:12px;
+    padding:60px 24px;text-align:center;background:#fff;border:1px solid var(--border);border-radius:12px;
   }
-  .empty-icon{
-    font-size:64px;
-    color:#cbd5e1;
-    margin-bottom:16px;
-  }
-  .empty-text{
-    color:var(--muted);
-    font-weight:700;
-    font-size:16px;
-    margin-bottom:8px;
-  }
-  .empty-subtext{
-    color:#94a3b8;
-    font-size:14px;
-  }
+  .empty-icon{ font-size:64px;color:#cbd5e1;margin-bottom:16px; }
+  .empty-text{ color:var(--muted);font-weight:700;font-size:16px;margin-bottom:8px; }
+  .empty-subtext{ color:#94a3b8;font-size:14px; }
 
-  /* Modal Enhancements */
   .modal-content{
-    border-radius:16px;
-    border:none;
-    box-shadow:0 20px 60px rgba(0,0,0,0.2);
+    border-radius:16px;border:none;box-shadow:0 20px 60px rgba(0,0,0,0.2);
   }
-  .modal-header{
-    background:var(--bg-soft);
-    border-bottom:1px solid var(--border);
-    padding:20px 24px;
-  }
-  .modal-title{
-    font-weight:900;
-    color:#0f172a;
-  }
-  .modal-body{
-    padding:24px;
-  }
-  .modal-footer{
-    background:var(--bg-soft);
-    border-top:1px solid var(--border);
-    padding:16px 24px;
-  }
+  .modal-header{ background:var(--bg-soft);border-bottom:1px solid var(--border);padding:20px 24px; }
+  .modal-title{ font-weight:900;color:#0f172a; }
+  .modal-body{ padding:24px; }
+  .modal-footer{ background:var(--bg-soft);border-top:1px solid var(--border);padding:16px 24px; }
 
-  .form-label{
-    font-weight:700;
-    color:#0f172a;
-    margin-bottom:8px;
-    font-size:14px;
-  }
+  .form-label{ font-weight:700;color:#0f172a;margin-bottom:8px;font-size:14px; }
   .form-control{
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:10px 14px;
-    font-weight:600;
-    transition:all 0.2s ease;
+    border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-weight:600;transition:all 0.2s ease;
   }
-  .form-control:focus{
-    border-color:var(--primary);
-    box-shadow:0 0 0 3px rgba(59,130,246,0.1);
-  }
+  .form-control:focus{ border-color:var(--primary); box-shadow:0 0 0 3px rgba(59,130,246,0.1); }
 
   .image-preview{
-    width:100%;
-    max-height:200px;
-    object-fit:cover;
-    border-radius:8px;
-    margin-top:8px;
+    width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-top:8px;
   }
 
-  /* Responsive */
   @media (max-width: 768px){
-    .page-head{
-      flex-direction:column;
-      align-items:flex-start;
-    }
-    .toolbar{
-      flex-direction:column;
-      align-items:stretch;
-    }
-    .toolbar-left{
-      flex-direction:column;
-    }
-    .search{
-      width:100%;
-    }
-    .services-grid{
-      grid-template-columns:1fr;
-    }
-    .list-header, .list-item{
-      grid-template-columns:60px 1fr;
-      gap:12px;
-    }
+    .page-head{ flex-direction:column;align-items:flex-start; }
+    .toolbar{ flex-direction:column;align-items:stretch; }
+    .toolbar-left{ flex-direction:column; }
+    .search{ width:100%; }
+    .services-grid{ grid-template-columns:1fr; }
+    .list-header, .list-item{ grid-template-columns:60px 1fr; gap:12px; }
     .list-header span:not(:first-child):not(:nth-child(2)),
-    .list-item > div:not(:first-child):not(:nth-child(2)){
-      display:none;
-    }
+    .list-item > div:not(:first-child):not(:nth-child(2)){ display:none; }
   }
 </style>
 
@@ -540,12 +255,9 @@
   </button>
 </div>
 
-<!-- Statistics Overview -->
 <div class="stats-grid">
   <div class="stat-card">
-    <div class="stat-icon blue">
-      <i class="fas fa-concierge-bell"></i>
-    </div>
+    <div class="stat-icon blue"><i class="fas fa-concierge-bell"></i></div>
     <div class="stat-details">
       <div class="stat-label">Total Services</div>
       <div class="stat-value"><span id="totalServices">{{ services|length }}</span></div>
@@ -553,9 +265,7 @@
   </div>
 
   <div class="stat-card">
-    <div class="stat-icon green">
-      <i class="fas fa-check-circle"></i>
-    </div>
+    <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
     <div class="stat-details">
       <div class="stat-label">Active</div>
       <div class="stat-value"><span id="activeCount">0</span></div>
@@ -563,9 +273,7 @@
   </div>
 
   <div class="stat-card">
-    <div class="stat-icon orange">
-      <i class="fas fa-pause-circle"></i>
-    </div>
+    <div class="stat-icon orange"><i class="fas fa-pause-circle"></i></div>
     <div class="stat-details">
       <div class="stat-label">Inactive</div>
       <div class="stat-value"><span id="inactiveCount">0</span></div>
@@ -573,9 +281,7 @@
   </div>
 
   <div class="stat-card">
-    <div class="stat-icon purple">
-      <i class="fas fa-dollar-sign"></i>
-    </div>
+    <div class="stat-icon purple"><i class="fas fa-dollar-sign"></i></div>
     <div class="stat-details">
       <div class="stat-label">Avg Price</div>
       <div class="stat-value">$<span id="avgPrice">0</span></div>
@@ -583,7 +289,6 @@
   </div>
 </div>
 
-<!-- Toolbar -->
 <div class="toolbar">
   <div class="toolbar-left">
     <div class="search">
@@ -592,39 +297,26 @@
     </div>
 
     <div class="filter-group">
-      <button class="filter-btn active" onclick="filterByStatus('all')">
-        All Services
-      </button>
-      <button class="filter-btn" onclick="filterByStatus('active')">
-        <i class="fas fa-check"></i> Active
-      </button>
-      <button class="filter-btn" onclick="filterByStatus('inactive')">
-        <i class="fas fa-pause"></i> Inactive
-      </button>
+      <button class="filter-btn active" onclick="filterByStatus(event,'all')">All Services</button>
+      <button class="filter-btn" onclick="filterByStatus(event,'active')"><i class="fas fa-check"></i> Active</button>
+      <button class="filter-btn" onclick="filterByStatus(event,'inactive')"><i class="fas fa-pause"></i> Inactive</button>
     </div>
   </div>
 
   <div class="view-toggle">
-    <button class="view-btn active" onclick="switchView('grid')" title="Grid View">
-      <i class="fas fa-th"></i>
-    </button>
-    <button class="view-btn" onclick="switchView('list')" title="List View">
-      <i class="fas fa-list"></i>
-    </button>
+    <button class="view-btn active" onclick="switchView(event,'grid')" title="Grid View"><i class="fas fa-th"></i></button>
+    <button class="view-btn" onclick="switchView(event,'list')" title="List View"><i class="fas fa-list"></i></button>
   </div>
 </div>
 
 {% if services %}
-  <!-- Grid View -->
   <div class="services-grid" id="gridView">
     {% for s in services %}
       <div class="service-card" data-status="{% if s.is_active %}active{% else %}inactive{% endif %}">
         {% if s.image %}
           <img src="{{ s.image.url }}" class="service-image" alt="{{ s.name }}">
         {% else %}
-          <div class="service-image placeholder">
-            <i class="fas fa-concierge-bell"></i>
-          </div>
+          <div class="service-image placeholder"><i class="fas fa-concierge-bell"></i></div>
         {% endif %}
 
         <div class="service-content">
@@ -636,29 +328,25 @@
             </div>
           </div>
 
-          <div class="service-description">
-            {{ s.description|truncatechars:90 }}
-          </div>
-
-          <div class="service-price">
-            ${{ s.price }}
-          </div>
+          <div class="service-description">{{ s.description|truncatechars:90 }}</div>
+          <div class="service-price">${{ s.price }}</div>
 
           <div class="service-actions">
-            <a class="action-btn" href="{% url 'manage_service_bookings' %}?service_id={{ s.id }}" title="Manage Bookings" style="background:#eef2ff;color:#1e3a8a;border:1px solid #e0e7ff;">
-              <i class="fas fa-calendar-check"></i>
-              Bookings
+            <a class="action-btn"
+               href="{% url 'manage_service_bookings' %}?service_id={{ s.id }}"
+               title="Manage Bookings"
+               style="background:#eef2ff;color:#1e3a8a;border:1px solid #e0e7ff;">
+              <i class="fas fa-calendar-check"></i> Bookings
             </a>
 
             <button class="action-btn edit" data-bs-toggle="modal" data-bs-target="#editServiceModal{{ s.id }}">
-              <i class="fas fa-edit"></i>
-              Edit
+              <i class="fas fa-edit"></i> Edit
             </button>
-            <form method="post" action="{% url 'delete_service' s.id %}" style="flex:1;margin:0;">
+
+            <form method="post" action="{% url 'delete_service' s.id %}" class="swal-delete-service" style="flex:1;margin:0;">
               {% csrf_token %}
-              <button type="submit" class="action-btn delete" onclick="return confirm('Delete service {{ s.name }}?');" style="width:100%;">
-                <i class="fas fa-trash"></i>
-                Delete
+              <button type="submit" class="action-btn delete" style="width:100%;">
+                <i class="fas fa-trash"></i> Delete
               </button>
             </form>
           </div>
@@ -667,7 +355,6 @@
     {% endfor %}
   </div>
 
-  <!-- List View -->
   <div class="services-list" id="listView">
     <div class="list-header">
       <span>Image</span>
@@ -677,15 +364,14 @@
       <span>Status</span>
       <span>Actions</span>
     </div>
+
     {% for s in services %}
       <div class="list-item" data-status="{% if s.is_active %}active{% else %}inactive{% endif %}">
         <div>
           {% if s.image %}
             <img src="{{ s.image.url }}" class="list-image" alt="{{ s.name }}">
           {% else %}
-            <div class="list-image placeholder">
-              <i class="fas fa-concierge-bell"></i>
-            </div>
+            <div class="list-image placeholder"><i class="fas fa-concierge-bell"></i></div>
           {% endif %}
         </div>
 
@@ -694,13 +380,8 @@
           <div class="list-description">{{ s.description|truncatechars:60 }}</div>
         </div>
 
-        <div class="list-description">
-          {{ s.description|truncatechars:80 }}
-        </div>
-
-        <div class="list-price">
-          ${{ s.price }}
-        </div>
+        <div class="list-description">{{ s.description|truncatechars:80 }}</div>
+        <div class="list-price">${{ s.price }}</div>
 
         <div>
           <div class="service-status {% if s.is_active %}active{% else %}inactive{% endif %}">
@@ -710,20 +391,21 @@
         </div>
 
         <div class="list-actions">
-          <a class="action-btn" href="{% url 'manage_service_bookings' %}?service_id={{ s.id }}" title="Manage Bookings" style="background:#eef2ff;color:#1e3a8a;border:1px solid #e0e7ff;padding:8px 12px;border-radius:8px;display:flex;align-items:center;gap:6px;">
-            <i class="fas fa-calendar-check"></i>
-            Bookings
+          <a class="action-btn"
+             href="{% url 'manage_service_bookings' %}?service_id={{ s.id }}"
+             title="Manage Bookings"
+             style="background:#eef2ff;color:#1e3a8a;border:1px solid #e0e7ff;padding:8px 12px;">
+            <i class="fas fa-calendar-check"></i> Bookings
           </a>
 
           <button class="action-btn edit" data-bs-toggle="modal" data-bs-target="#editServiceModal{{ s.id }}">
-            <i class="fas fa-edit"></i>
-            Edit
+            <i class="fas fa-edit"></i> Edit
           </button>
-          <form method="post" action="{% url 'delete_service' s.id %}" style="margin:0;">
+
+          <form method="post" action="{% url 'delete_service' s.id %}" class="swal-delete-service" style="margin:0;">
             {% csrf_token %}
-            <button type="submit" class="action-btn delete" onclick="return confirm('Delete {{ s.name }}?');">
-              <i class="fas fa-trash"></i>
-              Delete
+            <button type="submit" class="action-btn delete">
+              <i class="fas fa-trash"></i> Delete
             </button>
           </form>
         </div>
@@ -732,9 +414,7 @@
   </div>
 {% else %}
   <div class="empty">
-    <div class="empty-icon">
-      <i class="fas fa-concierge-bell"></i>
-    </div>
+    <div class="empty-icon"><i class="fas fa-concierge-bell"></i></div>
     <div class="empty-text">No services available</div>
     <div class="empty-subtext">Click "Add New Service" to create your first service</div>
   </div>
@@ -751,35 +431,28 @@
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="post" action="{% url 'add_service' %}" enctype="multipart/form-data">
+
+      <form method="post" action="{% url 'add_service' %}" enctype="multipart/form-data" class="swal-add-service">
         {% csrf_token %}
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-tag"></i> Service Name *
-            </label>
+            <label class="form-label"><i class="fas fa-tag"></i> Service Name *</label>
             <input class="form-control" name="name" required placeholder="e.g., Room Service, Spa Treatment">
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-align-left"></i> Description
-            </label>
+            <label class="form-label"><i class="fas fa-align-left"></i> Description</label>
             <textarea class="form-control" name="description" rows="3" placeholder="Describe your service..."></textarea>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-dollar-sign"></i> Price *
-            </label>
+            <label class="form-label"><i class="fas fa-dollar-sign"></i> Price *</label>
             <input class="form-control" name="price" type="number" step="0.01" required placeholder="0.00">
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-image"></i> Service Image
-            </label>
-            <input class="form-control" name="image" type="file" accept="image/*" onchange="previewImage(event, 'addPreview')">
+            <label class="form-label"><i class="fas fa-image"></i> Service Image</label>
+            <input class="form-control" name="image" type="file" accept="image/*" onchange="previewImage(event,'addPreview')">
             <small class="text-muted">JPG, PNG, GIF up to 5MB</small>
             <img id="addPreview" class="image-preview" style="display:none;">
           </div>
@@ -787,11 +460,11 @@
           <div class="form-check">
             <input class="form-check-input" type="checkbox" id="is_active_add" name="is_active" checked>
             <label class="form-check-label" for="is_active_add" style="font-weight:700;">
-              <i class="fas fa-toggle-on" style="color:var(--success);"></i>
-              Mark as Active
+              <i class="fas fa-toggle-on" style="color:var(--success);"></i> Mark as Active
             </label>
           </div>
         </div>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="fas fa-times"></i> Cancel
@@ -817,27 +490,22 @@
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <form method="post" action="{% url 'edit_service' service.id %}" enctype="multipart/form-data">
+
+      <form method="post" action="{% url 'edit_service' service.id %}" enctype="multipart/form-data" class="swal-save-service">
         {% csrf_token %}
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-tag"></i> Service Name *
-            </label>
+            <label class="form-label"><i class="fas fa-tag"></i> Service Name *</label>
             <input class="form-control" name="name" value="{{ service.name }}" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-align-left"></i> Description
-            </label>
+            <label class="form-label"><i class="fas fa-align-left"></i> Description</label>
             <textarea class="form-control" name="description" rows="3">{{ service.description }}</textarea>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-dollar-sign"></i> Price *
-            </label>
+            <label class="form-label"><i class="fas fa-dollar-sign"></i> Price *</label>
             <input class="form-control" name="price" type="number" step="0.01" value="{{ service.price }}" required>
           </div>
 
@@ -852,21 +520,19 @@
             <label class="form-label">
               <i class="fas fa-image"></i> {% if service.image %}Change{% else %}Add{% endif %} Image
             </label>
-            <input class="form-control" name="image" type="file" accept="image/*" onchange="previewImage(event, 'editPreview{{ service.id }}')">
-            <small class="text-muted">
-              {% if service.image %}Leave empty to keep current image{% else %}JPG, PNG, GIF up to 5MB{% endif %}
-            </small>
+            <input class="form-control" name="image" type="file" accept="image/*" onchange="previewImage(event,'editPreview{{ service.id }}')">
+            <small class="text-muted">{% if service.image %}Leave empty to keep current image{% else %}JPG, PNG, GIF up to 5MB{% endif %}</small>
             <img id="editPreview{{ service.id }}" class="image-preview" style="display:none;">
           </div>
 
           <div class="form-check">
             <input class="form-check-input" type="checkbox" id="is_active_{{ service.id }}" name="is_active" {% if service.is_active %}checked{% endif %}>
             <label class="form-check-label" for="is_active_{{ service.id }}" style="font-weight:700;">
-              <i class="fas fa-toggle-on" style="color:var(--success);"></i>
-              Active
+              <i class="fas fa-toggle-on" style="color:var(--success);"></i> Active
             </label>
           </div>
         </div>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="fas fa-times"></i> Cancel
@@ -885,47 +551,34 @@
   let currentView = 'grid';
   let currentFilter = 'all';
 
-  // Calculate statistics
   function calculateStats() {
     const cards = document.querySelectorAll('.service-card, .list-item');
-    let activeCount = 0;
-    let inactiveCount = 0;
-    let totalPrice = 0;
-    let count = 0;
+    let activeCount = 0, inactiveCount = 0, totalPrice = 0, count = 0;
 
     cards.forEach(card => {
       const status = card.getAttribute('data-status');
       if (status === 'active') activeCount++;
       if (status === 'inactive') inactiveCount++;
 
-      // Get price
       const priceEl = card.querySelector('.service-price, .list-price');
       if (priceEl) {
         const price = parseFloat(priceEl.textContent.replace('$', '').trim());
-        if (!isNaN(price)) {
-          totalPrice += price;
-          count++;
-        }
+        if (!isNaN(price)) { totalPrice += price; count++; }
       }
     });
 
-    document.getElementById('totalServices').textContent = cards.length;
+    const total = "{{ services|length }}";
+    document.getElementById('totalServices').textContent = total;
     document.getElementById('activeCount').textContent = activeCount;
     document.getElementById('inactiveCount').textContent = inactiveCount;
-    
-    const avgPrice = count > 0 ? (totalPrice / count).toFixed(2) : '0.00';
-    document.getElementById('avgPrice').textContent = avgPrice;
+    document.getElementById('avgPrice').textContent = count > 0 ? (totalPrice / count).toFixed(2) : '0.00';
   }
 
-  // Switch view
-  function switchView(view) {
+  function switchView(e, view) {
     currentView = view;
-
-    // Update buttons
     document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.closest('.view-btn').classList.add('active');
+    if (e && e.target) e.target.closest('.view-btn').classList.add('active');
 
-    // Toggle views
     const gridView = document.getElementById('gridView');
     const listView = document.getElementById('listView');
 
@@ -938,53 +591,43 @@
     }
   }
 
-  // Filter by status
-  function filterByStatus(status) {
+  function filterByStatus(e, status) {
     currentFilter = status;
-
-    // Update filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-
-    // Apply filter
+    if (e && e.target) e.target.classList.add('active');
     filterServices();
   }
 
-  // Filter services
   function filterServices() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const searchTerm = (document.getElementById('searchInput').value || '').toLowerCase();
     const cards = document.querySelectorAll('.service-card');
     const items = document.querySelectorAll('.list-item');
 
-    // Filter grid view
     cards.forEach(card => {
       const name = card.querySelector('.service-name').textContent.toLowerCase();
-      const description = card.querySelector('.service-description').textContent.toLowerCase();
+      const desc = card.querySelector('.service-description').textContent.toLowerCase();
       const status = card.getAttribute('data-status');
 
-      const matchesSearch = name.includes(searchTerm) || description.includes(searchTerm);
+      const matchesSearch = name.includes(searchTerm) || desc.includes(searchTerm);
       const matchesFilter = currentFilter === 'all' || status === currentFilter;
-
-      card.style.display = matchesSearch && matchesFilter ? 'block' : 'none';
+      card.style.display = (matchesSearch && matchesFilter) ? 'block' : 'none';
     });
 
-    // Filter list view
     items.forEach(item => {
       const name = item.querySelector('.list-name').textContent.toLowerCase();
-      const description = item.querySelector('.list-description').textContent.toLowerCase();
+      const desc = item.querySelector('.list-description').textContent.toLowerCase();
       const status = item.getAttribute('data-status');
 
-      const matchesSearch = name.includes(searchTerm) || description.includes(searchTerm);
+      const matchesSearch = name.includes(searchTerm) || desc.includes(searchTerm);
       const matchesFilter = currentFilter === 'all' || status === currentFilter;
-
-      item.style.display = matchesSearch && matchesFilter ? 'grid' : 'none';
+      item.style.display = (matchesSearch && matchesFilter) ? 'grid' : 'none';
     });
   }
 
-  // Image preview
   function previewImage(event, previewId) {
     const file = event.target.files[0];
     const preview = document.getElementById(previewId);
+    if (!preview) return;
 
     if (file) {
       const reader = new FileReader();
@@ -998,9 +641,83 @@
     }
   }
 
-  // Initialize on page load
   document.addEventListener('DOMContentLoaded', function() {
     calculateStats();
+
+    // SweetAlert mixin (only if Swal exists)
+    const swalBS = (typeof Swal !== "undefined") ? Swal.mixin({
+      customClass: { confirmButton: "btn btn-success ms-2", cancelButton: "btn btn-danger" },
+      buttonsStyling: false
+    }) : null;
+
+    // Confirm delete service
+    document.querySelectorAll(".swal-delete-service").forEach(form => {
+      form.addEventListener("submit", function(e){
+        e.preventDefault();
+
+        const name =
+          form.closest(".service-card")?.querySelector(".service-name")?.textContent?.trim()
+          || form.closest(".list-item")?.querySelector(".list-name")?.textContent?.trim()
+          || "this service";
+
+        if (!swalBS) {
+          if (confirm(`Delete ${name}?`)) form.submit();
+          return;
+        }
+
+        swalBS.fire({
+          title: "Are you sure?",
+          text: `Delete "${name}"? You won't be able to revert this!`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Yes, delete it!",
+          cancelButtonText: "No, cancel!",
+          reverseButtons: true
+        }).then((result) => {
+          if (result.isConfirmed) form.submit();
+        });
+      });
+    });
+
+    // Confirm add service
+    document.querySelectorAll(".swal-add-service").forEach(form => {
+      form.addEventListener("submit", function(e){
+        e.preventDefault();
+        if (!swalBS) { form.submit(); return; }
+
+        swalBS.fire({
+          title: "Add this service?",
+          text: "Please confirm adding a new service.",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Yes, add it!",
+          cancelButtonText: "Cancel",
+          reverseButtons: true
+        }).then((result) => {
+          if (result.isConfirmed) form.submit();
+        });
+      });
+    });
+
+    // Confirm save service
+    document.querySelectorAll(".swal-save-service").forEach(form => {
+      form.addEventListener("submit", function(e){
+        e.preventDefault();
+        if (!swalBS) { form.submit(); return; }
+
+        swalBS.fire({
+          title: "Save changes?",
+          text: "Do you want to update this service information?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Yes, save it!",
+          cancelButtonText: "Cancel",
+          reverseButtons: true
+        }).then((result) => {
+          if (result.isConfirmed) form.submit();
+        });
+      });
+    });
   });
 </script>
 {% endblock %}

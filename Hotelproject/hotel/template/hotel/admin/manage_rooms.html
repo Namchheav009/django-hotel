@@ -540,7 +540,7 @@
 
 <!-- Statistics Overview -->
 <div class="stats-grid">
-  <div class="stat-card" onclick="filterByStatus('all')">
+  <div class="stat-card" onclick="filterByStatus(null,'all')">
     <div class="stat-icon blue">
       <i class="fa-solid fa-door-open"></i>
     </div>
@@ -550,7 +550,7 @@
     </div>
   </div>
 
-  <div class="stat-card" onclick="filterByStatus('Available')">
+  <div class="stat-card" onclick="filterByStatus(null,'Available')">
     <div class="stat-icon green">
       <i class="fa-solid fa-check-circle"></i>
     </div>
@@ -560,7 +560,7 @@
     </div>
   </div>
 
-  <div class="stat-card" onclick="filterByStatus('Booked')">
+  <div class="stat-card" onclick="filterByStatus(null,'Booked')">
     <div class="stat-icon orange">
       <i class="fa-solid fa-bed"></i>
     </div>
@@ -570,7 +570,7 @@
     </div>
   </div>
 
-  <div class="stat-card" onclick="filterByStatus('Maintenance')">
+  <div class="stat-card" onclick="filterByStatus(null,'Maintenance')">
     <div class="stat-icon red">
       <i class="fa-solid fa-tools"></i>
     </div>
@@ -600,16 +600,16 @@
     </div>
 
     <div class="filter-group">
-      <button class="filter-btn active" onclick="filterByStatus('all')">
+      <button class="filter-btn active" onclick="filterByStatus(event,'all')">
         All Rooms
       </button>
-      <button class="filter-btn" onclick="filterByStatus('Available')">
+      <button class="filter-btn" onclick="filterByStatus(event,'Available')">
         <i class="fa-solid fa-check"></i> Available
       </button>
-      <button class="filter-btn" onclick="filterByStatus('Booked')">
+      <button class="filter-btn" onclick="filterByStatus(event,'Booked')">
         <i class="fa-solid fa-bed"></i> Booked
       </button>
-      <button class="filter-btn" onclick="filterByStatus('Maintenance')">
+      <button class="filter-btn" onclick="filterByStatus(event,'Maintenance')">
         <i class="fa-solid fa-tools"></i> Maintenance
       </button>
     </div>
@@ -710,9 +710,9 @@
                   <i class="fa-solid fa-pen"></i> Edit
                 </button>
 
-                <form method="POST" action="{% url 'delete_room' room.id %}" style="display:inline;margin:0;">
+                <form method="POST" action="{% url 'delete_room' room.id %}" class="swal-delete-room" style="display:inline;margin:0;">
                   {% csrf_token %}
-                  <button class="btn btn-sm btn-danger" onclick="return confirm('Delete room {{ room.room_number }}? This action cannot be undone.');">
+                  <button class="btn btn-sm btn-danger">
                     <i class="fa-solid fa-trash"></i> Delete
                   </button>
                 </form>
@@ -749,7 +749,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <form method="POST" action="{% url 'add_room' %}" enctype="multipart/form-data">
+      <form method="POST" action="{% url 'add_room' %}" enctype="multipart/form-data" class="swal-add-room">
         {% csrf_token %}
 
         <div class="modal-body">
@@ -860,7 +860,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
-      <form method="POST" action="{% url 'edit_room' room.id %}" enctype="multipart/form-data">
+      <form method="POST" action="{% url 'edit_room' room.id %}" enctype="multipart/form-data" class="swal-save-room">
         {% csrf_token %}
 
         <div class="modal-body">
@@ -932,54 +932,27 @@
               {% endif %}
             </div>
 
-            <!-- Room Image Gallery -->
+            <!-- Room Image Gallery (simplified, existing images not shown) -->
             <div class="col-12">
               <label class="form-label">
                 <i class="fa-solid fa-images"></i> Room Image Gallery (up to 6 images)
               </label>
               <div class="image-gallery">
-                {% for i in "123456" %}
-                  {% with image=room.images.all|dictsort:"order"|slice:forloop.counter0|first %}
+                {% for idx in "123456" %}
                   <div class="image-slot">
                     <div class="image-slot-header">
                       Image {{ forloop.counter }}
                     </div>
-                    
-                    {% if image and image.image %}
-                      <img src="{{ image.image.url }}" alt="{{ image.alt_text }}" class="image-preview">
-                      <input type="text" class="form-control form-control-sm mb-2" 
-                        placeholder="Alt text" 
-                        value="{{ image.alt_text }}" 
-                        name="alt_text_{{ forloop.counter }}" 
-                        style="font-size:12px;">
-                      <div class="image-actions">
-                        <input type="file" class="form-control form-control-sm" 
-                          name="room_image_{{ forloop.counter }}" 
-                          accept="image/*" 
-                          style="flex:1;">
-                        <form method="POST" action="{% url 'delete_room_image' image.id %}" style="display:inline;margin:0;">
-                          {% csrf_token %}
-                          <button type="submit" class="btn btn-sm btn-danger" 
-                            onclick="return confirm('Delete this image?');" 
-                            style="padding:6px 10px;">
-                            <i class="fa-solid fa-trash"></i>
-                          </button>
-                        </form>
-                      </div>
-                    {% else %}
-                      <div class="image-placeholder">
-                        <i class="fa-solid fa-image"></i>
-                      </div>
-                      <input type="text" class="form-control form-control-sm mb-2" 
-                        placeholder="Alt text" 
-                        name="alt_text_{{ forloop.counter }}" 
-                        style="font-size:12px;">
-                      <input type="file" class="form-control form-control-sm" 
-                        name="room_image_{{ forloop.counter }}" 
-                        accept="image/*">
-                    {% endif %}
+                    <div class="image-placeholder">
+                      <i class="fa-solid fa-image"></i>
+                    </div>
+                    <input type="text" class="form-control form-control-sm mb-2"
+                      placeholder="Alt text"
+                      name="alt_text_{{ forloop.counter }}"
+                      style="font-size:12px;">
+                    <input type="file" class="form-control form-control-sm"
+                      name="room_image_{{ forloop.counter }}" accept="image/*">
                   </div>
-                  {% endwith %}
                 {% endfor %}
               </div>
             </div>
@@ -1054,13 +1027,15 @@
     document.getElementById('occupancyRate').textContent = occupancyRate + '%';
   }
 
-  // Filter by status
-  function filterByStatus(status) {
+  // Filter by status (accepts optional event)
+  function filterByStatus(e, status) {
     currentFilter = status;
 
     // Update filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.closest('.filter-btn').classList.add('active');
+    if (e && e.target) {
+      e.target.closest('.filter-btn').classList.add('active');
+    }
 
     // Apply filter
     filterRooms();
@@ -1092,6 +1067,98 @@
   document.addEventListener('DOMContentLoaded', function() {
     calculateStats();
   });
+</script>
+
+<script>
+// additional SweetAlert confirmations for room operations
+// this block fires after the existing filtering code above
+
+document.addEventListener("DOMContentLoaded", function () {
+
+  // always check AFTER page is loaded
+  const hasSwal = (typeof window.Swal !== "undefined");
+  const swalBS  = window.swalWithBootstrapButtons || (hasSwal ? Swal.mixin({
+    customClass: { confirmButton: "btn btn-success me-2", cancelButton: "btn btn-danger" },
+    buttonsStyling: false
+  }) : null);
+
+  // ---------- Delete room ----------
+  document.querySelectorAll(".swal-delete-room").forEach(form => {
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+
+      const roomName = form.closest("tr")?.querySelector(".room-title")?.textContent?.trim() || "this room";
+
+      if (!swalBS) {
+        if (confirm(`Delete ${roomName}?`)) form.submit();
+        return;
+      }
+      
+
+      swalBS.fire({
+        title: "Are you sure?",
+        text: `Delete ${roomName}? You won't be able to revert this!`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "No, cancel!",
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed){ form.submit();}
+        else if (result.dismiss === Swal.DismissReason.cancel) {
+          swalBS.fire({
+            title: "Cancelled",
+            text: `${roomName} is safe 🙂`,
+            icon: "error"
+          });
+        }
+      });
+    });
+  });
+
+  // ---------- Confirm save changes (edit room) ----------
+  document.querySelectorAll(".swal-save-room").forEach(form => {
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+
+      if (!swalBS) { form.submit(); return; }
+
+      swalBS.fire({
+        title: "Save changes?",
+        text: "Do you want to update this room information?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Yes, save it!",
+        cancelButtonText: "Cancel",
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) form.submit();
+      });
+    });
+  });
+
+  // ---------- Confirm add room ----------
+  document.querySelectorAll(".swal-add-room").forEach(form => {
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+
+      if (!swalBS) { form.submit(); return; }
+
+      swalBS.fire({
+        title: "Add this room?",
+        text: "Please confirm adding a new room.",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Yes, add it!",
+        cancelButtonText: "Cancel",
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) form.submit();
+      });
+    });
+  });
+
+});
 </script>
 
 {% endblock %}

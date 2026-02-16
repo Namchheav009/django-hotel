@@ -17,22 +17,22 @@
   }
 
   .page-head{
-    display:flex; 
-    align-items:flex-end; 
-    justify-content:space-between; 
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
     gap:14px;
     margin-bottom:24px;
     flex-wrap:wrap;
   }
-  .page-head h2{ 
-    margin:0; 
-    font-weight:900; 
+  .page-head h2{
+    margin:0;
+    font-weight:900;
     font-size:28px;
     color:#0f172a;
   }
-  .page-sub{ 
-    margin:6px 0 0; 
-    color:var(--muted); 
+  .page-sub{
+    margin:6px 0 0;
+    color:var(--muted);
     font-weight:600;
     font-size:14px;
   }
@@ -105,10 +105,8 @@
   .stat-icon.orange{ background:#fed7aa; color:#ea580c; }
   .stat-icon.purple{ background:#ede9fe; color:#7c3aed; }
   .stat-icon.pink{ background:#fce7f3; color:#db2777; }
-  
-  .stat-details{
-    flex:1;
-  }
+
+  .stat-details{ flex:1; }
   .stat-label{
     font-size:12px;
     color:var(--muted);
@@ -142,8 +140,8 @@
   }
 
   .search{
-    display:flex; 
-    align-items:center; 
+    display:flex;
+    align-items:center;
     gap:10px;
     padding:10px 14px;
     border:1px solid var(--border);
@@ -157,17 +155,15 @@
     box-shadow:0 0 0 3px rgba(59,130,246,0.1);
   }
   .search input{
-    border:none; 
-    outline:none; 
+    border:none;
+    outline:none;
     background:transparent;
     width:100%;
     font-weight:600;
     color:#0f172a;
     font-size:14px;
   }
-  .search input::placeholder{
-    color:#94a3b8;
-  }
+  .search input::placeholder{ color:#94a3b8; }
 
   /* Filter Buttons */
   .filter-group{
@@ -230,12 +226,10 @@
   }
 
   /* Table */
-  .table-wrapper{
-    overflow-x:auto;
-  }
-  .admin-table{ 
-    width:100%; 
-    border-collapse:collapse; 
+  .table-wrapper{ overflow-x:auto; }
+  .admin-table{
+    width:100%;
+    border-collapse:collapse;
   }
   .admin-table thead th{
     text-align:left;
@@ -257,12 +251,8 @@
     color:#0f172a;
     font-size:14px;
   }
-  .admin-table tbody tr{
-    transition:all 0.15s ease;
-  }
-  .admin-table tbody tr:hover{ 
-    background:#f8fafc;
-  }
+  .admin-table tbody tr{ transition:all 0.15s ease; }
+  .admin-table tbody tr:hover{ background:#f8fafc; }
 
   /* User Info */
   .user-info{
@@ -309,34 +299,12 @@
     font-weight:800;
     font-size:12px;
   }
-  .badge-role{
-    background:#f0f9ff;
-    color:#0c4a6e;
-  }
-  .badge-yes{
-    background:#d1fae5;
-    color:#065f46;
-  }
-  .badge-no{
-    background:#f1f5f9;
-    color:#64748b;
-  }
-  .badge-admin{
-    background:#ede9fe;
-    color:#5b21b6;
-  }
-  .badge-staff{
-    background:#dbeafe;
-    color:#1e3a8a;
-  }
-  .badge-customer{
-    background:#f0fdf4;
-    color:#166534;
-  }
-  .badge-receptionist{
-    background:#fef3c7;
-    color:#92400e;
-  }
+  .badge-admin{ background:#ede9fe; color:#5b21b6; }
+  .badge-staff{ background:#dbeafe; color:#1e3a8a; }
+  .badge-customer{ background:#f0fdf4; color:#166534; }
+  .badge-receptionist{ background:#fef3c7; color:#92400e; }
+  .badge-yes{ background:#d1fae5; color:#065f46; }
+  .badge-no{ background:#f1f5f9; color:#64748b; }
 
   /* Action Buttons */
   .action-btns{
@@ -375,9 +343,7 @@
     background:#6b7280;
     color:#fff;
   }
-  .btn-secondary:hover{
-    background:#4b5563;
-  }
+  .btn-secondary:hover{ background:#4b5563; }
 
   /* Empty State */
   .empty{
@@ -413,9 +379,7 @@
     align-items:center;
     gap:10px;
   }
-  .modal-body{
-    padding:24px;
-  }
+  .modal-body{ padding:24px; }
   .modal-footer{
     background:var(--bg-soft);
     border-top:1px solid var(--border);
@@ -494,26 +458,12 @@
 
   /* Responsive */
   @media (max-width: 768px){
-    .page-head{
-      flex-direction:column;
-      align-items:flex-start;
-    }
-    .toolbar{
-      flex-direction:column;
-      align-items:stretch;
-    }
-    .toolbar-left{
-      flex-direction:column;
-    }
-    .search{
-      width:100%;
-    }
-    .stats-grid{
-      grid-template-columns:1fr;
-    }
-    .action-btns{
-      flex-direction:column;
-    }
+    .page-head{ flex-direction:column; align-items:flex-start; }
+    .toolbar{ flex-direction:column; align-items:stretch; }
+    .toolbar-left{ flex-direction:column; }
+    .search{ width:100%; }
+    .stats-grid{ grid-template-columns:1fr; }
+    .action-btns{ flex-direction:column; }
   }
 </style>
 
@@ -529,24 +479,6 @@
   </button>
 </div>
 
-<!-- Alert Messages -->
-{% if messages %}
-  {% for message in messages %}
-    <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show" role="alert">
-      <i class="fas {% if 'success' in message.tags %}fa-check-circle{% elif 'error' in message.tags or 'danger' in message.tags %}fa-exclamation-circle{% elif 'warning' in message.tags %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
-      <div style="flex:1;">
-        <strong>
-          {% if 'success' in message.tags %}Success!
-          {% elif 'error' in message.tags or 'danger' in message.tags %}Error!
-          {% elif 'warning' in message.tags %}Warning!
-          {% else %}Info{% endif %}
-        </strong>
-        {{ message }}
-      </div>
-      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-  {% endfor %}
-{% endif %}
 
 <!-- Statistics Overview -->
 <div class="stats-grid">
@@ -667,71 +599,54 @@
 
               <td>
                 {% if u.userprofile.role == 'Admin' %}
-                  <span class="badge badge-admin">
-                    <i class="fas fa-shield-alt"></i>
-                    Admin
-                  </span>
+                  <span class="badge badge-admin"><i class="fas fa-shield-alt"></i> Admin</span>
                 {% elif u.userprofile.role == 'Staff' %}
-                  <span class="badge badge-staff">
-                    <i class="fas fa-users-cog"></i>
-                    Staff
-                  </span>
+                  <span class="badge badge-staff"><i class="fas fa-users-cog"></i> Staff</span>
                 {% elif u.userprofile.role == 'Receptionist' %}
-                  <span class="badge badge-receptionist">
-                    <i class="fas fa-user-tie"></i>
-                    Receptionist
-                  </span>
+                  <span class="badge badge-receptionist"><i class="fas fa-user-tie"></i> Receptionist</span>
                 {% else %}
-                  <span class="badge badge-customer">
-                    <i class="fas fa-user"></i>
-                    Customer
-                  </span>
+                  <span class="badge badge-customer"><i class="fas fa-user"></i> Customer</span>
                 {% endif %}
               </td>
 
               <td>
                 {% if u.is_staff %}
-                  <span class="badge badge-yes">
-                    <i class="fas fa-check"></i>
-                    Staff
-                  </span>
+                  <span class="badge badge-yes"><i class="fas fa-check"></i> Staff</span>
                 {% else %}
-                  <span class="badge badge-no">
-                    <i class="fas fa-times"></i>
-                    Regular
-                  </span>
+                  <span class="badge badge-no"><i class="fas fa-times"></i> Regular</span>
                 {% endif %}
               </td>
 
               <td>
                 {% if u.is_superuser %}
-                  <span class="badge badge-yes">
-                    <i class="fas fa-crown"></i>
-                    Yes
-                  </span>
+                  <span class="badge badge-yes"><i class="fas fa-crown"></i> Yes</span>
                 {% else %}
-                  <span class="badge badge-no">
-                    <i class="fas fa-user"></i>
-                    No
-                  </span>
+                  <span class="badge badge-no"><i class="fas fa-user"></i> No</span>
                 {% endif %}
               </td>
 
               <td>
                 <div class="action-btns">
-                  <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#editUserModal" 
-                    data-user-id="{{ u.id }}" 
-                    data-username="{{ u.username }}" 
-                    data-email="{{ u.email }}" 
-                    data-role="{{ u.userprofile.role|default:'Customer' }}" 
-                    data-is-staff="{{ u.is_staff|lower }}" 
-                    data-is-superuser="{{ u.is_superuser|lower }}" 
+                  <button type="button" class="btn btn-sm btn-primary"
+                    data-bs-toggle="modal" data-bs-target="#editUserModal"
+                    data-user-id="{{ u.id }}"
+                    data-username="{{ u.username }}"
+                    data-email="{{ u.email }}"
+                    data-role="{{ u.userprofile.role|default:'Customer' }}"
+                    data-is-staff="{{ u.is_staff|lower }}"
+                    data-is-superuser="{{ u.is_superuser|lower }}"
                     onclick="editUser(this)">
                     <i class="fas fa-edit"></i> Edit
                   </button>
-                  <form method="post" action="{% url 'delete_user' u.id %}" style="display:inline;margin:0;">
+
+                  <!-- SweetAlert delete -->
+                  <form method="post"
+                        action="{% url 'delete_user' u.id %}"
+                        data-swal="delete"
+                        data-swal-name="user {{ u.username }}"
+                        style="display:inline;margin:0;">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete user {{ u.username }}? This action cannot be undone.');">
+                    <button type="submit" class="btn btn-sm btn-danger">
                       <i class="fas fa-trash"></i> Delete
                     </button>
                   </form>
@@ -744,9 +659,7 @@
     </div>
   {% else %}
     <div class="empty">
-      <div class="empty-icon">
-        <i class="fas fa-users"></i>
-      </div>
+      <div class="empty-icon"><i class="fas fa-users"></i></div>
       <div class="empty-text">No users found</div>
     </div>
   {% endif %}
@@ -763,34 +676,28 @@
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form method="post" action="{% url 'add_user' %}">
+
+      <!-- SweetAlert create -->
+      <form method="post" action="{% url 'add_user' %}" data-swal="create">
         {% csrf_token %}
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-user"></i> Username *
-            </label>
+            <label class="form-label"><i class="fas fa-user"></i> Username *</label>
             <input type="text" name="username" class="form-control" placeholder="Enter username" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-envelope"></i> Email
-            </label>
+            <label class="form-label"><i class="fas fa-envelope"></i> Email</label>
             <input type="email" name="email" class="form-control" placeholder="user@example.com">
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-lock"></i> Password *
-            </label>
+            <label class="form-label"><i class="fas fa-lock"></i> Password *</label>
             <input type="password" name="password" class="form-control" placeholder="Enter secure password" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-briefcase"></i> Role
-            </label>
+            <label class="form-label"><i class="fas fa-briefcase"></i> Role</label>
             <select name="role" class="form-control">
               <option value="Customer">Customer</option>
               <option value="Staff">Staff</option>
@@ -839,29 +746,25 @@
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <form method="post" id="editUserForm" action="">
+
+      <!-- SweetAlert save -->
+      <form method="post" id="editUserForm" action="" data-swal="save">
         {% csrf_token %}
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-user"></i> Username
-            </label>
+            <label class="form-label"><i class="fas fa-user"></i> Username</label>
             <input type="text" id="editUsername" class="form-control" disabled>
             <small class="text-muted">Username cannot be changed</small>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-envelope"></i> Email
-            </label>
+            <label class="form-label"><i class="fas fa-envelope"></i> Email</label>
             <input type="email" id="editEmail" class="form-control" disabled>
             <small class="text-muted">Email cannot be changed</small>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">
-              <i class="fas fa-briefcase"></i> Role
-            </label>
+            <label class="form-label"><i class="fas fa-briefcase"></i> Role</label>
             <select name="role" id="editRole" class="form-control">
               <option value="Customer">Customer</option>
               <option value="Staff">Staff</option>
@@ -886,6 +789,7 @@
             </label>
           </div>
         </div>
+
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
             <i class="fas fa-times"></i> Cancel
@@ -902,7 +806,6 @@
 <script>
   let currentFilter = 'all';
 
-  // Calculate statistics
   function calculateStats() {
     const rows = document.querySelectorAll('#usersTable tbody tr');
     let staffCount = 0;
@@ -927,19 +830,13 @@
     document.getElementById('adminCount').textContent = adminCount;
   }
 
-  // Filter by role
   function filterByRole(role) {
     currentFilter = role;
-
-    // Update filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
     event.target.closest('.filter-btn').classList.add('active');
-
-    // Apply filter
     filterUsers();
   }
 
-  // Filter users
   function filterUsers() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
     const rows = document.querySelectorAll('#usersTable tbody tr');
@@ -961,7 +858,6 @@
     document.getElementById('visibleCount').textContent = visibleCount;
   }
 
-  // Edit user
   function editUser(button) {
     const userId = button.getAttribute('data-user-id');
     const username = button.getAttribute('data-username');
@@ -969,18 +865,17 @@
     const role = button.getAttribute('data-role');
     const isStaff = button.getAttribute('data-is-staff') === 'true';
     const isSuperuser = button.getAttribute('data-is-superuser') === 'true';
-    
+
     document.getElementById('editUsername').value = username;
     document.getElementById('editEmail').value = email;
     document.getElementById('editRole').value = role;
     document.getElementById('editIsStaff').checked = isStaff;
     document.getElementById('editIsSuperuser').checked = isSuperuser;
-    
+
     const editUrl = '/dashboard/users/' + userId + '/edit/';
     document.getElementById('editUserForm').action = editUrl;
   }
 
-  // Initialize on page load
   document.addEventListener('DOMContentLoaded', function() {
     calculateStats();
   });
