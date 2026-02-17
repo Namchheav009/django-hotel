@@ -199,7 +199,8 @@ class ServiceBookingForm(forms.ModelForm):
             'scheduled_date': forms.DateTimeInput(attrs={
                 'type': 'datetime-local',
                 'class': 'form-control',
-                'placeholder': 'When do you need this service?'
+                'placeholder': 'When do you need this service?',
+                'required': 'required'
             }),
             'quantity': forms.NumberInput(attrs={
                 'class': 'form-control',
@@ -217,9 +218,12 @@ class ServiceBookingForm(forms.ModelForm):
         cleaned_data = super().clean()
         scheduled_date = cleaned_data.get('scheduled_date')
 
-        if scheduled_date:
-            from django.utils import timezone
-            if scheduled_date < timezone.now():
-                raise forms.ValidationError("Scheduled date must be in the future.")
+        # ensure date/time was provided
+        if not scheduled_date:
+            raise forms.ValidationError("You must select a date and time for the service.")
+
+        from django.utils import timezone
+        if scheduled_date < timezone.now():
+            raise forms.ValidationError("Scheduled date must be in the future.")
 
         return cleaned_data

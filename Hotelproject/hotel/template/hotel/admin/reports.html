@@ -10,7 +10,7 @@
         <div class="header-content">
             <div class="title-section">
                 <h1 class="page-title">Analytics & Reports</h1>
-                <p class="page-subtitle">Performance overview for the last 30 days</p>
+                <p class="page-subtitle">Performance overview for the last {{ period }} day{% if period > 1 %}s{% endif %}</p>
             </div>
             <div class="header-actions">
                 <button class="btn-export">
@@ -41,7 +41,7 @@
                     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                     <polyline points="17 6 23 6 23 12"></polyline>
                 </svg>
-                <span>+12.5% from last month</span>
+                <span>{{ revenue_trend }}</span>
             </div>
         </div>
 
@@ -63,7 +63,7 @@
                     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                     <polyline points="17 6 23 6 23 12"></polyline>
                 </svg>
-                <span>+8.3% from last month</span>
+                <span>{{ bookings_trend }}</span>
             </div>
         </div>
 
@@ -82,7 +82,7 @@
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                 </svg>
-                <span>No change</span>
+                <span>{{ occupancy_trend }}</span>
             </div>
         </div>
 
@@ -101,7 +101,7 @@
                     <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                     <polyline points="17 6 23 6 23 12"></polyline>
                 </svg>
-                <span>+0.3 from last month</span>
+                <span>{{ rating_trend }} from last period</span>
             </div>
         </div>
     </div>
@@ -115,9 +115,9 @@
                     <p class="chart-subtitle">Daily revenue over the past 30 days</p>
                 </div>
                 <div class="chart-controls">
-                    <button class="time-filter active">30D</button>
-                    <button class="time-filter">90D</button>
-                    <button class="time-filter">1Y</button>
+                    <button class="time-filter {% if period == 30 %}active{% endif %}" data-days="30">30D</button>
+                    <button class="time-filter {% if period == 90 %}active{% endif %}" data-days="90">90D</button>
+                    <button class="time-filter {% if period == 365 %}active{% endif %}" data-days="365">1Y</button>
                 </div>
             </div>
             <div class="chart-body">
@@ -1046,6 +1046,50 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         });
+    }
+
+    // add period button and export functionality
+    document.querySelectorAll('.time-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const days = btn.getAttribute('data-days');
+            const params = new URLSearchParams(window.location.search);
+            params.set('period', days);
+            window.location.search = params.toString();
+        });
+    });
+
+    function exportTables() {
+        let csv = '';
+        document.querySelectorAll('.data-card').forEach(card => {
+            const title = card.querySelector('.data-title')?.innerText.trim() || '';
+            if (title) {
+                csv += title + '\r\n';
+            }
+            const table = card.querySelector('table');
+            if (!table) return;
+            const rows = table.querySelectorAll('tr');
+            rows.forEach((row, i) => {
+                const cols = row.querySelectorAll('th, td');
+                const rowData = Array.from(cols).map(td => '"' + td.innerText.trim().replace(/"/g, '""') + '"');
+                csv += rowData.join(',') + '\r\n';
+            });
+            csv += '\r\n';
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'admin_report.csv';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    const exportBtn = document.querySelector('.btn-export');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportTables);
     }
 });
 </script>

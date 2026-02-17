@@ -74,6 +74,13 @@
   .total-amount {
     color: #22c55e;
   }
+  .payment-title {
+    color: #f0eded;
+  }
+  .drop {
+    color: #000;
+    background-color: blanchedalmond;
+  }
 </style>
 
 <div class="payment-container">
@@ -116,11 +123,11 @@
                   {{ form.payment_method }}
                 {% else %}
                   <select name="payment_method" class="form-control" required>
-                    <option value="">-- Select Payment Method --</option>
-                    <option value="Cash">Cash</option>
-                    <option value="Card">Credit/Debit Card</option>
-                    <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Online">Online Payment</option>
+                    <option class="drop" value="">-- Select Payment Method --</option>
+                    <option class="drop" value="Cash">Cash</option>
+                    <option class="drop" value="Card">Credit/Debit Card</option>
+                    <option class="drop" value="Bank Transfer">Bank Transfer</option>
+                    <option class="drop" value="Online">Online Payment</option>
                   </select>
                 {% endif %}
               </div>

@@ -829,18 +829,18 @@
 
               {% comment %} Check-in / Check-out actions for admins {% endcomment %}
               {% if r.status == 'Pending' or r.status == 'Confirmed' %}
-                <form method="post" action="{% url 'update_reservation_status' r.id %}" style="display:inline;">
+                <form method="post" action="{% url 'update_reservation_status' r.id %}" style="display:inline;" class="confirm-action" data-swal-title="Check In" data-swal-text="Mark reservation #{{ r.id }} as Checked In?" data-swal-icon="question" data-swal-confirm="Yes, check in" data-swal-cancel="Cancel">
                   {% csrf_token %}
                   <input type="hidden" name="status" value="Checked In">
-                  <button type="submit" class="btn-mini info" onclick="return confirm('Mark reservation #{{ r.id }} as Checked In?');" title="Check In">
+                  <button type="submit" class="btn-mini info" title="Check In">
                     <i class="fas fa-sign-in-alt"></i> Check In
                   </button>
                 </form>
               {% elif r.status == 'Checked In' %}
-                <form method="post" action="{% url 'update_reservation_status' r.id %}" style="display:inline;">
+                <form method="post" action="{% url 'update_reservation_status' r.id %}" style="display:inline;" class="confirm-action" data-swal-title="Check Out" data-swal-text="Mark reservation #{{ r.id }} as Checked Out?" data-swal-icon="question" data-swal-confirm="Yes, check out" data-swal-cancel="Cancel">
                   {% csrf_token %}
                   <input type="hidden" name="status" value="Checked Out">
-                  <button type="submit" class="btn-mini warn" onclick="return confirm('Mark reservation #{{ r.id }} as Checked Out?');" title="Check Out">
+                  <button type="submit" class="btn-mini warn" title="Check Out">
                     <i class="fas fa-sign-out-alt"></i> Check Out
                   </button>
                 </form>
@@ -978,6 +978,42 @@
   document.addEventListener('DOMContentLoaded', function() {
     calculateStats();
   });
+</script>
+
+<script>
+// initialize confirmation popups for forms marked with .confirm-action
+
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof Swal === 'undefined') return;
+    const swalBS = Swal.mixin({
+        customClass: {
+            confirmButton: "btn btn-success ms-2",
+            cancelButton: "btn btn-danger"
+        },
+        buttonsStyling: false
+    });
+
+    document.querySelectorAll('form.confirm-action').forEach(f => {
+        f.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const title = f.dataset.swalTitle || 'Confirm';
+            const text = f.dataset.swalText || 'Are you sure?';
+            const icon = f.dataset.swalIcon || 'warning';
+            const confirmText = f.dataset.swalConfirm || 'Yes';
+            const cancelText = f.dataset.swalCancel || 'Cancel';
+
+            swalBS.fire({
+                title, text, icon,
+                showCancelButton: true,
+                confirmButtonText: confirmText,
+                cancelButtonText: cancelText,
+                reverseButtons: true
+            }).then(result => {
+                if (result.isConfirmed) { f.submit(); }
+            });
+        });
+    });
+});
 </script>
 
 {% endblock %}

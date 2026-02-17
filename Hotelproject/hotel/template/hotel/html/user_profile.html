@@ -20,11 +20,8 @@
         --info: #00e5ff;
     }
 
-    .profile-container {
-        padding: 20px 0 40px;
-    }
+    .profile-container { padding: 20px 0 40px; }
 
-    /* Sidebar */
     .sidebar-card {
         background: var(--dark-bg);
         border: 1px solid var(--border);
@@ -36,14 +33,11 @@
     }
 
     .profile-avatar {
-        width: 100px;
-        height: 100px;
+        width: 100px; height: 100px;
         background: linear-gradient(135deg, var(--primary) 0%, #0ea5e9 100%);
         border: 3px solid var(--border);
         border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: flex; align-items: center; justify-content: center;
         color: #0a192f;
         font-size: 2.5rem;
         font-weight: 900;
@@ -51,23 +45,10 @@
         box-shadow: 0 8px 25px rgba(0, 229, 255, 0.3);
     }
 
-    .profile-name {
-        color: var(--text-primary);
-        font-size: 1.3rem;
-        font-weight: 700;
-        margin-bottom: 5px;
-    }
+    .profile-name { color: var(--text-primary); font-size: 1.3rem; font-weight: 700; margin-bottom: 5px; }
+    .profile-member-since { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    .profile-member-since {
-        color: var(--text-muted);
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .sidebar-nav {
-        margin: 25px 0;
-    }
+    .sidebar-nav { margin: 25px 0; }
 
     .sidebar-nav .nav-link {
         color: var(--text-secondary);
@@ -85,10 +66,7 @@
         letter-spacing: 0.5px;
     }
 
-    .sidebar-nav .nav-link i {
-        color: var(--primary);
-        font-size: 1rem;
-    }
+    .sidebar-nav .nav-link i { color: var(--primary); font-size: 1rem; }
 
     .sidebar-nav .nav-link:hover {
         color: var(--text-primary);
@@ -120,6 +98,7 @@
         align-items: center;
         justify-content: center;
         gap: 8px;
+        text-decoration: none;
     }
 
     .btn-logout:hover {
@@ -129,7 +108,6 @@
         box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
     }
 
-    /* Content Cards */
     .content-card {
         background: var(--dark-bg);
         border: 1px solid var(--border);
@@ -158,15 +136,9 @@
         letter-spacing: 1px;
     }
 
-    .content-card-body {
-        padding: 25px;
-    }
+    .content-card-body { padding: 25px; }
 
-    /* Info Display */
-    .info-row {
-        margin-bottom: 20px;
-    }
-
+    .info-row { margin-bottom: 20px; }
     .info-label {
         color: var(--text-muted);
         font-size: 0.75rem;
@@ -175,14 +147,8 @@
         margin-bottom: 5px;
         font-weight: 700;
     }
+    .info-value { color: var(--text-primary); font-size: 1rem; font-weight: 600; }
 
-    .info-value {
-        color: var(--text-primary);
-        font-size: 1rem;
-        font-weight: 600;
-    }
-
-    /* Stats Cards */
     .stat-card {
         background: var(--dark-bg);
         border: 1px solid var(--border);
@@ -200,24 +166,10 @@
         box-shadow: 0 8px 25px rgba(0, 229, 255, 0.2);
     }
 
-    .stat-number {
-        font-size: 2.5rem;
-        font-weight: 900;
-        margin-bottom: 10px;
-    }
-
-    .stat-number.primary {
-        color: var(--primary);
-    }
-
-    .stat-number.success {
-        color: var(--success);
-    }
-
-    .stat-number.warning {
-        color: var(--warning);
-    }
-
+    .stat-number { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; }
+    .stat-number.primary { color: var(--primary); }
+    .stat-number.success { color: #4ade80; }
+    .stat-number.warning { color: #fbbf24; }
     .stat-label {
         color: var(--text-muted);
         font-size: 0.85rem;
@@ -226,7 +178,6 @@
         font-weight: 700;
     }
 
-    /* Booking Items */
     .booking-item {
         background: rgba(0, 229, 255, 0.05);
         border: 1px solid var(--border);
@@ -244,14 +195,7 @@
         box-shadow: 0 4px 15px rgba(0, 229, 255, 0.15);
     }
 
-    .booking-image {
-        width: 100%;
-        height: 120px;
-        object-fit: cover;
-        border-radius: 8px;
-        border: 1px solid var(--border);
-    }
-
+    .booking-image { width: 100%; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
     .booking-placeholder {
         height: 120px;
         background: rgba(0, 229, 255, 0.05);
@@ -262,28 +206,10 @@
         justify-content: center;
     }
 
-    .booking-title {
-        color: var(--text-primary);
-        font-weight: 700;
-        margin-bottom: 8px;
-        font-size: 1.05rem;
-    }
+    .booking-title { color: var(--text-primary); font-weight: 700; margin-bottom: 8px; font-size: 1.05rem; }
+    .booking-detail { color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 5px; display: flex; align-items: center; gap: 8px; }
+    .booking-detail i { color: var(--primary); width: 14px; }
 
-    .booking-detail {
-        color: var(--text-secondary);
-        font-size: 0.85rem;
-        margin-bottom: 5px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .booking-detail i {
-        color: var(--primary);
-        width: 14px;
-    }
-
-    /* Badges */
     .status-badge {
         padding: 6px 14px;
         border-radius: 20px;
@@ -293,32 +219,11 @@
         letter-spacing: 0.5px;
         border: 1px solid;
     }
+    .status-badge.confirmed { background: rgba(74, 222, 128, 0.2); border-color: #4ade80; color: #4ade80; }
+    .status-badge.checked-in { background: rgba(0, 229, 255, 0.2); border-color: var(--info); color: var(--info); }
+    .status-badge.checked-out { background: rgba(255, 255, 255, 0.1); border-color: var(--text-muted); color: var(--text-muted); }
+    .status-badge.pending { background: rgba(251, 191, 36, 0.2); border-color: #fbbf24; color: #fbbf24; }
 
-    .status-badge.confirmed {
-        background: rgba(74, 222, 128, 0.2);
-        border-color: var(--success);
-        color: var(--success);
-    }
-
-    .status-badge.checked-in {
-        background: rgba(0, 229, 255, 0.2);
-        border-color: var(--info);
-        color: var(--info);
-    }
-
-    .status-badge.checked-out {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: var(--text-muted);
-        color: var(--text-muted);
-    }
-
-    .status-badge.pending {
-        background: rgba(251, 191, 36, 0.2);
-        border-color: var(--warning);
-        color: var(--warning);
-    }
-
-    /* Buttons */
     .btn-edit {
         background: transparent;
         border: 2px solid var(--primary);
@@ -331,13 +236,7 @@
         letter-spacing: 0.5px;
         transition: all 0.3s ease;
     }
-
-    .btn-edit:hover {
-        background: var(--primary);
-        color: #0a192f;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
-    }
+    .btn-edit:hover { background: var(--primary); color: #0a192f; transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4); }
 
     .btn-action {
         background: transparent;
@@ -352,211 +251,53 @@
         transition: all 0.3s ease;
         text-decoration: none;
     }
+    .btn-action:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--border-hover); color: var(--text-primary); }
+    .btn-action.primary { border: 2px solid var(--primary); color: var(--primary); }
+    .btn-action.primary:hover { background: var(--primary); color: #0a192f; }
 
-    .btn-action:hover {
-        background: rgba(255, 255, 255, 0.1);
-        border-color: var(--border-hover);
-        color: var(--text-primary);
-    }
+    .review-item { padding-bottom: 20px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
+    .review-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 
-    .btn-action.primary {
-        border: 2px solid var(--primary);
-        color: var(--primary);
-    }
+    .review-title { color: var(--text-primary); font-weight: 700; margin-bottom: 8px; }
 
-    .btn-action.primary:hover {
-        background: var(--primary);
-        color: #0a192f;
-    }
+    .review-rating { margin-bottom: 10px; }
+    .review-rating i { font-size: 0.9rem; margin-right: 2px; }
+    .review-rating i.filled { color: var(--warning); }
+    .review-rating i.empty { color: var(--text-muted); }
 
-    /* Reviews */
-    .review-item {
-        padding-bottom: 20px;
-        margin-bottom: 20px;
-        border-bottom: 1px solid var(--border);
-    }
+    .review-date { color: var(--text-muted); font-size: 0.8rem; margin-left: 10px; }
+    .review-text { color: var(--text-secondary); line-height: 1.6; }
 
-    .review-item:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-    }
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-state i { font-size: 4rem; color: var(--text-muted); margin-bottom: 20px; opacity: 0.5; }
+    .empty-state p { color: var(--text-muted); font-size: 1rem; }
+    .empty-state a { color: var(--primary); text-decoration: none; font-weight: 700; }
+    .empty-state a:hover { text-decoration: underline; }
 
-    .review-title {
-        color: var(--text-primary);
-        font-weight: 700;
-        margin-bottom: 8px;
-    }
+    .form-label { color: var(--text-primary); font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .form-control { background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: var(--text-primary); border-radius: 8px; padding: 12px 14px; }
+    .form-control:focus { background: rgba(255, 255, 255, 0.08); border-color: var(--primary); box-shadow: 0 0 0 0.2rem rgba(0, 229, 255, 0.25); color: var(--text-primary); }
+    .form-control:disabled { background: rgba(255, 255, 255, 0.02); color: var(--text-muted); }
 
-    .review-rating {
-        margin-bottom: 10px;
-    }
+    .modal-content { background: var(--darker-bg); border: 1px solid var(--border); border-radius: 12px; backdrop-filter: blur(20px); }
+    .modal-header { background: rgba(0, 229, 255, 0.1); border-bottom: 1px solid var(--border); padding: 20px 25px; }
+    .modal-title { color: var(--text-primary); font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .modal-body { padding: 25px; }
+    .modal-footer { border-top: 1px solid var(--border); padding: 20px 25px; }
 
-    .review-rating i {
-        font-size: 0.9rem;
-        margin-right: 2px;
-    }
+    .btn-close { filter: invert(1); opacity: 0.7; }
+    .btn-close:hover { opacity: 1; }
 
-    .review-rating i.filled {
-        color: var(--warning);
-    }
+    .btn-secondary { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--border); color: var(--text-primary); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); border-color: var(--border-hover); color: var(--text-primary); }
 
-    .review-rating i.empty {
-        color: var(--text-muted);
-    }
+    .btn-primary { background: transparent; border: 2px solid var(--primary); color: var(--primary); }
+    .btn-primary:hover { background: var(--primary); border-color: var(--primary); color: #0a192f; }
 
-    .review-date {
-        color: var(--text-muted);
-        font-size: 0.8rem;
-        margin-left: 10px;
-    }
-
-    .review-text {
-        color: var(--text-secondary);
-        line-height: 1.6;
-    }
-
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 60px 20px;
-    }
-
-    .empty-state i {
-        font-size: 4rem;
-        color: var(--text-muted);
-        margin-bottom: 20px;
-        opacity: 0.5;
-    }
-
-    .empty-state p {
-        color: var(--text-muted);
-        font-size: 1rem;
-    }
-
-    .empty-state a {
-        color: var(--primary);
-        text-decoration: none;
-        font-weight: 700;
-    }
-
-    .empty-state a:hover {
-        text-decoration: underline;
-    }
-
-    /* Forms */
-    .form-label {
-        color: var(--text-primary);
-        font-size: 0.85rem;
-        font-weight: 700;
-        margin-bottom: 8px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .form-control {
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid var(--border);
-        color: var(--text-primary);
-        border-radius: 8px;
-        padding: 12px 14px;
-    }
-
-    .form-control:focus {
-        background: rgba(255, 255, 255, 0.08);
-        border-color: var(--primary);
-        box-shadow: 0 0 0 0.2rem rgba(0, 229, 255, 0.25);
-        color: var(--text-primary);
-    }
-
-    .form-control:disabled {
-        background: rgba(255, 255, 255, 0.02);
-        color: var(--text-muted);
-    }
-
-    .form-text {
-        color: var(--text-muted);
-        font-size: 0.8rem;
-    }
-
-    /* Modal */
-    .modal-content {
-        background: var(--darker-bg);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        backdrop-filter: blur(20px);
-    }
-
-    .modal-header {
-        background: rgba(0, 229, 255, 0.1);
-        border-bottom: 1px solid var(--border);
-        padding: 20px 25px;
-    }
-
-    .modal-title {
-        color: var(--text-primary);
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-    }
-
-    .modal-body {
-        padding: 25px;
-    }
-
-    .modal-footer {
-        border-top: 1px solid var(--border);
-        padding: 20px 25px;
-    }
-
-    .btn-close {
-        filter: invert(1);
-        opacity: 0.7;
-    }
-
-    .btn-close:hover {
-        opacity: 1;
-    }
-
-    .btn-secondary {
-        background: rgba(255, 255, 255, 0.1);
-        border: 1px solid var(--border);
-        color: var(--text-primary);
-    }
-
-    .btn-secondary:hover {
-        background: rgba(255, 255, 255, 0.15);
-        border-color: var(--border-hover);
-        color: var(--text-primary);
-    }
-
-    .btn-primary {
-        background: transparent;
-        border: 2px solid var(--primary);
-        color: var(--primary);
-    }
-
-    .btn-primary:hover {
-        background: var(--primary);
-        border-color: var(--primary);
-        color: #0a192f;
-    }
-
-    /* Responsive */
     @media (max-width: 768px) {
-        .sidebar-card {
-            position: relative !important;
-            top: 0 !important;
-            margin-bottom: 30px;
-        }
-
-        .booking-item .row > div {
-            margin-bottom: 15px;
-        }
-
-        .stat-card {
-            margin-bottom: 15px;
-        }
+        .sidebar-card { position: relative !important; top: 0 !important; margin-bottom: 30px; }
+        .booking-item .row > div { margin-bottom: 15px; }
+        .stat-card { margin-bottom: 15px; }
     }
 </style>
 {% endblock %}
@@ -565,7 +306,8 @@
 <div class="profile-container">
     <div class="container">
         <div class="row">
-            <!-- Sidebar Navigation -->
+
+            <!-- Sidebar -->
             <div class="col-lg-3">
                 <div class="sidebar-card">
                     <div class="card-body" style="padding: 30px;">
@@ -577,24 +319,25 @@
                             <p class="profile-member-since">Member since {{ user.date_joined|date:"M Y" }}</p>
                         </div>
 
-                        <nav class="sidebar-nav">
-                            <a class="nav-link active" href="#profile" data-bs-toggle="tab">
+                        <nav class="sidebar-nav" role="tablist">
+                            <a id="tab-profile" class="nav-link {% if active_tab == 'profile' %}active{% endif %}" href="#profile" data-bs-toggle="tab" role="tab" aria-controls="profile" aria-selected="{% if active_tab == 'profile' %}true{% else %}false{% endif %}">
                                 <i class="fas fa-user"></i> My Profile
                             </a>
-                            <a class="nav-link" href="#bookings" data-bs-toggle="tab">
+                            <a id="tab-bookings" class="nav-link {% if active_tab == 'bookings' %}active{% endif %}" href="#bookings" data-bs-toggle="tab" role="tab" aria-controls="bookings" aria-selected="{% if active_tab == 'bookings' %}true{% else %}false{% endif %}">
                                 <i class="fas fa-calendar-check"></i> My Bookings
                             </a>
-                            <a class="nav-link" href="#reviews" data-bs-toggle="tab">
+                            <a id="tab-reviews" class="nav-link {% if active_tab == 'reviews' %}active{% endif %}" href="#reviews" data-bs-toggle="tab" role="tab" aria-controls="reviews" aria-selected="{% if active_tab == 'reviews' %}true{% else %}false{% endif %}">
                                 <i class="fas fa-star"></i> My Reviews
                             </a>
-                            <a class="nav-link" href="#settings" data-bs-toggle="tab">
+                            <a id="tab-settings" class="nav-link {% if active_tab == 'settings' %}active{% endif %}" href="#settings" data-bs-toggle="tab" role="tab" aria-controls="settings" aria-selected="{% if active_tab == 'settings' %}true{% else %}false{% endif %}">
                                 <i class="fas fa-cog"></i> Settings
                             </a>
                         </nav>
 
                         <hr style="border-color: var(--border); margin: 25px 0;">
 
-                        <a href="{% url 'logout' %}" class="btn-logout">
+                        <!-- SweetAlert logout -->
+                        <a href="#" class="btn-logout logout-link" data-logout-url="{% url 'logout' %}">
                             <i class="fas fa-sign-out-alt"></i> Logout
                         </a>
                     </div>
@@ -604,8 +347,9 @@
             <!-- Main Content -->
             <div class="col-lg-9">
                 <div class="tab-content">
-                    <!-- Profile Tab -->
-                    <div class="tab-pane fade show active" id="profile">
+
+                    <!-- Profile -->
+                    <div class="tab-pane fade {% if active_tab == 'profile' %}show active{% endif %}" id="profile" role="tabpanel" aria-labelledby="tab-profile">
                         <div class="content-card">
                             <div class="content-card-header">
                                 <h5>Personal Information</h5>
@@ -631,19 +375,19 @@
                                     </div>
                                     <div class="col-md-6">
                                         <div class="info-label">Phone</div>
-                                        <div class="info-value">{{ guest.phone|default:"Not provided" }}</div>
+                                        <div class="info-value">{{ guest.phone|default_if_none:"Not provided" }}</div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="info-label">Address</div>
-                                        <div class="info-value">{{ guest.address|default:"Not provided" }}</div>
+                                        <div class="info-value">{{ guest.address|default_if_none:"Not provided" }}</div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Account Stats -->
+                        <!-- Stats -->
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="stat-card">
@@ -666,68 +410,124 @@
                         </div>
                     </div>
 
-                    <!-- Bookings Tab -->
-                    <div class="tab-pane fade" id="bookings">
+                    <!-- Bookings -->
+                    <div class="tab-pane fade {% if active_tab == 'bookings' %}show active{% endif %}" id="bookings" role="tabpanel" aria-labelledby="tab-bookings">
                         <div class="content-card">
                             <div class="content-card-header">
                                 <h5>My Bookings</h5>
                             </div>
                             <div class="content-card-body">
-                                {% if bookings %}
-                                <div class="booking-list">
-                                    {% for booking in bookings %}
-                                    <div class="booking-item">
-                                        <div class="row align-items-center">
-                                            <div class="col-md-2">
-                                                {% if booking.room.image %}
-                                                    <img src="{{ booking.room.image.url }}" alt="Room" class="booking-image">
-                                                {% else %}
-                                                    <div class="booking-placeholder">
-                                                        <i class="fas fa-image text-muted fa-2x"></i>
+                                {% if bookings or service_bookings %}
+
+                                    {% if bookings %}
+                                        <div class="booking-list">
+                                            {% for booking in bookings %}
+                                            <div class="booking-item">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-2">
+                                                        {% if booking.room.image %}
+                                                            <img src="{{ booking.room.image.url }}" alt="Room" class="booking-image">
+                                                        {% else %}
+                                                            <div class="booking-placeholder">
+                                                                <i class="fas fa-image text-muted fa-2x"></i>
+                                                            </div>
+                                                        {% endif %}
                                                     </div>
-                                                {% endif %}
-                                            </div>
-                                            <div class="col-md-4">
-                                                <h6 class="booking-title">{{ booking.room.room_number }} - {{ booking.room.category.category_name }}</h6>
-                                                <p class="booking-detail">
-                                                    <i class="fas fa-calendar"></i>
-                                                    {{ booking.check_in_date|date:"M d, Y" }} to {{ booking.check_out_date|date:"M d, Y" }}
-                                                </p>
-                                                <p class="booking-detail">
-                                                    <i class="fas fa-users"></i>
-                                                    {{ booking.number_of_guests }} guest{{ booking.number_of_guests|pluralize }}
-                                                </p>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <div style="margin-bottom: 10px;">
-                                                    {% if booking.status == 'Confirmed' %}
-                                                        <span class="status-badge confirmed">Confirmed</span>
-                                                    {% elif booking.status == 'Checked In' %}
-                                                        <span class="status-badge checked-in">Checked In</span>
-                                                    {% elif booking.status == 'Checked Out' %}
-                                                        <span class="status-badge checked-out">Checked Out</span>
-                                                    {% else %}
-                                                        <span class="status-badge pending">{{ booking.status }}</span>
-                                                    {% endif %}
+                                                    <div class="col-md-4">
+                                                        <h6 class="booking-title">{{ booking.room.room_number }} - {{ booking.room.category.category_name }}</h6>
+                                                        <p class="booking-detail">
+                                                            <i class="fas fa-calendar"></i>
+                                                            {{ booking.check_in_date|date:"M d, Y" }} to {{ booking.check_out_date|date:"M d, Y" }}
+                                                        </p>
+                                                        <p class="booking-detail">
+                                                            <i class="fas fa-users"></i>
+                                                            {{ booking.number_of_guests }} guest{{ booking.number_of_guests|pluralize }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div style="margin-bottom: 10px;">
+                                                            {% with st=booking.status|lower %}
+                                                                {% if st == 'confirmed' %}
+                                                                    <span class="status-badge confirmed">Confirmed</span>
+                                                                {% elif st == 'checked in' %}
+                                                                    <span class="status-badge checked-in">Checked In</span>
+                                                                {% elif st == 'checked out' %}
+                                                                    <span class="status-badge checked-out">Checked Out</span>
+                                                                {% else %}
+                                                                    <span class="status-badge pending">{{ booking.status }}</span>
+                                                                {% endif %}
+                                                            {% endwith %}
+                                                        </div>
+                                                        <p class="booking-detail" style="margin-bottom: 0;">
+                                                            Total: <strong style="color: var(--primary);">${{ booking.total_price }}</strong>
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-md-3 text-end">
+                                                        <a href="{% url 'reservation_detail' booking.id %}" class="btn-action" style="display: inline-block; margin-bottom: 8px;">
+                                                            <i class="fas fa-eye"></i> Details
+                                                        </a> 
+                                                        {% if booking.status == 'Checked Out' and booking.room.id not in reviewed_rooms %}
+                                                        <a href="{% url 'rate_room' booking.room.id %}" class="btn-action primary" style="display: inline-block;">
+                                                            <i class="fas fa-star"></i> Review
+                                                        </a>
+                                                        {% endif %}
+                                                    </div>
                                                 </div>
-                                                <p class="booking-detail" style="margin-bottom: 0;">
-                                                    Total: <strong style="color: var(--primary);">${{ booking.total_price }}</strong>
-                                                </p>
                                             </div>
-                                            <div class="col-md-3 text-end">
-                                                <a href="{% url 'reservation_detail' booking.id %}" class="btn-action" style="display: inline-block; margin-bottom: 8px;">
-                                                    <i class="fas fa-eye"></i> Details
-                                                </a>
-                                                {% if booking.status == 'Checked Out' %}
-                                                <a href="{% url 'rate_room' booking.room.id %}" class="btn-action primary" style="display: inline-block;">
-                                                    <i class="fas fa-star"></i> Review
-                                                </a>
-                                                {% endif %}
-                                            </div>
+                                            {% endfor %}
                                         </div>
-                                    </div>
-                                    {% endfor %}
-                                </div>
+                                    {% endif %}
+
+                                    {% if service_bookings %}
+                                        <h6 class="mt-4" style="color:var(--text-primary);">Service Bookings</h6>
+                                        <div class="booking-list">
+                                            {% for sb in service_bookings %}
+                                            <div class="booking-item">
+                                                <div class="row align-items-center">
+                                                    <div class="col-md-2">
+                                                        <i class="fas fa-concierge-bell fa-2x" style="color:var(--primary);"></i>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <h6 class="booking-title">{{ sb.service.name }}</h6>
+                                                        <p class="booking-detail">
+                                                            <i class="fas fa-calendar"></i>
+                                                            {{ sb.scheduled_date|date:"M d, Y" }}
+                                                        </p>
+                                                        <p class="booking-detail">
+                                                            Quantity: {{ sb.quantity }}
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <div style="margin-bottom: 10px;">
+                                                            {% with st=sb.status|lower %}
+                                                                {% if st == 'confirmed' %}
+                                                                    <span class="status-badge confirmed">Confirmed</span>
+                                                                {% elif st == 'in progress' %}
+                                                                    <span class="status-badge checked-in">In Progress</span>
+                                                                {% elif st == 'completed' %}
+                                                                    <span class="status-badge checked-out">Completed</span>
+                                                                {% elif st == 'cancelled' %}
+                                                                    <span class="status-badge pending">Cancelled</span>
+                                                                {% else %}
+                                                                    <span class="status-badge pending">{{ sb.status }}</span>
+                                                                {% endif %}
+                                                            {% endwith %}
+                                                        </div>
+                                                        <p class="booking-detail" style="margin-bottom: 0;">
+                                                            Total: <strong style="color: var(--primary);">${{ sb.total_price }}</strong>
+                                                        </p>
+                                                    </div>
+                                                    <div class="col-md-3 text-end">
+                                                        <a href="{% url 'my_service_bookings' %}" class="btn-action" style="display: inline-block;">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+
                                 {% else %}
                                 <div class="empty-state">
                                     <i class="fas fa-inbox"></i>
@@ -738,57 +538,52 @@
                         </div>
                     </div>
 
-                    <!-- Reviews Tab -->
-                    <div class="tab-pane fade" id="reviews">
+                    <!-- Reviews -->
+                    <div class="tab-pane fade {% if active_tab == 'reviews' %}show active{% endif %}" id="reviews" role="tabpanel" aria-labelledby="tab-reviews">
                         <div class="content-card">
                             <div class="content-card-header">
                                 <h5>My Reviews & Ratings</h5>
                             </div>
                             <div class="content-card-body">
                                 {% if room_reviews or service_reviews %}
-  <div class="reviews-list">
+                                  <div class="reviews-list">
 
-    {% for review in room_reviews %}
-      <div class="review-item">
-        <h6 class="review-title">Room {{ review.room.room_number }}</h6>
+                                    {% for review in room_reviews %}
+                                      <div class="review-item">
+                                        <h6 class="review-title">Room {{ review.room.room_number }}</h6>
+                                        <div class="review-rating">
+                                          {% for i in "12345" %}
+                                            <i class="fas fa-star {% if forloop.counter <= review.rating %}filled{% else %}empty{% endif %}"></i>
+                                          {% endfor %}
+                                          <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+                                        </div>
+                                        <p class="review-text">{{ review.review }}</p>
+                                      </div>
+                                    {% endfor %}
 
-        <div class="review-rating">
-          {% for i in "12345" %}
-            <i class="fas fa-star {% if forloop.counter <= review.rating %}filled{% else %}empty{% endif %}"></i>
-          {% endfor %}
-          <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
-        </div>
+                                    {% for review in service_reviews %}
+                                      <div class="review-item">
+                                        <h6 class="review-title">Service {{ review.service.name }}</h6>
+                                        <div class="review-rating">
+                                          {% for i in "12345" %}
+                                            <i class="fas fa-star {% if forloop.counter <= review.rating %}filled{% else %}empty{% endif %}"></i>
+                                          {% endfor %}
+                                          <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+                                        </div>
+                                        <p class="review-text">{{ review.review }}</p>
+                                      </div>
+                                    {% endfor %}
 
-        <p class="review-text">{{ review.review }}</p>
-      </div>
-    {% endfor %}
-
-    {% for review in service_reviews %}
-      <div class="review-item">
-        <h6 class="review-title">Service {{ review.service.name }}</h6>
-
-        <div class="review-rating">
-          {% for i in "12345" %}
-            <i class="fas fa-star {% if forloop.counter <= review.rating %}filled{% else %}empty{% endif %}"></i>
-          {% endfor %}
-          <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
-        </div>
-
-        <p class="review-text">{{ review.review }}</p>
-      </div>
-    {% endfor %}
-
-  </div>
-{% else %}
-  <p class="text-muted">No reviews yet.</p>
-{% endif %}
-
+                                  </div>
+                                {% else %}
+                                  <p class="text-muted">No reviews yet.</p>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
 
-                    <!-- Settings Tab -->
-                    <div class="tab-pane fade" id="settings">
+                    <!-- Settings -->
+                    <div class="tab-pane fade {% if active_tab == 'settings' %}show active{% endif %}" id="settings" role="tabpanel" aria-labelledby="tab-settings">
                         <div class="content-card">
                             <div class="content-card-header">
                                 <h5>Change Password</h5>
@@ -813,7 +608,8 @@
                             </div>
                         </div>
                     </div>
-                </div>
+
+                </div><!-- tab-content -->
             </div>
         </div>
     </div>
@@ -845,11 +641,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Phone</label>
-                        <input type="tel" class="form-control" name="phone" value="{{ guest.phone|default:'' }}">
+                        <input type="tel" class="form-control" name="phone" value="{{ guest.phone|default_if_none:'' }}">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Address</label>
-                        <input type="text" class="form-control" name="address" value="{{ guest.address|default:'' }}">
+                        <input type="text" class="form-control" name="address" value="{{ guest.address|default_if_none:'' }}">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -860,4 +656,41 @@
         </div>
     </div>
 </div>
+
+<!-- extra scripts moved to dedicated block (after Bootstrap js) -->
+{% endblock %}
+
+{% block scripts %}
+<script>
+// only page-specific JavaScript, executed after all global scripts (Bootstrap/SweetAlert)
+
+document.addEventListener("DOMContentLoaded", function () {
+    // remember active tab locally
+    document.querySelectorAll('.sidebar-nav a[data-bs-toggle="tab"]').forEach(el => {
+        el.addEventListener('shown.bs.tab', function () {
+            const href = this.getAttribute('href');
+            localStorage.setItem('activeProfileTab', href);
+            // keep url in sync so reload/bookmark works
+            const tabName = href.replace('#', '');
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabName);
+            history.replaceState(null, '', url);
+        });
+    });
+
+    // if a specific tab was requested via URL parameter it should override stored value
+    const urlParams = new URLSearchParams(window.location.search);
+    let desired = null;
+    if (urlParams.has('tab')) {
+        const t = urlParams.get('tab');
+        desired = `#${t}`;
+    }
+    const stored = localStorage.getItem('activeProfileTab');
+    const toShow = desired || stored;
+    if (toShow) {
+        const trigger = document.querySelector(`.sidebar-nav a[href="${toShow}"]`);
+        if (trigger) new bootstrap.Tab(trigger).show();
+    }
+});
+</script>
 {% endblock %}

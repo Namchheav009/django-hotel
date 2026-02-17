@@ -2,7 +2,7 @@
 
 {% block title %}Dashboard - Admin Panel{% endblock %}
 {% block page_title %}Dashboard{% endblock %}
-{% block page_subtitle %}Hotel analytics overview{% endblock %}
+{% block page_subtitle %}Hotel analytics overview{% if period_label %} ({{ period_label }}){% endif %}{% endblock %}
 
 {% block admin_content %}
 
@@ -217,6 +217,18 @@
       <input type="text" placeholder="Search..." />
     </div>
 
+    <div class="dropdown">
+      <button class="chip dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fa-regular fa-calendar"></i> {{ period_label }}
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end">
+        <li><a class="dropdown-item {% if period == 1 %}active{% endif %}" href="?period=1">Today</a></li>
+        <li><a class="dropdown-item {% if period == 7 %}active{% endif %}" href="?period=7">Last 7 days</a></li>
+        <li><a class="dropdown-item {% if period == 30 %}active{% endif %}" href="?period=30">Last 30 days</a></li>
+        <li><a class="dropdown-item {% if period == 365 %}active{% endif %}" href="?period=365">This year</a></li>
+      </ul>
+    </div>
+
     <!-- Notifications -->
     <div class="dropdown notify-btn">
       <button class="chip dropdown-toggle" data-bs-toggle="dropdown">
@@ -241,17 +253,7 @@
       </ul>
     </div>
 
-    <div class="dropdown">
-      <button class="chip dropdown-toggle" data-bs-toggle="dropdown">
-        <i class="fa-regular fa-calendar"></i> Time period
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" href="#">Today</a></li>
-        <li><a class="dropdown-item" href="#">Last 7 days</a></li>
-        <li><a class="dropdown-item" href="#">Last 30 days</a></li>
-        <li><a class="dropdown-item" href="#">This year</a></li>
-      </ul>
-    </div>
+    
 
     <a class="chip" href="{% url 'manage_reservations' %}">
       <i class="fa-solid fa-plus"></i> Add data
@@ -266,7 +268,7 @@
     <div>
       <div class="label">Total Rooms</div>
       <div class="value">{{ total_rooms|default:"0" }}</div>
-      <div class="hint">+2.5%</div>
+      <div class="hint" style="color:{{ total_rooms_trend_color }};">{{ total_rooms_trend }}</div>
     </div>
   </div>
 
@@ -277,7 +279,7 @@
     <div>
       <div class="label">Active Reservations</div>
       <div class="value">{{ active_reservations|default:"0" }}</div>
-      <div class="hint" style="color:#2563eb;">+0.5%</div>
+      <div class="hint" style="color:{{ active_reservations_trend_color }};">{{ active_reservations_trend }}</div>
     </div>
   </div>
 
@@ -286,9 +288,9 @@
       <i class="fa-solid fa-users"></i>
     </div>
     <div>
-      <div class="label">Guests Today</div>
+      <div class="label">Guests{% if period == 1 %} Today{% else %} (last {{ period }} days){% endif %}</div>
       <div class="value">{{ guests_today|default:"0" }}</div>
-      <div class="hint" style="color:#f59e0b;">+0.2%</div>
+      <div class="hint" style="color:{{ guests_trend_color }};">{{ guests_trend }}</div>
     </div>
   </div>
 
@@ -297,9 +299,9 @@
       <i class="fa-solid fa-dollar-sign"></i>
     </div>
     <div>
-      <div class="label">Revenue (Today)</div>
+      <div class="label">Revenue{% if period == 1 %} (Today){% else %} (last {{ period }} days){% endif %}</div>
       <div class="value">${{ revenue_today|default:"0" }}</div>
-      <div class="hint" style="color:#db2777;">+1.2%</div>
+      <div class="hint" style="color:{{ revenue_trend_color }};">{{ revenue_trend }}</div>
     </div>
   </div>
 </div>

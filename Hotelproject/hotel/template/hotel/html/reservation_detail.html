@@ -261,13 +261,15 @@
           {% endif %}
 
           {% if reservation.status != 'Checked Out' and reservation.status != 'Cancelled' %}
-            <form method="POST" action="{% url 'cancel_reservation' reservation.id %}">
+            <form method="POST"
+                  action="{% url 'cancel_reservation' reservation.id %}"
+                  class="cancel-form">
               {% csrf_token %}
-              <button type="submit" class="btnx btn-danger"
-                onclick="return confirm('Are you sure you want to cancel this reservation?')">
+              <button type="submit" class="btnx btn-danger">
                 <i class="fas fa-times-circle"></i> Cancel Reservation
               </button>
             </form>
+
           {% endif %}
 
           <a href="{% url 'my_reservations' %}" class="btnx btn-ghost">
@@ -347,4 +349,40 @@
       .catch(() => alert("Copy failed. Please copy manually."));
   }
 </script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const swalDark = Swal.mixin({
+    background: "#0a192f",
+    color: "#e6f1ff",
+    confirmButtonColor: "#e5484d",
+    cancelButtonColor: "#6b7280"
+  });
+
+  document.querySelectorAll(".cancel-form").forEach(form => {
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+
+      swalDark.fire({
+        title: "Cancel Reservation?",
+        text: "This action cannot be undone.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, cancel it",
+        cancelButtonText: "Keep Reservation"
+      }).then((result) => {
+        if(result.isConfirmed){
+          form.submit();
+        }
+        else if(result.dismiss === Swal.DismissReason.cancel){
+          swalDark.fire("Cancelled", "Your reservation is safe :)", "info");
+        }
+      });
+
+    });
+  });
+
+});
+</script>
+
 {% endblock %}

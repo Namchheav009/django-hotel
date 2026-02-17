@@ -5,11 +5,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{% block title %}Hotel Management System{% endblock %}</title>
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static 'hotel/css/home.css' %}">
+
     <style>
     :root {
         --primary: #00e5ff;
@@ -18,16 +20,16 @@
         --light: #ecf0f1;
         --cyan-glow: rgba(0, 229, 255, 0.2);
     }
-    
+
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
+
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background: linear-gradient(135deg, #0a192f 0%, #112240 100%);
         min-height: 100vh;
         color: #e6f1ff;
     }
-    
+
     /* Navbar */
     .navbar {
         background: rgba(10, 25, 47, 0.95);
@@ -44,7 +46,7 @@
         height: 70px;
         z-index: 1000;
     }
-    
+
     .navbar-brand {
         font-weight: 700;
         font-size: 1.5rem;
@@ -53,7 +55,7 @@
         align-items: center;
         gap: 10px;
     }
-    
+
     .navbar-brand i {
         color: #00e5ff;
         font-size: 1.8rem;
@@ -61,11 +63,11 @@
         background: rgba(0, 229, 255, 0.1);
         border-radius: 8px;
     }
-    
+
     .navbar-brand .brand-text .highlight {
         color: #00e5ff;
     }
-    
+
     .nav-link {
         color: rgba(255,255,255,0.7) !important;
         transition: all 0.3s ease;
@@ -76,19 +78,19 @@
         font-size: 0.85rem;
         letter-spacing: 0.5px;
     }
-    
+
     .nav-link:hover {
         color: #00e5ff !important;
         background: rgba(0, 229, 255, 0.1);
         border-radius: 8px;
     }
-    
+
     .nav-link.active {
         color: #00e5ff !important;
         background: rgba(0, 229, 255, 0.15);
         border-radius: 8px;
     }
-    
+
     .navbar .btn-book {
         background: transparent;
         border: 2px solid #00e5ff;
@@ -101,47 +103,41 @@
         letter-spacing: 0.5px;
         transition: all 0.3s ease;
     }
-    
+
     .navbar .btn-book:hover {
         background: #00e5ff;
         color: #0a192f;
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
     }
-   
-  
+
     .dropdown-menu {
         background: rgba(10, 25, 47, 0.98);
         border: 1px solid rgba(0, 229, 255, 0.2);
         border-radius: 8px;
         margin-top: 10px;
     }
-    
+
     .dropdown-item {
         color: rgba(255,255,255,0.7);
         transition: all 0.3s ease;
     }
-    
+
     .dropdown-item:hover {
         background: rgba(0, 229, 255, 0.1);
         color: #00e5ff;
     }
-    
+
     .dropdown-divider {
         border-color: rgba(0, 229, 255, 0.2);
     }
-    
+
     /* Main content */
     main {
         min-height: calc(100vh - 300px);
         padding: 30px 0;
     }
-    
-    .container {
-        max-width: 1200px;
-       
-    }
-    
+
     /* Messages */
     .alert {
         border-radius: 12px;
@@ -150,31 +146,31 @@
         background: rgba(10, 25, 47, 0.8);
         backdrop-filter: blur(10px);
     }
-    
+
     .alert-success {
         background-color: rgba(40, 167, 69, 0.2);
         border-color: rgba(40, 167, 69, 0.5);
         color: #4ade80;
     }
-    
+
     .alert-error, .alert-danger {
         background-color: rgba(231, 76, 60, 0.2);
         border-color: rgba(231, 76, 60, 0.5);
         color: #ff6b6b;
     }
-    
+
     .alert-warning {
         background-color: rgba(255, 193, 7, 0.2);
         border-color: rgba(255, 193, 7, 0.5);
         color: #ffd43b;
     }
-    
+
     .alert-info {
         background-color: rgba(0, 229, 255, 0.2);
         border-color: rgba(0, 229, 255, 0.5);
         color: #00e5ff;
     }
-    
+
     /* Cards */
     .card {
         background: rgba(10, 25, 47, 0.8);
@@ -184,20 +180,20 @@
         transition: transform 0.3s, box-shadow 0.3s;
         color: #e6f1ff;
     }
-    
+
     .card:hover {
         transform: translateY(-5px);
         box-shadow: 0 8px 30px rgba(0, 229, 255, 0.3);
         border-color: rgba(0, 229, 255, 0.4);
     }
-    
+
     .card-header {
         background: rgba(0, 229, 255, 0.1);
         color: #00e5ff;
         border-bottom: 1px solid rgba(0, 229, 255, 0.2);
         border-radius: 12px 12px 0 0 !important;
     }
-    
+
     /* Buttons */
     .btn-primary {
         background: transparent;
@@ -206,7 +202,7 @@
         font-weight: 600;
         transition: all 0.3s ease;
     }
-    
+
     .btn-primary:hover {
         background: #00e5ff;
         border-color: #00e5ff;
@@ -214,19 +210,19 @@
         transform: translateY(-2px);
         box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
     }
-    
+
     .btn-secondary {
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: #e6f1ff;
     }
-    
+
     .btn-secondary:hover {
         background: rgba(255, 255, 255, 0.2);
         border-color: rgba(255, 255, 255, 0.3);
         color: #fff;
     }
-    
+
     /* Forms */
     .form-control {
         background: rgba(255, 255, 255, 0.05);
@@ -234,23 +230,23 @@
         color: #e6f1ff;
         border-radius: 8px;
     }
-    
+
     .form-control:focus {
         background: rgba(255, 255, 255, 0.08);
         border-color: #00e5ff;
         box-shadow: 0 0 0 0.2rem rgba(0, 229, 255, 0.25);
         color: #e6f1ff;
     }
-    
+
     .form-control::placeholder {
         color: rgba(230, 241, 255, 0.5);
     }
-    
+
     .form-label {
         color: #e6f1ff;
         font-weight: 500;
     }
-    
+
     /* Footer */
     footer {
         background: rgba(10, 25, 47, 0.95);
@@ -260,14 +256,14 @@
         padding: 50px 0 30px;
         margin-top: 80px;
     }
-    
+
     footer .footer-brand {
         display: flex;
         align-items: center;
         gap: 10px;
         margin-bottom: 20px;
     }
-    
+
     footer .footer-brand i {
         color: #00e5ff;
         font-size: 1.8rem;
@@ -275,24 +271,24 @@
         background: rgba(0, 229, 255, 0.1);
         border-radius: 8px;
     }
-    
+
     footer .footer-brand .brand-text {
         font-size: 1.3rem;
         font-weight: 700;
         color: #fff;
     }
-    
+
     footer .footer-brand .highlight {
         color: #00e5ff;
     }
-    
+
     footer .footer-description {
         color: rgba(255,255,255,0.6);
         margin-bottom: 25px;
         font-size: 0.95rem;
         line-height: 1.6;
     }
-    
+
     footer .footer-section h5 {
         color: #fff;
         font-weight: 600;
@@ -301,54 +297,28 @@
         font-size: 0.9rem;
         letter-spacing: 1px;
     }
-    
+
     footer .footer-links {
         list-style: none;
         padding: 0;
     }
-    
+
     footer .footer-links li {
         margin-bottom: 12px;
     }
-    
+
     footer .footer-links a {
         color: rgba(255,255,255,0.6);
         text-decoration: none;
         transition: all 0.3s ease;
         font-size: 0.9rem;
     }
-    
+
     footer .footer-links a:hover {
         color: #00e5ff;
         padding-left: 5px;
     }
-    
-    footer .social-icons {
-        display: flex;
-        gap: 15px;
-        margin-top: 20px;
-    }
-    
-    footer .social-icons a {
-        width: 40px;
-        height: 40px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(255, 255, 255, 0.05);
-        border: 1px solid rgba(0, 229, 255, 0.2);
-        border-radius: 8px;
-        color: rgba(255,255,255,0.6);
-        transition: all 0.3s ease;
-    }
-    
-    footer .social-icons a:hover {
-        background: rgba(0, 229, 255, 0.1);
-        border-color: #00e5ff;
-        color: #00e5ff;
-        transform: translateY(-3px);
-    }
-    
+
     footer .footer-bottom {
         border-top: 1px solid rgba(0, 229, 255, 0.2);
         margin-top: 40px;
@@ -357,7 +327,7 @@
         color: rgba(255,255,255,0.5);
         font-size: 0.85rem;
     }
-    
+
     footer .footer-bottom .footer-meta {
         display: flex;
         justify-content: space-between;
@@ -365,64 +335,32 @@
         flex-wrap: wrap;
         gap: 15px;
     }
-    
+
     footer .footer-bottom a {
         color: #00e5ff;
         text-decoration: none;
     }
-    
+
     footer .footer-bottom a:hover {
         text-decoration: underline;
     }
-    
-    /* Page titles */
-    .page-title {
-        margin-bottom: 30px;
-        color: #fff;
-        border-bottom: 3px solid #00e5ff;
-        padding-bottom: 15px;
-    }
-    
-    /* Badge */
-    .badge {
-        padding: 5px 10px;
-        border-radius: 6px;
-        font-weight: 600;
-    }
-    
-    .badge-success {
-        background-color: rgba(40, 167, 69, 0.3);
-        color: #4ade80;
-        border: 1px solid rgba(40, 167, 69, 0.5);
-    }
-    
-    .badge-warning {
-        background-color: rgba(255, 193, 7, 0.3);
-        color: #ffd43b;
-        border: 1px solid rgba(255, 193, 7, 0.5);
-    }
-    
-    .badge-danger {
-        background-color: rgba(231, 76, 60, 0.3);
-        color: #ff6b6b;
-        border: 1px solid rgba(231, 76, 60, 0.5);
-    }
-    
-    /* Responsive adjustments */
+
     @media (max-width: 768px) {
         .navbar {
             margin: 10px;
             padding: 10px 15px;
         }
-        
+
         footer .footer-meta {
             flex-direction: column;
             text-align: center;
         }
     }
     </style>
+
     {% block extra_head %}{% endblock %}
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
@@ -431,26 +369,34 @@
                 <i class="fas fa-hotel"></i>
                 <span class="brand-text">My<span class="highlight">Hotel</span></span>
             </a>
+
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
+
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-cente">
-                
+                <ul class="navbar-nav ms-auto align-items-center">
+
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'guest_home' %}active{% endif %}" href="{% url 'guest_home' %}">Home</a>
+                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'room_list' %}active{% endif %}" href="{% url 'room_list' %}">Rooms</a>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'service' %}active{% endif %}" href="{% url 'service' %}">Services</a>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a>
                     </li>
+
                     <li class="nav-item">
                         <a class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a>
                     </li>
+
                     {% if user.is_authenticated %}
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'view_cart' %}active{% endif %}" href="{% url 'view_cart' %}" style="position: relative;">
@@ -462,16 +408,17 @@
                                 {% endwith %}
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a class="nav-link {% if request.resolver_match.url_name == 'my_reservations' %}active{% endif %}" href="{% url 'my_reservations' %}">
                                 My Bookings
                             </a>
                         </li>
+
                         <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'reviews' %}active{% endif %}"
-                            href="{% url 'reviews' %}">
-                            Reviews
-                        </a>
+                            <a class="nav-link {% if request.resolver_match.url_name == 'reviews' %}active{% endif %}" href="{% url 'reviews' %}">
+                                Reviews
+                            </a>
                         </li>
 
                         <li class="nav-item dropdown">
@@ -483,7 +430,11 @@
                                 <li><a class="dropdown-item" href="{% url 'complete_profile' %}">Edit Profile</a></li>
                                 <li><a class="dropdown-item" href="{% url 'my_service_bookings' %}">My Service Bookings</a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'logout' %}">Logout</a></li>
+
+                                <!-- ✅ Logout uses SweetAlert -->
+                                <li><a class="dropdown-item logout-link" href="#" data-logout-url="{% url 'logout' %}">
+                                    <i class="fas fa-right-from-bracket me-1"></i> Logout
+                                </a></li>
                             </ul>
                         </li>
                     {% else %}
@@ -494,23 +445,10 @@
                             <a class="btn-book {% if request.resolver_match.url_name == 'register' %}active{% endif %}" href="{% url 'register' %}">Register</a>
                         </li>
                     {% endif %}
-                    </li>
                 </ul>
             </div>
         </div>
     </nav>
-
-    <!-- Messages -->
-    <div class="container-lg mt-3">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{% if 'error' in message.tags %}danger{% elif 'warning' in message.tags %}warning{% elif 'success' in message.tags %}success{% elif 'info' in message.tags %}info{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
 
     <!-- Main Content -->
     <main>
@@ -537,7 +475,7 @@
                         <a href="#"><i class="fab fa-instagram"></i></a>
                     </div>
                 </div>
-                
+
                 <div class="col-lg-2 col-md-6 mb-4 footer-section">
                     <h5>Explore</h5>
                     <ul class="footer-links">
@@ -547,21 +485,23 @@
                         <li><a href="{% url 'contact' %}">Contact</a></li>
                     </ul>
                 </div>
-                
+
                 <div class="col-lg-3 col-md-6 mb-4 footer-section">
                     <h5>Account</h5>
                     <ul class="footer-links">
                         {% if user.is_authenticated %}
                             <li><a href="{% url 'my_reservations' %}">My Bookings</a></li>
                             <li><a href="{% url 'user_profile' %}">My Profile</a></li>
-                            <li><a href="{% url 'logout' %}">Logout</a></li>
+
+                            <!-- ✅ Footer Logout uses SweetAlert -->
+                            <li><a class="logout-link" href="#" data-logout-url="{% url 'logout' %}">Logout</a></li>
                         {% else %}
                             <li><a href="{% url 'login' %}">Login</a></li>
                             <li><a href="{% url 'register' %}">Register</a></li>
                         {% endif %}
                     </ul>
                 </div>
-                
+
                 <div class="col-lg-3 col-md-6 mb-4 footer-section">
                     <h5>Legal</h5>
                     <ul class="footer-links">
@@ -571,7 +511,7 @@
                     </ul>
                 </div>
             </div>
-            
+
             <div class="footer-bottom">
                 <div class="footer-meta">
                     <div>&copy; 2025 MyHotel Systems. All rights reserved.</div>
@@ -583,6 +523,56 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- ✅ SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+
+        // ---------- SweetAlert theme ----------
+        const swalDark = Swal.mixin({
+          background: "#0a192f",
+          color: "#e6f1ff",
+          confirmButtonColor: "#00e5ff",
+          cancelButtonColor: "#6b7280"
+        });
+
+        // ---------- Logout confirmation ----------
+        document.querySelectorAll(".logout-link").forEach(function (link) {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            const logoutUrl = link.getAttribute("data-logout-url") || "{% url 'logout' %}";
+
+            swalDark.fire({
+              title: "Logout?",
+              text: "Are you sure you want to logout?",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonText: "Yes, logout",
+              cancelButtonText: "Cancel"
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.href = logoutUrl;
+              }
+            });
+          });
+        });
+
+        // ---------- Optional: Django messages as SweetAlert popups ----------
+        {% if messages %}
+          {% for message in messages %}
+            swalDark.fire({
+              icon: "{% if 'error' in message.tags or 'danger' in message.tags %}error{% elif 'warning' in message.tags %}warning{% elif 'success' in message.tags %}success{% else %}info{% endif %}",
+              title: "{% if 'success' in message.tags %}Success{% elif 'error' in message.tags or 'danger' in message.tags %}Error{% elif 'warning' in message.tags %}Warning{% else %}Info{% endif %}",
+              text: "{{ message|escapejs }}"
+            });
+          {% endfor %}
+        {% endif %}
+      });
+    </script>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>

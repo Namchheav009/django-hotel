@@ -483,18 +483,7 @@
     <p class="page-subtitle">Review your items and proceed to checkout</p>
   </div>
 
-  <!-- Alert Messages -->
-  {% if messages %}
-    <div>
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}" role="alert">
-          <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
-          <span>{{ message }}</span>
-          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
+
 
   <!-- Pending Payment Alert -->
   {% if pending_reservations %}
@@ -547,13 +536,13 @@
                       {% endif %}
                     </div>
 
-                    <!-- Remove Button -->
-                    <form method="post" action="{% url 'remove_from_cart' item.id %}" style="margin: 0;">
+                    <form method="post" action="{% url 'remove_from_cart' item.id %}" style="margin: 0;" class="swal-remove-cart">
                       {% csrf_token %}
-                      <button type="submit" class="remove-btn" onclick="return confirm('Remove this item from cart?');">
+                      <button type="submit" class="remove-btn">
                         <i class="fas fa-trash"></i> Remove
                       </button>
                     </form>
+
                   </div>
 
                   <!-- Item Meta Information -->
@@ -772,5 +761,41 @@
     </div>
   {% endif %}
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  // Dark theme Swal
+  const swalDark = Swal.mixin({
+    background: "#0a192f",
+    color: "#e6f1ff",
+    iconColor: "#00e5ff",
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#6b7280"
+  });
+
+  document.querySelectorAll(".swal-remove-cart").forEach(form => {
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+
+      swalDark.fire({
+        title: "Remove this item?",
+        text: "It will be removed from your cart.",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Yes, remove",
+        cancelButtonText: "Cancel",
+        reverseButtons: true
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
+      });
+    });
+  });
+
+});
+</script>
+
 
 {% endblock %}

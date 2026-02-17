@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseForbidden
+from django.urls import reverse
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -735,8 +736,27 @@ def admin_dashboard(request):
     from django.db.models import Count, Sum
     from datetime import date, timedelta
     
+    # ===== REQUESTED PERIOD =====
+    # allow client to choose period via GET parameter (days)
+    period_param = request.GET.get('period', '1')
+    try:
+        period = int(period_param)
+    except ValueError:
+        period = 1
+
+    today = timezone.now().date()
+    if period <= 1:
+        start_date = today
+    else:
+        start_date = today - timedelta(days=period - 1)
+
+    prev_end = start_date - timedelta(days=1)
+    prev_start = prev_end - timedelta(days=period - 1) if period > 1 else prev_end
+
     # ===== ROOM STATISTICS =====
     total_rooms = Room.objects.count()
+    # count as of beginning of current period (rooms added before start_date)
+    total_rooms_prev = Room.objects.filter(created_at__lt=start_date).count()
     available_rooms = Room.objects.filter(status='Available').count()
     booked_rooms = Room.objects.filter(status='Booked').count()
     
@@ -751,20 +771,71 @@ def admin_dashboard(request):
         total=models.Sum('amount')
     )['total'] or 0
     
-    # ===== TODAY STATISTICS =====
-    today = timezone.now().date()
-    guests_today = Reservation.objects.filter(
-        check_in_date=today
-    ).count()
-    
-    revenue_today = Payment.objects.filter(
-        payment_status='Completed',
-        payment_date__date=today
-    ).aggregate(total=models.Sum('amount'))['total'] or 0
-    
-    active_reservations = Reservation.objects.filter(
-        status__in=['Confirmed', 'Checked In']
-    ).count()
+    # ===== PERIOD METRICS =====
+    if period <= 1:
+        guests_count = Reservation.objects.filter(check_in_date=today).count()
+        revenue_count = Payment.objects.filter(
+            payment_status='Completed',
+            payment_date__date=today
+        ).aggregate(total=models.Sum('amount'))['total'] or 0
+        active_current = Reservation.objects.filter(
+            status__in=['Confirmed', 'Checked In']
+        ).count()
+
+        prev_guests = Reservation.objects.filter(check_in_date=prev_end).count()
+        prev_revenue = Payment.objects.filter(
+            payment_status='Completed',
+            payment_date__date=prev_end
+        ).aggregate(total=models.Sum('amount'))['total'] or 0
+        prev_active = Reservation.objects.filter(
+            status__in=['Confirmed', 'Checked In'],
+            booking_date__date=prev_end
+        ).count()
+    else:
+        guests_count = Reservation.objects.filter(
+            check_in_date__range=(start_date, today)
+        ).count()
+        revenue_count = Payment.objects.filter(
+            payment_status='Completed',
+            payment_date__date__range=(start_date, today)
+        ).aggregate(total=models.Sum('amount'))['total'] or 0
+        active_current = Reservation.objects.filter(
+            status__in=['Confirmed', 'Checked In'],
+            booking_date__date__range=(start_date, today)
+        ).count()
+
+        prev_guests = Reservation.objects.filter(
+            check_in_date__range=(prev_start, prev_end)
+        ).count()
+        prev_revenue = Payment.objects.filter(
+            payment_status='Completed',
+            payment_date__date__range=(prev_start, prev_end)
+        ).aggregate(total=models.Sum('amount'))['total'] or 0
+        prev_active = Reservation.objects.filter(
+            status__in=['Confirmed', 'Checked In'],
+            booking_date__date__range=(prev_start, prev_end)
+        ).count()
+
+    # helper for percentage difference
+    def pct(curr, prev):
+        if prev == 0:
+            return "100%" if curr > 0 else "0%"
+        diff = ((curr - prev) / prev) * 100
+        return f"{ '+' if diff >= 0 else ''}{int(diff)}%"
+
+    total_rooms_trend = pct(total_rooms, total_rooms_prev)
+    active_reservations_trend = pct(active_current, prev_active)
+    guests_trend = pct(guests_count, prev_guests)
+    revenue_trend = pct(revenue_count, prev_revenue)
+
+    # determine colors for hints based on sign
+    def hint_color(trend_str):
+        return '#ef4444' if str(trend_str).startswith('-') else '#16a34a'
+
+    total_rooms_trend_color = hint_color(total_rooms_trend)
+    active_reservations_trend_color = hint_color(active_reservations_trend)
+    guests_trend_color = hint_color(guests_trend)
+    revenue_trend_color = hint_color(revenue_trend)
     
     # ===== RECENT DATA =====
     recent_reservations = Reservation.objects.select_related(
@@ -872,9 +943,20 @@ def admin_dashboard(request):
         'confirmed_reservations': confirmed_reservations,
         'total_payments': total_payments,
         'total_revenue': total_revenue,
-        'guests_today': guests_today,
-        'revenue_today': revenue_today,
-        'active_reservations': active_reservations,
+        # period-specific metrics
+        'guests_today': guests_count,
+        'revenue_today': revenue_count,
+        'active_reservations': active_current,
+        'total_rooms_trend': total_rooms_trend,
+        'active_reservations_trend': active_reservations_trend,
+        'guests_trend': guests_trend,
+        'revenue_trend': revenue_trend,
+        'total_rooms_trend_color': total_rooms_trend_color,
+        'active_reservations_trend_color': active_reservations_trend_color,
+        'guests_trend_color': guests_trend_color,
+        'revenue_trend_color': revenue_trend_color,
+        'period': period,
+        'period_label': {1:'Today',7:'Last 7 days',30:'Last 30 days',365:'This year'}.get(period, f'Last {period} days'),
         'recent_reservations': recent_reservations,
         'unread_contacts': unread_contacts,
         'pending_bookings': pending_bookings,
@@ -1165,6 +1247,7 @@ def mark_contact_read(request, contact_id):
 def admin_reports(request):
     """Admin reports page with analytics"""
     from django.db.models import Sum, Avg, Count
+    from .models import RoomRating, ServiceRating
     
     period = int(request.GET.get('period', 30))
     start_date = datetime.now() - timedelta(days=period)
@@ -1177,7 +1260,63 @@ def admin_reports(request):
     ).aggregate(Sum('amount'))['amount__sum'] or 0
     
     total_bookings = reservations.count()
-    
+
+    # calculate previous period values for trends
+    prev_start = start_date - timedelta(days=period)
+    prev_end = start_date
+
+    prev_revenue = Payment.objects.filter(
+        payment_status='Completed',
+        payment_date__gte=prev_start,
+        payment_date__lt=prev_end
+    ).aggregate(Sum('amount'))['amount__sum'] or 0
+
+    prev_bookings = Reservation.objects.filter(
+        booking_date__gte=prev_start,
+        booking_date__lt=prev_end
+    ).count()
+
+    def pct_change(current, previous):
+        if previous == 0:
+            return None
+        return (current - previous) / previous * 100
+
+    revenue_pct = pct_change(total_revenue, prev_revenue)
+    bookings_pct = pct_change(total_bookings, prev_bookings)
+
+    def format_pct(val):
+        if val is None:
+            return 'N/A'
+        sign = '+' if val >= 0 else ''
+        return f"{sign}{val:.1f}% from last period"
+
+    revenue_trend = format_pct(revenue_pct)
+    bookings_trend = format_pct(bookings_pct)
+
+    # occupancy current already computed; compute previous occupancy similarly
+    total_rooms = Room.objects.count()
+    if total_rooms > 0:
+        checked_in_prev = Reservation.objects.filter(
+            check_in_date__lte=prev_end.date(),
+            check_out_date__gte=prev_start.date(),
+            status__in=['Checked In', 'Confirmed']
+        ).values('room').distinct().count()
+        occ_prev = int((checked_in_prev / total_rooms) * 100)
+        occ_pct = occ_prev and ((occupancy_rate - occ_prev) / occ_prev * 100) or None
+    else:
+        occ_pct = None
+    occupancy_trend = format_pct(occ_pct) if occ_pct is not None else 'No change'
+
+    # rating: average within period vs previous (models already imported above)
+    period_avg_rating = RoomRating.objects.filter(
+        created_at__gte=start_date
+    ).aggregate(Avg('rating'))['rating__avg'] or 0
+    prev_avg_rating = RoomRating.objects.filter(
+        created_at__gte=prev_start,
+        created_at__lt=prev_end
+    ).aggregate(Avg('rating'))['rating__avg'] or 0
+    rating_diff = period_avg_rating - prev_avg_rating
+    rating_trend = f"+{rating_diff:.1f}" if rating_diff >= 0 else f"{rating_diff:.1f}"
     # Occupancy calculation
     total_rooms = Room.objects.count()
     if total_rooms > 0:
@@ -1190,28 +1329,36 @@ def admin_reports(request):
     else:
         occupancy_rate = 0
     
-    # Average rating
+    # Average rating (all time)
     from .models import RoomRating, ServiceRating
     avg_rating = RoomRating.objects.aggregate(Avg('rating'))['rating__avg'] or 0
     
-    # Top rooms
+    # helper Q for period
+    from django.db.models import Q
+    date_filter = Q(reservations__booking_date__gte=start_date)
+    usage_filter = Q(usages__usage_date__gte=start_date)
+
+    # Top rooms (period-filtered)
     top_rooms = Room.objects.annotate(
-        booking_count=Count('reservations'),
-        total_revenue=Sum('reservations__payment__amount'),
+        booking_count=Count('reservations', filter=date_filter),
+        total_revenue=Sum('reservations__payment__amount', filter=date_filter),
         avg_rating=Avg('ratings__rating')
     ).filter(booking_count__gt=0).order_by('-total_revenue')[:5]
     
-    # Top services
+    # Top services (period-filtered)
+    # count number of bookings rather than ServiceUsage; bookings better represent actual user orders
+    # ServiceBooking uses related_name='user_bookings' on Service
+    booking_filter = Q(user_bookings__booking_date__gte=start_date)
     top_services = Service.objects.annotate(
-        usage_count=Count('usages'),
+        usage_count=Count('user_bookings', filter=booking_filter),
         avg_rating=Avg('ratings__rating')
     ).filter(usage_count__gt=0).order_by('-usage_count')[:5]
     
-    # Guest statistics
-    guests_checked_in = Reservation.objects.filter(status='Checked In').count()
-    guests_pending = Reservation.objects.filter(status='Pending').count()
-    guests_checked_out = Reservation.objects.filter(status='Checked Out').count()
-    guests_cancelled = Reservation.objects.filter(status='Cancelled').count()
+    # Guest statistics (period-filtered where appropriate)
+    guests_checked_in = Reservation.objects.filter(status='Checked In', booking_date__gte=start_date).count()
+    guests_pending = Reservation.objects.filter(status='Pending', booking_date__gte=start_date).count()
+    guests_checked_out = Reservation.objects.filter(status='Checked Out', booking_date__gte=start_date).count()
+    guests_cancelled = Reservation.objects.filter(status='Cancelled', booking_date__gte=start_date).count()
     
     # Revenue dates for chart
     revenue_by_date = {}
@@ -1225,6 +1372,7 @@ def admin_reports(request):
     revenue_values = json.dumps([revenue_by_date[d] for d in sorted(revenue_by_date.keys())])
     
     context = {
+        'period': period,
         'total_revenue': f"${total_revenue:,.2f}",
         'total_bookings': total_bookings,
         'occupancy_rate': occupancy_rate,
@@ -1235,8 +1383,12 @@ def admin_reports(request):
         'guests_pending': guests_pending,
         'guests_checked_out': guests_checked_out,
         'guests_cancelled': guests_cancelled,
-        'revenue_dates': revenue_dates,
-        'revenue_values': revenue_values,
+        'revenue_dates_json': revenue_dates,
+        'revenue_values_json': revenue_values,
+        'revenue_trend': revenue_trend,
+        'bookings_trend': bookings_trend,
+        'occupancy_trend': occupancy_trend,
+        'rating_trend': rating_trend,
     }
     return render(request, 'hotel/admin/reports.html', context)
 
@@ -1253,17 +1405,33 @@ def user_profile(request):
     room_reviews = RoomRating.objects.filter(user=request.user).select_related("room")
     service_reviews = ServiceRating.objects.filter(user=request.user).select_related("service")
 
+    # user's service bookings
+    service_bookings = ServiceBooking.objects.filter(user=request.user).select_related('service', 'reservation').order_by('-booking_date')
+
     total_bookings = bookings.count()
+    total_service_bookings = service_bookings.count()
     total_nights = sum((b.check_out_date - b.check_in_date).days for b in bookings if b.check_out_date and b.check_in_date) if bookings else 0
+
+    # set of room ids already reviewed by the user (prevent duplicate review links)
+    reviewed_rooms = set(room_reviews.values_list('room_id', flat=True))
+
+    # allow caller to request a specific tab via query parameter
+    active_tab = request.GET.get('tab', 'profile')
+    if active_tab not in ('profile', 'bookings', 'reviews', 'settings'):
+        active_tab = 'profile'
 
     context = {
         'guest': guest,
         'bookings': bookings,
+        'service_bookings': service_bookings,
         'room_reviews': room_reviews,
         'service_reviews': service_reviews,
         'total_bookings': total_bookings,
         'total_nights': total_nights,
+        'total_service_bookings': total_service_bookings,
         'reviews_count': room_reviews.count() + service_reviews.count(),
+        'active_tab': active_tab,
+        'reviewed_rooms': reviewed_rooms,
     }
     return render(request, 'hotel/html/user_profile.html', context)
 
@@ -1286,7 +1454,7 @@ def update_profile(request):
         pass
     
     messages.success(request, "Profile updated successfully!")
-    return redirect('user_profile')
+    return redirect(f"{reverse('user_profile')}?tab=profile")
 
 
 @login_required(login_url='login')
@@ -1310,7 +1478,8 @@ def change_password(request):
     login(request, request.user)
     
     messages.success(request, "Password changed successfully!")
-    return redirect('user_profile')
+    # keep the settings tab open after changing password
+    return redirect(f"{reverse('user_profile')}?tab=settings")
 
 
 @login_required(login_url='login')
@@ -1323,6 +1492,12 @@ def rate_room(request, room_id):
     if not reservation:
         messages.error(request, "No reservation found for you and this room.")
         return redirect('my_reservations')
+
+    # avoid duplicate review for same reservation
+    from .models import RoomRating
+    if RoomRating.objects.filter(user=request.user, reservation=reservation).exists():
+        messages.info(request, "You've already reviewed this reservation.")
+        return redirect(f"{reverse('user_profile')}?tab=reviews")
 
     if request.method == 'POST':
         rating_val = request.POST.get('rating')
@@ -1343,7 +1518,8 @@ def rate_room(request, room_id):
                 amenities=int(amenities),
             )
             messages.success(request, "Thank you for your review!")
-            return redirect('user_profile')
+            # user just submitted a room review, show reviews tab
+            return redirect(f"{reverse('user_profile')}?tab=reviews")
         except Exception as e:
             messages.error(request, f"Error saving review: {str(e)}")
 
@@ -1372,6 +1548,11 @@ def rate_service(request, service_id):
         messages.error(request, "No completed service booking found for you and this service. You can only rate services after they're completed.")
         return redirect('service')
 
+    # prevent duplicate service review on the same booking
+    if ServiceRating.objects.filter(user=request.user, service_booking=service_booking).exists():
+        messages.info(request, "You have already reviewed this service booking.")
+        return redirect(f"{reverse('user_profile')}?tab=reviews")
+
     if request.method == 'POST':
         rating_val = request.POST.get('rating')
         quality = request.POST.get('quality', 5)
@@ -1391,7 +1572,7 @@ def rate_service(request, service_id):
                 value_for_money=int(value_for_money),
             )
             messages.success(request, "Thank you for your service review!")
-            return redirect('user_profile')
+            return redirect(f"{reverse('user_profile')}?tab=reviews")
         except Exception as e:
             messages.error(request, f"Error saving service review: {str(e)}")
 
@@ -2024,7 +2205,19 @@ def add_room_review_admin(request):
 @login_required
 @admin_login_required
 def delete_review(request, review_id):
-    r = get_object_or_404(RoomRating, id=review_id)
+    # allow deleting either a room or service review using same URL
+    from .models import RoomRating, ServiceRating
+    r = None
+    try:
+        r = RoomRating.objects.get(id=review_id)
+    except RoomRating.DoesNotExist:
+        try:
+            r = ServiceRating.objects.get(id=review_id)
+        except ServiceRating.DoesNotExist:
+            # nothing to delete; show generic error
+            messages.error(request, "Review not found.")
+            return redirect("manage_reviews")
+
     if request.method == "POST":
         r.delete()
         messages.success(request, "Review deleted.")
@@ -2185,10 +2378,27 @@ def add_service_to_cart(request, service_id):
         if quantity < 1:
             messages.error(request, 'Quantity must be at least 1.')
             return redirect('book_service', service_id=service_id)
+
+        # require date/time
+        if not scheduled_date:
+            messages.error(request, 'Please choose a date and time before adding to cart.')
+            return redirect('book_service', service_id=service_id)
         
         try:
-            if scheduled_date:
+            # some browsers return \"YYYY-MM-DDTHH:MM\" (with T) others use space
+            try:
                 scheduled_date = datetime.strptime(scheduled_date, '%Y-%m-%d %H:%M')
+            except ValueError:
+                scheduled_date = datetime.strptime(scheduled_date, '%Y-%m-%dT%H:%M')
+
+            from django.utils import timezone
+            # make aware in current timezone so comparison works
+            if timezone.is_naive(scheduled_date):
+                scheduled_date = timezone.make_aware(scheduled_date, timezone.get_current_timezone())
+
+            if scheduled_date < timezone.now():
+                messages.error(request, 'Scheduled date must be in the future.')
+                return redirect('book_service', service_id=service_id)
             
             cart, created = Cart.objects.get_or_create(user=request.user)
             CartItem.objects.create(
@@ -2196,11 +2406,14 @@ def add_service_to_cart(request, service_id):
                 item_type='Service',
                 service=service,
                 service_quantity=quantity,
-                scheduled_date=scheduled_date if scheduled_date else None,
+                scheduled_date=scheduled_date,
             )
             
             messages.success(request, f'{service.name} added to cart!')
             return redirect('view_cart')
+        except ValueError:
+            messages.error(request, 'Invalid date/time, please pick a valid future date.')
+            return redirect('book_service', service_id=service_id)
         except Exception as e:
             messages.error(request, f'Error adding service to cart: {str(e)}')
             return redirect('book_service', service_id=service_id)

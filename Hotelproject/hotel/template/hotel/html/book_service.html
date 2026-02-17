@@ -64,6 +64,9 @@
     background: #dc2626;
     color: #fff;
   }
+  .text-muted {
+    color: rgba(255,255,255,.7) !important;
+  }
 
   
 </style>
@@ -84,14 +87,7 @@
         </div>
 
         <div class="card-body booking-body">
-          {% if messages %}
-            {% for message in messages %}
-              <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-              </div>
-            {% endfor %}
-          {% endif %}
+         
 
           {% if form.non_field_errors %}
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -146,8 +142,9 @@
             <p style="color: rgba(255,255,255,.7); font-size: 13px; margin-bottom: 12px;">
               <i class="fas fa-info-circle"></i> Or add this service to your shopping cart
             </p>
-            <form method="POST" action="{% url 'add_service_to_cart' service.id %}" style="display: flex; gap: 8px;">
+            <form id="cart-form" method="POST" action="{% url 'add_service_to_cart' service.id %}" style="display: flex; gap: 8px;">
               {% csrf_token %}
+              <input type="hidden" name="scheduled_date" id="cart_scheduled_date" />
               <div style="flex: 1;">
                 <input type="number" name="quantity" class="form-control form-control-sm" value="1" min="1" required style="border-radius: 8px;">
               </div>
@@ -229,6 +226,21 @@
       quantityInput.addEventListener('input', calc);
     }
     calc();
+
+    // synchronize scheduled date into cart form
+    const dateInput = document.querySelector('input[name="scheduled_date"]');
+    const cartDate = document.getElementById('cart_scheduled_date');
+    const cartForm = document.getElementById('cart-form');
+
+    if (dateInput && cartDate && cartForm) {
+      // copy on change and before submit
+      function syncDate() {
+        cartDate.value = dateInput.value;
+      }
+      dateInput.addEventListener('change', syncDate);
+      dateInput.addEventListener('input', syncDate);
+      cartForm.addEventListener('submit', syncDate);
+    }
   })();
 </script>
 {% endblock %}
