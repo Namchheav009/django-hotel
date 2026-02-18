@@ -217,7 +217,13 @@
           <h5 style="margin:0 0 12px; font-weight:900; color:var(--text);">Billing</h5>
 
           <div class="rd-2col">
-            <div class="kv"><strong>Price / Night</strong><span>${{ reservation.room.category.base_price }}</span></div>
+            <div class="kv"><strong>Price / Night</strong><span>
+                {% if reservation.room.price %}
+                  ${{ reservation.room.price|floatformat:2 }}
+                {% else %}
+                  <span class="text-muted">Price on request</span>
+                {% endif %}
+            </span></div>
             <div class="money">
               <div>
                 <div class="label">Total Price</div>

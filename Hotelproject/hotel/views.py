@@ -379,6 +379,7 @@ def room_list(request):
         check_out = form.cleaned_data.get('check_out_date')
         category = form.cleaned_data.get('category')
         max_price = form.cleaned_data.get('max_price')
+        guests = form.cleaned_data.get('guests')
         
         if check_in and check_out:
             # Filter out booked rooms
@@ -396,7 +397,18 @@ def room_list(request):
             rooms = rooms.filter(category__category_name__icontains=category)
         
         if max_price:
-            rooms = rooms.filter(category__base_price__lte=max_price)
+            # `RoomCategory.base_price` was removed in migrations; filter by Room.price instead.
+            # Only include rooms with an explicit price set that are <= max_price.
+            rooms = rooms.filter(price__lte=max_price)
+
+        # Filter by requested number of guests: only rooms with sufficient max_occupancy
+        if guests:
+            try:
+                g = int(guests)
+                if g > 0:
+                    rooms = rooms.filter(max_occupancy__gte=g)
+            except (ValueError, TypeError):
+                pass
     
     context = {
         'rooms': rooms,

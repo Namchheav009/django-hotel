@@ -3,8 +3,171 @@
 
 {% block title %}Contact Us - MyHotel{% endblock %}
 
+{% block extra_head %}
+<style>
+    .page-header {
+        text-align: center;
+        margin-bottom: 50px;
+        padding-bottom: 30px;
+        border-bottom: 2px solid rgba(0, 229, 255, 0.2);
+    }
+    .page-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        color: #e6f1ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+        margin: 0 0 10px;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+    }
+    .page-title i {
+        color: #00e5ff;
+        font-size: 2.5rem;
+    }
+    .page-subtitle {
+        color: rgba(230, 241, 255, 0.7);
+        font-size: 1rem;
+        margin: 0;
+        letter-spacing: 0.5px;
+    }
+    .card {
+        border: 1px solid rgba(0, 229, 255, 0.1);
+        border-radius: 16px;
+        background: linear-gradient(135deg, #0f1a33 0%, #0b1220 100%);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 40px rgba(0, 229, 255, 0.15);
+        border-color: rgba(0, 229, 255, 0.2);
+    }
+    .card-header {
+        background: rgba(0, 229, 255, 0.08);
+        border-bottom: 1px solid rgba(0, 229, 255, 0.15);
+        border-radius: 16px 16px 0 0;
+        padding: 20px;
+    }
+    .card-header h5 {
+        color: #00e5ff;
+        margin: 0;
+        font-weight: 900;
+        font-size: 1.15rem;
+        letter-spacing: 0.5px;
+    }
+    .card-body {
+        padding: 25px;
+    }
+    .form-label {
+        color: #e6f1ff;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    textarea {
+        width: 100%;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 229, 255, 0.2);
+        padding: 12px 14px;
+        background: rgba(255, 255, 255, 0.05);
+        color: #e6f1ff;
+        font-family: inherit;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+    }
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="tel"]:focus,
+    textarea:focus {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #00e5ff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 229, 255, 0.25);
+        outline: none;
+    }
+    input[type="text"]::placeholder,
+    input[type="email"]::placeholder,
+    input[type="tel"]::placeholder,
+    textarea::placeholder {
+        color: rgba(230, 241, 255, 0.4);
+    }
+    .btn-primary {
+        background: #00e5ff;
+        border: 2px solid #00e5ff;
+        color: #0a192f;
+        font-weight: 700;
+        padding: 12px 30px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.9rem;
+    }
+    .btn-primary:hover {
+        background: #00d4e8;
+        border-color: #00d4e8;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4);
+    }
+    .text-danger {
+        color: #ff6b6b !important;
+        font-weight: 600;
+    }
+    .contact-info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+        padding: 16px 0;
+        border-bottom: 1px solid rgba(0, 229, 255, 0.1);
+    }
+    .contact-info-item:last-child {
+        border-bottom: none;
+    }
+    .contact-info-item i {
+        color: #00e5ff;
+        font-size: 1.3rem;
+        margin-top: 2px;
+        min-width: 25px;
+    }
+    .contact-info-item strong {
+        color: #e6f1ff;
+        display: block;
+        margin-bottom: 4px;
+        font-weight: 700;
+    }
+    .contact-info-item p {
+        color: rgba(230, 241, 255, 0.8);
+        margin: 0;
+        line-height: 1.5;
+    }
+    @media (max-width: 768px) {
+        .page-title {
+            font-size: 1.8rem;
+            gap: 10px;
+        }
+        .page-title i {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1 class="page-title"><i class="fas fa-envelope"></i> Contact Us</h1>
+<div class="page-header">
+    <h1 class="page-title">
+        <i class="fas fa-envelope"></i> Contact Us
+    </h1>
+    <p class="page-subtitle">We'd love to hear from you. Send us a message!</p>
+</div>
 
 <div class="row">
     <div class="col-md-8">
@@ -20,11 +183,13 @@
                             {{ field.label_tag }}
                             {{ field }}
                             {% if field.errors %}
-                                <div class="text-danger"><small>{{ field.errors }}</small></div>
+                                <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle"></i> {{ field.errors }}</div>
                             {% endif %}
                         </div>
                     {% endfor %}
-                    <button type="submit" class="btn btn-primary">Send Message</button>
+                    <button type="submit" class="btn btn-primary mt-2">
+                        <i class="fas fa-paper-plane"></i> Send Message
+                    </button>
                 </form>
             </div>
         </div>
@@ -35,9 +200,27 @@
                 <h5>Contact Information</h5>
             </div>
             <div class="card-body">
-                <p><i class="fas fa-phone"></i> <strong>Phone:</strong> +1 (555) 123-4567</p>
-                <p><i class="fas fa-envelope"></i> <strong>Email:</strong> info@myhotel.com</p>
-                <p><i class="fas fa-map-marker-alt"></i> <strong>Address:</strong> 123 Hotel Street, City, State 12345</p>
+                <div class="contact-info-item">
+                    <i class="fas fa-phone"></i>
+                    <div>
+                        <strong>Phone</strong>
+                        <p>+1 (555) 123-4567</p>
+                    </div>
+                </div>
+                <div class="contact-info-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <strong>Email</strong>
+                        <p>info@myhotel.com</p>
+                    </div>
+                </div>
+                <div class="contact-info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <strong>Address</strong>
+                        <p>123 Hotel Street, City, State 12345</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

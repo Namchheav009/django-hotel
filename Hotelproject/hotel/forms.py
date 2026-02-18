@@ -85,6 +85,11 @@ class RoomFilterForm(forms.Form):
         required=False,
         widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Max price'})
     )
+    guests = forms.IntegerField(
+        required=False,
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '1'})
+    )
 
 
 class PaymentForm(forms.ModelForm):

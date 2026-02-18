@@ -495,8 +495,8 @@
 
                 <div class="filter-field">
                     <label class="form-label"><i class="fas fa-users"></i> Guests</label>
-                    <input type="number" name="guests" min="1" class="form-control"
-                           placeholder="1" value="{{ request.GET.guests|default:'1' }}">
+                          <input type="number" name="guests" min="1" class="form-control"
+                              placeholder="1" value="{{ form.guests.value|default:'1' }}">
                 </div>
 
                 <div class="filter-field" style="grid-column: 1 / -1;">
@@ -579,18 +579,22 @@
                                 </h5>
 
                                 <div class="room-price">
-                                    ${{ room.category.base_price }}<small>/night</small>
+                                    {% if room.price %}
+                                        ${{ room.price|floatformat:2 }}<small>/night</small>
+                                    {% else %}
+                                        <span style="color:var(--text-muted);">Price on request</span>
+                                    {% endif %}
                                 </div>
                             </div>
 
                             <div class="room-desc">
-                                {{ room.category.description|truncatechars:95 }}
+                                {{ room.description|default:""|truncatechars:95 }}
                             </div>
 
                             <div class="chips">
                                 <span class="chip">
                                     <i class="fas fa-user"></i>
-                                    {{ room.category.max_occupancy|default:"2" }} Guests
+                                    {{ room.max_occupancy|default:"2" }} Guests
                                 </span>
                                 {% if room.floor %}
                                     <span class="chip">

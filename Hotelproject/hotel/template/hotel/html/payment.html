@@ -184,7 +184,13 @@
             <p><strong>Check-in:</strong> {{ reservation.check_in_date }}</p>
             <p><strong>Check-out:</strong> {{ reservation.check_out_date }}</p>
             <hr>
-            <p><strong>Price/Night:</strong> ${{ reservation.room.category.base_price }}</p>
+            <p><strong>Price/Night:</strong> 
+              {% if reservation.room.price %}
+                ${{ reservation.room.price|floatformat:2 }}
+              {% else %}
+                <span class="text-muted">Price on request</span>
+              {% endif %}
+            </p>
             <p class="h5"><strong>Total Amount:</strong> <span class="text-success">${{ payment.amount }}</span></p>
           {% endif %}
         </div>

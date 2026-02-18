@@ -5,7 +5,8 @@ from .models import Room, RoomCategory, Reservation, Payment, Guest, Service, Co
 class RoomCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = RoomCategory
-        fields = ['id', 'category_name', 'description', 'base_price', 'max_occupancy', 'amenities']
+        # `base_price` was removed from RoomCategory; expose existing fields only
+        fields = ['id', 'category_name', 'description', 'max_occupancy', 'amenities']
 
 
 class RoomSerializer(serializers.ModelSerializer):
@@ -13,7 +14,8 @@ class RoomSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = ['id', 'room_number', 'category', 'status', 'floor', 'description']
+        # include `price` so API clients receive the room-level price
+        fields = ['id', 'room_number', 'category', 'status', 'floor', 'description', 'price']
 
 
 class GuestSerializer(serializers.ModelSerializer):

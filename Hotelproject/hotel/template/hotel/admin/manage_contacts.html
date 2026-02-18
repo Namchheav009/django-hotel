@@ -3,288 +3,705 @@
 
 {% block admin_content %}
 
+<style>
+  :root{
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --line: #e2e8f0;
+    --shadow: 0 2px 8px rgba(0,0,0,0.04);
+    --radius: 12px;
+
+    --green:#22c55e;
+    --amber:#f59e0b;
+    --red:#ef4444;
+    --blue:#3b82f6;
+    --cyan:#0ea5e9;
+    --purple:#a855f7;
+  }
+
+  /* Page header */
+  .contacts-head{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    margin: 6px 0 16px;
+  }
+  .contacts-title{
+    display:flex; gap:12px; align-items:center;
+  }
+  .contacts-title .icon{
+    width:44px;height:44px;border-radius:14px;
+    display:flex;align-items:center;justify-content:center;
+    background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e9 100%);
+    border:1px solid var(--card-border);
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.1);
+  }
+  .contacts-title h1{
+    margin:0;
+    font-weight: 900;
+    letter-spacing: .2px;
+    color: var(--text);
+    font-size: 22px;
+  }
+  .contacts-title p{
+    margin:4px 0 0;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* Cards */
+  .cardx{
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .cardx-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--line);
+    gap: 10px;
+  }
+  .cardx-body{ padding: 14px 16px; }
+
+  /* Toolbar (filter/search/buttons) */
+  .toolbar{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .toolbar-left{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    align-items:center;
+  }
+  .toolbar-right{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+
+  .inputx, .selectx{
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: var(--text) !important;
+    border-radius: 12px !important;
+    padding: 10px 12px !important;
+    font-weight: 700;
+  }
+  .inputx::placeholder{ color: #94a3b8; font-weight:700; }
+  .inputx:focus, .selectx:focus{ 
+    background: #ffffff !important;
+    border-color: #22c55e !important;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1) !important;
+  }
+  .selectx option{ color:#0f172a; }
+
+  .btnx{
+    border-radius: 12px;
+    padding: 10px 12px;
+    font-weight: 800;
+    border: 1px solid transparent;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+  }
+  .btnx-primary{
+    background: #22c55e;
+    color:white;
+  }
+  .btnx-primary:hover{
+    background: #16a34a;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+  }
+  .btnx-soft{
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: var(--text);
+  }
+  .btnx-soft:hover{ background: #f1f5f9; border-color: #cbd5e1; }
+
+  /* Table */
+  .table-wrap{ overflow:auto; }
+  table.admin-table-modern{
+    width:100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 960px;
+  }
+  .admin-table-modern thead th{
+    text-align:left;
+    padding: 12px 12px;
+    font-size: 12px;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    color: #0f172a;
+    background: #f8fafc;
+    border-bottom: 2px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    font-weight: 700;
+  }
+  .admin-table-modern tbody td{
+    padding: 12px 12px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .admin-table-modern tbody tr{
+    transition: background .15s ease, transform .15s ease;
+  }
+  .admin-table-modern tbody tr:hover{
+    background: #f8fafc;
+  }
+
+  /* Unread emphasis */
+  .unread-message td{
+    font-weight: 900;
+  }
+  .unread-dot{
+    width:8px;height:8px;border-radius:999px;
+    background: #f59e0b;
+    box-shadow: 0 0 0 4px rgba(245,158,11,.15);
+    display:inline-block;
+    margin-right: 10px;
+    transform: translateY(-1px);
+  }
+
+  /* Email link */
+  .mail-link{
+    color: #22c55e;
+    text-decoration: none;
+    font-weight: 800;
+  }
+  .mail-link:hover{ 
+    color: #16a34a;
+    text-decoration: underline; 
+  }
+
+  /* Badges */
+  .badgex{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    border:1px solid transparent;
+  }
+  .badgex-read{
+    background: #f0fdf4;
+    color: #16a34a;
+    border-color: #bbf7d0;
+  }
+  .badgex-unread{
+    background: #fef3c7;
+    color: #b45309;
+    border-color: #fde68a;
+  }
+
+  /* Action buttons */
+  .actions{
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .iconbtn{
+    width:36px;height:36px;
+    border-radius: 12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #0f172a;
+    transition: transform .12s ease, background .12s ease;
+  }
+  .iconbtn:hover{ transform: translateY(-1px); background: #f1f5f9; }
+
+  .iconbtn.view{ border-color: #bfdbfe; background: #eff6ff; color: #0c4a6e; }
+  .iconbtn.view:hover{ background: #dbeafe; }
+  .iconbtn.edit{ border-color: #fed7aa; background: #fffbeb; color: #b45309; }
+  .iconbtn.edit:hover{ background: #fef3c7; }
+  .iconbtn.del{ border-color: #fecaca; background: #fef2f2; color: #7f1d1d; }
+  .iconbtn.del:hover{ background: #fee2e2; }
+
+  /* Alerts nicer */
+  .alert{
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+
+  /* Empty state */
+  .empty{
+    padding: 26px 18px;
+    text-align:center;
+    color: #64748b;
+  }
+  .empty .big{
+    font-size: 34px;
+    margin-bottom: 8px;
+    color: #cbd5e1;
+  }
+  .empty h3{
+    color: #0f172a;
+    margin: 6px 0 6px;
+    font-weight: 900;
+  }
+  .empty p{ margin:0; font-weight:700; color: #64748b; }
+
+  /* Modals */
+  .modal-content{
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .modal-header{
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+  }
+  .modal-header .modal-title{
+    color: #0f172a;
+    font-weight: 700;
+  }
+  .modal-body{
+    color: #0f172a;
+  }
+
+  /* Bootstrap button overrides for light theme */
+  .btn-primary {
+    background: #22c55e;
+    border-color: #22c55e;
+  }
+  .btn-primary:hover {
+    background: #16a34a;
+    border-color: #16a34a;
+  }
+  .btn-warning {
+    background: #f59e0b;
+    border-color: #f59e0b;
+  }
+  .btn-warning:hover {
+    background: #d97706;
+    border-color: #d97706;
+  }
+  .btn-secondary {
+    background: #64748b;
+    border-color: #64748b;
+  }
+  .btn-secondary:hover {
+    background: #475569;
+    border-color: #475569;
+  }
+  .form-check-input {
+    background: #fff;
+    border: 1px solid #cbd5e1;
+  }
+  .form-check-input:checked {
+    background: #22c55e;
+    border-color: #22c55e;
+  }
+  .form-label {
+    color: #0f172a;
+  }
+</style>
+
 <!-- Alert Messages -->
 {% if messages %}
-<div style="margin-bottom: 20px;">
-    {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}" role="alert">
-            <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    {% endfor %}
+<div style="margin-bottom: 14px;">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} d-flex align-items-center justify-content-between" role="alert" style="gap:12px;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+        <div style="font-weight:800;">{{ message }}</div>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
 </div>
 {% endif %}
 
-<div class="admin-content-title">
-    <h1><i class="fas fa-envelope"></i> Contact Messages</h1>
+<!-- Header -->
+<div class="contacts-head">
+  <div class="contacts-title">
+    <div class="icon"><i class="fas fa-envelope"></i></div>
+    <div>
+      <h1>Contact Messages</h1>
+      <p>Manage, read, and respond to customer inquiries</p>
+    </div>
+  </div>
+
+  <button class="btnx btnx-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">
+    <i class="fas fa-plus"></i> New Contact
+  </button>
 </div>
 
-<div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">
-        <i class="fas fa-plus"></i> New Contact
-    </button>
-</div>
+<!-- Filters / Search -->
+<div class="cardx" style="margin-bottom: 14px;">
+  <div class="cardx-head">
+    <div style="font-weight:900;color:var(--text);display:flex;gap:10px;align-items:center;">
+      <i class="fas fa-filter"></i> Filters
+    </div>
+  </div>
 
-<!-- Filter Section -->
-<div class="admin-card" style="margin-bottom: 20px;">
-    <form method="GET" style="display: flex; gap: 10px;">
-        <select name="read_status" class="form-select" style="max-width: 200px;">
-            <option value="">All Messages</option>
-            <option value="unread" {% if request.GET.read_status == 'unread' %}selected{% endif %}>Unread</option>
-            <option value="read" {% if request.GET.read_status == 'read' %}selected{% endif %}>Read</option>
+  <div class="cardx-body">
+    <form method="GET" class="toolbar">
+      <div class="toolbar-left">
+        <select name="read_status" class="form-select selectx" style="max-width: 220px;">
+          <option value="">All Messages</option>
+          <option value="unread" {% if request.GET.read_status == 'unread' %}selected{% endif %}>Unread</option>
+          <option value="read" {% if request.GET.read_status == 'read' %}selected{% endif %}>Read</option>
         </select>
-        <button type="submit" class="btn btn-primary">Filter</button>
+
+        <!-- Optional search (works if your view supports ?q= ) -->
+        <input
+          class="form-control inputx"
+          name="q"
+          value="{{ request.GET.q|default:'' }}"
+          placeholder="Search name, email, subject..."
+          style="min-width: 260px;"
+        />
+      </div>
+
+      <div class="toolbar-right">
+        <button type="submit" class="btnx btnx-primary">
+          <i class="fas fa-search"></i> Apply
+        </button>
+        <a href="?" class="btnx btnx-soft" title="Reset filters">
+          <i class="fas fa-rotate-left"></i> Reset
+        </a>
+      </div>
     </form>
+  </div>
 </div>
 
 <!-- Messages Table -->
-<div class="admin-card">
-    {% if contacts %}
-        <table class="admin-table">
-            <thead>
-                <tr>
-                    <th><i class="fas fa-user"></i> From</th>
-                    <th><i class="fas fa-envelope"></i> Email</th>
-                    <th><i class="fas fa-heading"></i> Subject</th>
-                    <th><i class="fas fa-calendar"></i> Date</th>
-                    <th><i class="fas fa-flag"></i> Status</th>
-                    <th><i class="fas fa-cogs"></i> Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for contact in contacts %}
-                    <tr {% if not contact.is_read %}class="unread-message"{% endif %}>
-                        <td>{{ contact.name }}</td>
-                        <td><a href="mailto:{{ contact.email }}">{{ contact.email }}</a></td>
-                        <td>{{ contact.subject }}</td>
-                        <td>{{ contact.created_at|date:"M d, Y H:i" }}</td>
-                        <td>
-                            {% if contact.is_read %}
-                                <span class="badge" style="background-color: #22c55e; color: white;">Read</span>
-                            {% else %}
-                                <span class="badge" style="background-color: #f59e0b; color: white;">Unread</span>
-                            {% endif %}
-                        </td>
+<div class="cardx">
+  <div class="cardx-head">
+    <div style="font-weight:900;color:var(--text);display:flex;gap:10px;align-items:center;">
+      <i class="fas fa-inbox"></i> Inbox
+      {% if contacts %}<span style="color:var(--muted);font-weight:800;">({{ contacts|length }})</span>{% endif %}
+    </div>
+  </div>
 
-                        <td style="display: flex; gap: 6px;">
-                            <!-- VIEW -->
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-info btn-view"
-                                data-id="{{ contact.id }}"
-                                data-name="{{ contact.name|escapejs }}"
-                                data-email="{{ contact.email|escapejs }}"
-                                data-subject="{{ contact.subject|default:''|escapejs }}"
-                                data-message="{{ contact.message|default:''|escapejs }}"
-                            >
-                                <i class="fas fa-eye"></i>
-                            </button>
+  {% if contacts %}
+    <div class="table-wrap">
+      <table class="admin-table-modern">
+        <thead>
+          <tr>
+            <th>From</th>
+            <th>Email</th>
+            <th>Subject</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th style="width:170px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for contact in contacts %}
+            <tr {% if not contact.is_read %}class="unread-message"{% endif %}>
+              <td>
+                {% if not contact.is_read %}<span class="unread-dot"></span>{% endif %}
+                {{ contact.name }}
+              </td>
 
-                            <!-- EDIT -->
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-warning btn-edit"
-                                data-id="{{ contact.id }}"
-                                data-name="{{ contact.name|escapejs }}"
-                                data-email="{{ contact.email|escapejs }}"
-                                data-phone="{{ contact.phone|default:''|escapejs }}"
-                                data-subject="{{ contact.subject|default:''|escapejs }}"
-                                data-message="{{ contact.message|default:''|escapejs }}"
-                                data-isread="{% if contact.is_read %}true{% else %}false{% endif %}"
-                            >
-                                <i class="fas fa-edit"></i>
-                            </button>
+              <td>
+                <a class="mail-link" href="mailto:{{ contact.email }}">
+                  <i class="fas fa-at" style="opacity:.8;"></i> {{ contact.email }}
+                </a>
+              </td>
 
-                            <!-- DELETE -->
-                            <form method="post" action="{% url 'delete_contact' contact.id %}" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Delete this message?')">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
+              <td style="max-width: 360px;">
+                <div style="font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                  {{ contact.subject|default:"(No subject)" }}
+                </div>
+                <div style="color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width: 360px;">
+                  {{ contact.message|default:""|truncatechars:60 }}
+                </div>
+              </td>
 
-                            {# OPTIONAL: Mark as read button if you have this url #}
-                            {#
-                            {% if not contact.is_read %}
-                            <form method="post" action="{% url 'mark_contact_read' contact.id %}" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-success" title="Mark as read">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                            </form>
-                            {% endif %}
-                            #}
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p style="color: #7f8c8d; text-align: center; padding: 20px;">No contact messages found.</p>
-    {% endif %}
+              <td style="white-space:nowrap;">
+                {{ contact.created_at|date:"M d, Y" }}
+                <div style="color:var(--muted);font-weight:700;font-size:12px;">
+                  {{ contact.created_at|date:"H:i" }}
+                </div>
+              </td>
+
+              <td>
+                {% if contact.is_read %}
+                  <span class="badgex badgex-read"><i class="fas fa-check"></i> Read</span>
+                {% else %}
+                  <span class="badgex badgex-unread"><i class="fas fa-envelope"></i> Unread</span>
+                {% endif %}
+              </td>
+
+              <td>
+                <div class="actions">
+                  <!-- VIEW -->
+                  <button
+                    type="button"
+                    class="iconbtn view btn-view"
+                    title="View"
+                    data-id="{{ contact.id }}"
+                    data-name="{{ contact.name|escapejs }}"
+                    data-email="{{ contact.email|escapejs }}"
+                    data-subject="{{ contact.subject|default:''|escapejs }}"
+                    data-message="{{ contact.message|default:''|escapejs }}"
+                  >
+                    <i class="fas fa-eye"></i>
+                  </button>
+
+                  <!-- EDIT -->
+                  <button
+                    type="button"
+                    class="iconbtn edit btn-edit"
+                    title="Edit"
+                    data-id="{{ contact.id }}"
+                    data-name="{{ contact.name|escapejs }}"
+                    data-email="{{ contact.email|escapejs }}"
+                    data-phone="{{ contact.phone|default:''|escapejs }}"
+                    data-subject="{{ contact.subject|default:''|escapejs }}"
+                    data-message="{{ contact.message|default:''|escapejs }}"
+                    data-isread="{% if contact.is_read %}true{% else %}false{% endif %}"
+                  >
+                    <i class="fas fa-pen"></i>
+                  </button>
+
+                  <!-- DELETE -->
+                  <form method="post" action="{% url 'delete_contact' contact.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="iconbtn del" title="Delete"
+                      onclick="return confirm('Delete this message?')">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </form>
+
+                  {# OPTIONAL: Mark as read button if you have this url #}
+                  {#
+                  {% if not contact.is_read %}
+                  <form method="post" action="{% url 'mark_contact_read' contact.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="iconbtn" title="Mark as read">
+                      <i class="fas fa-check"></i>
+                    </button>
+                  </form>
+                  {% endif %}
+                  #}
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty">
+      <div class="big">📭</div>
+      <h3>No contact messages</h3>
+      <p>When users submit the contact form, messages will appear here.</p>
+      <div style="margin-top:14px;">
+        <button class="btnx btnx-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">
+          <i class="fas fa-plus"></i> Add Contact
+        </button>
+      </div>
+    </div>
+  {% endif %}
 </div>
 
 <!-- View Message Modal -->
 <div class="modal fade" id="viewMessageModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="messageName"></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p><strong>From:</strong> <span id="messageFrom"></span></p>
-                <p><strong>Email:</strong> <span id="messageEmail"></span></p>
-                <p><strong>Subject:</strong> <span id="messageSubject"></span></p>
-                <hr>
-                <p id="messageBody" style="white-space: pre-wrap;"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="messageName" style="font-weight:900;"></h5>
+          <div style="color:#64748b;font-weight:700;font-size:13px;">
+            <span id="messageEmail"></span>
+          </div>
         </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+          <div class="badgex badgex-unread" style="display:none;" id="viewUnreadBadge">
+            <i class="fas fa-envelope"></i> Unread
+          </div>
+          <div class="badgex badgex-read" style="display:none;" id="viewReadBadge">
+            <i class="fas fa-check"></i> Read
+          </div>
+        </div>
+
+        <p style="margin:0 0 6px;"><strong>From:</strong> <span id="messageFrom"></span></p>
+        <p style="margin:0 0 10px;"><strong>Subject:</strong> <span id="messageSubject"></span></p>
+        <hr>
+        <div id="messageBody" style="white-space: pre-wrap; font-weight:700; line-height:1.6;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Add Contact Modal -->
 <div class="modal fade" id="addContactModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Contact</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="post" action="{% url 'add_contact' %}">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Name</label>
-                        <input class="form-control" name="name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input class="form-control" name="email" type="email" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Phone</label>
-                        <input class="form-control" name="phone">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Subject</label>
-                        <input class="form-control" name="subject">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Message</label>
-                        <textarea class="form-control" name="message" rows="4"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary">Add Contact</button>
-                </div>
-            </form>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" style="font-weight:900;">Add Contact</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form method="post" action="{% url 'add_contact' %}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:800;">Name</label>
+            <input class="form-control" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:800;">Email</label>
+            <input class="form-control" name="email" type="email" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:800;">Phone</label>
+            <input class="form-control" name="phone">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:800;">Subject</label>
+            <input class="form-control" name="subject">
+          </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:800;">Message</label>
+            <textarea class="form-control" name="message" rows="4"></textarea>
+          </div>
         </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Contact
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 
 <!-- Edit Contact Modal -->
 <div class="modal fade" id="editContactModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Edit Contact</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" style="font-weight:900;">Edit Contact</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form method="post" id="editContactForm" action="">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:800;">Name</label>
+              <input class="form-control" name="name" id="editName" required>
             </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:800;">Email</label>
+              <input class="form-control" name="email" type="email" id="editEmail" required>
+            </div>
+          </div>
 
-            {# IMPORTANT: you need a URL like update_contact #}
-            <form method="post" id="editContactForm" action="">
-                {% csrf_token %}
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Name</label>
-                            <input class="form-control" name="name" id="editName" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Email</label>
-                            <input class="form-control" name="email" type="email" id="editEmail" required>
-                        </div>
-                    </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:800;">Phone</label>
+              <input class="form-control" name="phone" id="editPhone">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" style="font-weight:800;">Subject</label>
+              <input class="form-control" name="subject" id="editSubject">
+            </div>
+          </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Phone</label>
-                            <input class="form-control" name="phone" id="editPhone">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Subject</label>
-                            <input class="form-control" name="subject" id="editSubject">
-                        </div>
-                    </div>
+          <div class="mb-3">
+            <label class="form-label" style="font-weight:800;">Message</label>
+            <textarea class="form-control" name="message" rows="5" id="editMessage"></textarea>
+          </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Message</label>
-                        <textarea class="form-control" name="message" rows="5" id="editMessage"></textarea>
-                    </div>
-
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="is_read" id="editIsRead">
-                        <label class="form-check-label" for="editIsRead">Mark as read</label>
-                    </div>
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-warning">Save Changes</button>
-                </div>
-            </form>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="is_read" id="editIsRead">
+            <label class="form-check-label" for="editIsRead" style="font-weight:800;">Mark as read</label>
+          </div>
         </div>
-    </div>
-</div>
 
-<style>
-    .unread-message { font-weight: bold; }
-</style>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-warning">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script>
 (function() {
-    const viewModalEl = document.getElementById('viewMessageModal');
-    const editModalEl = document.getElementById('editContactModal');
+  const viewModalEl = document.getElementById('viewMessageModal');
+  const editModalEl = document.getElementById('editContactModal');
 
-    const viewModal = new bootstrap.Modal(viewModalEl);
-    const editModal = new bootstrap.Modal(editModalEl);
+  const viewModal = new bootstrap.Modal(viewModalEl);
+  const editModal = new bootstrap.Modal(editModalEl);
 
-    // VIEW
-    document.querySelectorAll('.btn-view').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.getElementById('messageName').textContent = btn.dataset.name || '';
-            document.getElementById('messageFrom').textContent = btn.dataset.name || '';
-            document.getElementById('messageEmail').textContent = btn.dataset.email || '';
-            document.getElementById('messageSubject').textContent = btn.dataset.subject || '';
-            document.getElementById('messageBody').textContent = btn.dataset.message || '';
-            viewModal.show();
-        });
+  const viewUnreadBadge = document.getElementById('viewUnreadBadge');
+  const viewReadBadge   = document.getElementById('viewReadBadge');
+
+  // VIEW
+  document.querySelectorAll('.btn-view').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('messageName').textContent = btn.dataset.name || '';
+      document.getElementById('messageFrom').textContent = btn.dataset.name || '';
+      document.getElementById('messageEmail').textContent = btn.dataset.email || '';
+      document.getElementById('messageSubject').textContent = btn.dataset.subject || '';
+      document.getElementById('messageBody').textContent = btn.dataset.message || '';
+
+      // If you want show read/unread in modal, you can pass data-isread to btn-view too.
+      // For now hide both:
+      viewUnreadBadge.style.display = 'none';
+      viewReadBadge.style.display = 'none';
+
+      viewModal.show();
     });
+  });
 
-    // EDIT
-    document.querySelectorAll('.btn-edit').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.getElementById('editName').value = btn.dataset.name || '';
-            document.getElementById('editEmail').value = btn.dataset.email || '';
-            document.getElementById('editPhone').value = btn.dataset.phone || '';
-            document.getElementById('editSubject').value = btn.dataset.subject || '';
-            document.getElementById('editMessage').value = btn.dataset.message || '';
-            document.getElementById('editIsRead').checked = (btn.dataset.isread === 'true');
+  // EDIT
+  document.querySelectorAll('.btn-edit').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.getElementById('editName').value = btn.dataset.name || '';
+      document.getElementById('editEmail').value = btn.dataset.email || '';
+      document.getElementById('editPhone').value = btn.dataset.phone || '';
+      document.getElementById('editSubject').value = btn.dataset.subject || '';
+      document.getElementById('editMessage').value = btn.dataset.message || '';
+      document.getElementById('editIsRead').checked = (btn.dataset.isread === 'true');
 
-            // Set form action dynamically
-            const form = document.getElementById('editContactForm');
-            form.action = "{% url 'edit_contact' 0 %}".replace('/0/', '/' + btn.dataset.id + '/');
+      const form = document.getElementById('editContactForm');
+      form.action = "{% url 'edit_contact' 0 %}".replace('/0/', '/' + btn.dataset.id + '/');
 
-            editModal.show();
-        });
+      editModal.show();
     });
+  });
 })();
 </script>
 

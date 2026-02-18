@@ -25,7 +25,8 @@ class RoomViewSet(viewsets.ReadOnlyModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['category', 'status', 'floor']
     search_fields = ['room_number', 'category__category_name']
-    ordering_fields = ['room_number', 'category__base_price']
+    # `category__base_price` was removed — allow ordering by room `price` instead
+    ordering_fields = ['room_number', 'price']
 
     @action(detail=False, methods=['get'])
     def available(self, request):

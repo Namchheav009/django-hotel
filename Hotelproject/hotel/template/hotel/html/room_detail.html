@@ -50,7 +50,13 @@
                         <span class="badge bg-info">{{ room.status }}</span>
                     </div>
 
-                    <h2 class="mb-2">${{ room.category.base_price|default:room.price }}<small class="fs-6 text-muted">/night</small></h2>
+                    <h2 class="mb-2">
+                        {% if room.price %}
+                            ${{ room.price|floatformat:2 }}<small class="fs-6 text-muted">/night</small>
+                        {% else %}
+                            <span class="fs-6 text-muted">Price on request</span>
+                        {% endif %}
+                    </h2>
 
                     <!-- Quick Info -->
                     <div class="mb-4">
