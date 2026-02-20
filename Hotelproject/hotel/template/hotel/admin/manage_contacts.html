@@ -320,20 +320,6 @@
   }
 </style>
 
-<!-- Alert Messages -->
-{% if messages %}
-<div style="margin-bottom: 14px;">
-  {% for message in messages %}
-    <div class="alert alert-{{ message.tags }} d-flex align-items-center justify-content-between" role="alert" style="gap:12px;">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
-        <div style="font-weight:800;">{{ message }}</div>
-      </div>
-      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-  {% endfor %}
-</div>
-{% endif %}
 
 <!-- Header -->
 <div class="contacts-head">
@@ -482,16 +468,17 @@
                   </button>
 
                   <!-- DELETE -->
-                  <form method="post" action="{% url 'delete_contact' contact.id %}" style="display:inline;">
+                  <form method="post" action="{% url 'delete_contact' contact.id %}"
+                        data-swal="delete"
+                        data-swal-name="contact {{ contact.name }}"
+                   style="display:inline;">
                     {% csrf_token %}
-                    <button type="submit" class="iconbtn del" title="Delete"
-                      onclick="return confirm('Delete this message?')">
+                    <button type="submit" class="iconbtn del" title="Delete">
                       <i class="fas fa-trash"></i>
                     </button>
                   </form>
-
-                  {# OPTIONAL: Mark as read button if you have this url #}
-                  {#
+                
+              
                   {% if not contact.is_read %}
                   <form method="post" action="{% url 'mark_contact_read' contact.id %}" style="display:inline;">
                     {% csrf_token %}
@@ -500,7 +487,7 @@
                     </button>
                   </form>
                   {% endif %}
-                  #}
+                  
                 </div>
               </td>
             </tr>
