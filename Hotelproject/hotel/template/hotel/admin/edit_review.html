@@ -1,0 +1,69 @@
+{% extends 'hotel/admin/admin_base.html' %}
+
+{% block admin_content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h2>Edit Review</h2>
+            {% if rating_type == 'room' %}
+                <p class="text-muted">Room Review: <strong>{{ r.room.room_number }}</strong></p>
+            {% else %}
+                <p class="text-muted">Service Review: <strong>{{ r.service.name }}</strong></p>
+            {% endif %}
+            
+            <form method="post" class="mt-4">
+                {% csrf_token %}
+                
+                <input type="hidden" name="id" value="{{ r.id }}">
+                
+                <div class="mb-3">
+                    <label class="form-label">Rating (1-5)</label>
+                    <input type="number" name="rating" class="form-control" min="1" max="5" value="{{ r.rating }}" required>
+                </div>
+
+                {% if rating_type == 'room' %}
+                    <div class="mb-3">
+                        <label class="form-label">Cleanliness (1-5)</label>
+                        <input type="number" name="cleanliness" class="form-control" min="1" max="5" value="{{ r.cleanliness }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Comfort (1-5)</label>
+                        <input type="number" name="comfort" class="form-control" min="1" max="5" value="{{ r.comfort }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Amenities (1-5)</label>
+                        <input type="number" name="amenities" class="form-control" min="1" max="5" value="{{ r.amenities }}" required>
+                    </div>
+                {% else %}
+                    <div class="mb-3">
+                        <label class="form-label">Quality (1-5)</label>
+                        <input type="number" name="quality" class="form-control" min="1" max="5" value="{{ r.quality }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Timeliness (1-5)</label>
+                        <input type="number" name="timeliness" class="form-control" min="1" max="5" value="{{ r.timeliness }}" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Value for Money (1-5)</label>
+                        <input type="number" name="value_for_money" class="form-control" min="1" max="5" value="{{ r.value_for_money }}" required>
+                    </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label">Review Text</label>
+                    <textarea name="review" class="form-control" rows="5">{{ r.review }}</textarea>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                    <a href="{% url 'manage_reviews' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
