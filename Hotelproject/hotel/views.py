@@ -399,7 +399,7 @@ def room_list(request):
         if selected_categories:
             rooms = rooms.filter(category__id__in=selected_categories)
         elif category:
-            # fallback to legacy single text category match
+            # fallback to legacy single text category matchd
             rooms = rooms.filter(category__category_name__icontains=category)
         
         if max_price:
