@@ -100,13 +100,13 @@
 
 <div class="page-head">
   <div>
-    <h2>Manage Categories</h2>
-    <p class="page-sub">Create, edit, and organize room categories.</p>
+    <h2>{{ page_title|default:"Manage Categories" }}</h2>
+    <p class="page-sub">{{ page_subtitle|default:"Create, edit, and organize room categories." }}</p>
   </div>
 
   <!-- ✅ Button works (opens modal by JS) -->
   <button type="button" class="btnx" onclick="openAddCategoryModal()">
-    <i class="fas fa-plus"></i> New Category
+    <i class="fas fa-plus"></i> {{ new_category_label|default:"New Category" }}
   </button>
 </div>
 
@@ -116,7 +116,7 @@
 
     <div class="search">
       <i class="fas fa-search muted"></i>
-      <input id="q" type="text" placeholder="Search category..." onkeyup="filterRows()">
+      <input id="q" type="text" placeholder="{{ search_placeholder|default:'Search category...' }}" onkeyup="filterRows()">
     </div>
   </div>
 
@@ -168,7 +168,7 @@
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content" style="border-radius:16px; overflow:hidden;">
       <div class="modal-header">
-        <h5 class="modal-title" style="font-weight:900;">Add New Category</h5>
+        <h5 class="modal-title" style="font-weight:900;">{{ modal_title_add_category|default:"Add New Category" }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
 
@@ -179,9 +179,9 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">{{ modal_close_label|default:"Close" }}</button>
         <button type="button" class="btn btn-primary fw-bold" onclick="submitCategory()">
-          Add Category
+          {{ modal_add_category_btn|default:"Add Category" }}
         </button>
       </div>
     </div>

@@ -83,27 +83,55 @@
                     </div>
 
                     {% if user.is_authenticated %}
-                       
-                        <form method="post" action="{% url 'add_room_to_cart' room.id %}" style="margin-bottom: 0;">
-                            {% csrf_token %}
-                            <div class="row g-2 mb-3">
-                                <div class="col-6">
-                                    <label class="form-label" style="font-size: 12px; font-weight: 700;">Check-in</label>
-                                    <input type="date" name="check_in_date" class="form-control form-control-sm" required>
+                        {% if check_in_date and check_out_date %}
+                            {% if is_booked %}
+                                <div class="alert alert-warning" role="alert">
+                                    The selected dates are unavailable for booking. Please choose different dates.
                                 </div>
-                                <div class="col-6">
-                                    <label class="form-label" style="font-size: 12px; font-weight: 700;">Check-out</label>
-                                    <input type="date" name="check_out_date" class="form-control form-control-sm" required>
+                            {% else %}
+                                <form method="post" action="{% url 'add_room_to_cart' room.id %}" style="margin-bottom: 0;">
+                                    {% csrf_token %}
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-6">
+                                            <label class="form-label" style="font-size: 12px; font-weight: 700;">Check-in</label>
+                                            <input type="date" name="check_in_date" class="form-control form-control-sm" required value="{{ check_in_date|date:'Y-m-d' }}">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label" style="font-size: 12px; font-weight: 700;">Check-out</label>
+                                            <input type="date" name="check_out_date" class="form-control form-control-sm" required value="{{ check_out_date|date:'Y-m-d' }}">
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label" style="font-size: 12px; font-weight: 700;">Guests</label>
+                                        <input type="number" name="number_of_guests" class="form-control form-control-sm" value="{{ guests_prefill|default:1 }}" min="1" max="{{ room.max_occupancy }}" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-outline-success btn-lg w-100" style="font-weight: 700;">
+                                        <i class="fas fa-shopping-cart me-2"></i> Add to Cart
+                                    </button>
+                                </form>
+                            {% endif %}
+                        {% else %}
+                            <form method="post" action="{% url 'add_room_to_cart' room.id %}" style="margin-bottom: 0;">
+                                {% csrf_token %}
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6">
+                                        <label class="form-label" style="font-size: 12px; font-weight: 700;">Check-in</label>
+                                        <input type="date" name="check_in_date" class="form-control form-control-sm" required>
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label" style="font-size: 12px; font-weight: 700;">Check-out</label>
+                                        <input type="date" name="check_out_date" class="form-control form-control-sm" required>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label" style="font-size: 12px; font-weight: 700;">Guests</label>
-                                <input type="number" name="number_of_guests" class="form-control form-control-sm" value="1" min="1" max="{{ room.max_occupancy }}" required>
-                            </div>
-                            <button type="submit" class="btn btn-outline-success btn-lg w-100" style="font-weight: 700;">
-                                <i class="fas fa-shopping-cart me-2"></i> Add to Cart
-                            </button>
-                        </form>
+                                <div class="mb-3">
+                                    <label class="form-label" style="font-size: 12px; font-weight: 700;">Guests</label>
+                                    <input type="number" name="number_of_guests" class="form-control form-control-sm" value="1" min="1" max="{{ room.max_occupancy }}" required>
+                                </div>
+                                <button type="submit" class="btn btn-outline-success btn-lg w-100" style="font-weight: 700;">
+                                    <i class="fas fa-shopping-cart me-2"></i> Add to Cart
+                                </button>
+                            </form>
+                        {% endif %}
                     {% else %}
                         <a href="{% url 'login' %}" class="btn btn-primary btn-lg w-100">
                             <i class="fas fa-sign-in-alt me-2"></i> Login to Book

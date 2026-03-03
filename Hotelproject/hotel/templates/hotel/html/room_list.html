@@ -566,9 +566,10 @@
                             {% else %}
                                 <img src="{% static 'hotel/img/room-placeholder.jpg' %}" alt="Room image">
                             {% endif %}
-                            <div class="room-badge">
+                            {% comment %} badge and availability are computed on the view as room.is_booked {% endcomment %}
+                        <div class="room-badge">
                                 {{ room.category.category_name|default:"Room" }}
-                            </div>
+                        </div>
                         </div>
 
                         <div class="room-body">
@@ -606,18 +607,34 @@
                                     <i class="fas fa-check-circle"></i> 
                                     {{ room.status }}
                                 </span>
+                                {% if room.is_booked %}
+                                    <span class="chip" style="background:#f44336;color:#fff;">
+                                        <i class="fas fa-ban"></i> Unavailable
+                                    </span>
+                                {% endif %}
                             </div>
                         </div>
 
                         <div class="room-actions">
-                            <a href="{% url 'room_detail' room.id %}" class="btn-details">
+                            {% comment %} propagate any GET params (dates etc.) so detail page can prefill {% endcomment %}
+                            {% with query=request.GET.urlencode %}
+                            <a href="{% url 'room_detail' room.id %}{% if query %}?{{ query }}{% endif %}" class="btn-details">
                                 Details
                             </a>
+                            {% endwith %}
 
                             {% if user.is_authenticated %}
-                                <a href="{% url 'room_detail' room.id %}" class="btn-book">
-                                    Book Now
-                                </a>
+                                {% if not room.is_booked %}
+                                    {% with query=request.GET.urlencode %}
+                                    <a href="{% url 'room_detail' room.id %}{% if query %}?{{ query }}{% endif %}" class="btn-book">
+                                        Book Now
+                                    </a>
+                                    {% endwith %}
+                                {% else %}
+                                    <button class="btn-book disabled" disabled>
+                                        Unavailable
+                                    </button>
+                                {% endif %}
                             {% else %}
                                 <a href="{% url 'login' %}" class="btn-login">
                                     Login to Book

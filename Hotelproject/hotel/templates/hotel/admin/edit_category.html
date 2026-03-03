@@ -3,7 +3,7 @@
 
 {% block admin_content %}
 <div class="admin-content-title">
-  <h2>Edit Category</h2>
+  <h2>{{ page_title|default:"Edit Category" }}</h2>
 </div>
 <div class="admin-card">
   <form method="post" action="{% url 'edit_category' category.id %}" action="" data-swal="save">
@@ -13,8 +13,8 @@
       <input class="form-control" name="category_name" value="{{ category.category_name }}" required>
     </div>
     <div class="d-flex gap-2">
-      <button class="btn btn-primary" type="submit">Save</button>
-      <a class="btn btn-secondary" href="{% url 'manage_categories' %}">Cancel</a>
+      <button class="btn btn-primary" type="submit">{{ save_button|default:"Save" }}</button>
+      <a class="btn btn-secondary" href="{% url 'manage_categories' %}">{{ cancel_label|default:"Cancel" }}</a>
     </div>
   </form>
 </div>

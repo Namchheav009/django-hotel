@@ -580,13 +580,13 @@
 
 <div class="page-head">
   <div>
-    <h2>Reservation Management</h2>
-    <p class="page-sub">Manage online and walk-in reservations</p>
+    <h2>{{ page_title|default:"Reservation Management" }}</h2>
+    <p class="page-sub">{{ page_subtitle|default:"Manage online and walk-in reservations" }}</p>
   </div>
 
   <a href="{% url 'add_reservation_page' %}" class="btn-action">
     <i class="fas fa-plus"></i>
-    New Reservation
+    {{ new_reservation_button|default:"New Reservation" }}
   </a>
 </div>
 
@@ -597,7 +597,7 @@
       <i class="fas fa-calendar-check"></i>
     </div>
     <div class="stat-details">
-      <div class="stat-label">Total Reservations</div>
+      <div class="stat-label">{{ stat_total_reservations_label|default:"Total Reservations" }}</div>
       <div class="stat-value"><span id="totalReservations">0</span></div>
     </div>
   </div>
@@ -607,7 +607,7 @@
       <i class="fas fa-clock"></i>
     </div>
     <div class="stat-details">
-      <div class="stat-label">Pending</div>
+      <div class="stat-label">{{ stat_pending_label|default:"Pending" }}</div>
       <div class="stat-value"><span id="pendingCount">0</span></div>
     </div>
   </div>
@@ -617,7 +617,7 @@
       <i class="fas fa-check-circle"></i>
     </div>
     <div class="stat-details">
-      <div class="stat-label">Confirmed</div>
+      <div class="stat-label">{{ stat_confirmed_label|default:"Confirmed" }}</div>
       <div class="stat-value"><span id="confirmedCount">0</span></div>
     </div>
   </div>
@@ -627,7 +627,7 @@
       <i class="fas fa-sign-in-alt"></i>
     </div>
     <div class="stat-details">
-      <div class="stat-label">Checked In</div>
+      <div class="stat-label">{{ stat_checked_in_label|default:"Checked In" }}</div>
       <div class="stat-value"><span id="checkedInCount">0</span></div>
     </div>
   </div>
@@ -637,7 +637,7 @@
       <i class="fas fa-sign-out-alt"></i>
     </div>
     <div class="stat-details">
-      <div class="stat-label">Checked Out</div>
+      <div class="stat-label">{{ stat_checked_out_label|default:"Checked Out" }}</div>
       <div class="stat-value"><span id="checkedOutCount">0</span></div>
     </div>
   </div>

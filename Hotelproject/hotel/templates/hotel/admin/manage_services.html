@@ -245,13 +245,13 @@
 
 <div class="page-head">
   <div>
-    <h2>Service Management</h2>
-    <p class="page-sub">Manage hotel services and amenities</p>
+    <h2>{{ page_title|default:"Service Management" }}</h2>
+    <p class="page-sub">{{ page_subtitle|default:"Manage hotel services and amenities" }}</p>
   </div>
 
   <button class="btn-action" data-bs-toggle="modal" data-bs-target="#addServiceModal">
     <i class="fas fa-plus"></i>
-    Add New Service
+    {{ add_service_button|default:"Add New Service" }}
   </button>
 </div>
 
@@ -259,7 +259,7 @@
   <div class="stat-card">
     <div class="stat-icon blue"><i class="fas fa-concierge-bell"></i></div>
     <div class="stat-details">
-      <div class="stat-label">Total Services</div>
+      <div class="stat-label">{{ stat_total_services_label|default:"Total Services" }}</div>
       <div class="stat-value"><span id="totalServices">{{ services|length }}</span></div>
     </div>
   </div>
@@ -293,13 +293,13 @@
   <div class="toolbar-left">
     <div class="search">
       <i class="fas fa-search"></i>
-      <input id="searchInput" type="text" placeholder="Search services..." onkeyup="filterServices()">
+      <input id="searchInput" type="text" placeholder="{{ search_placeholder|default:'Search services...' }}" onkeyup="filterServices()">
     </div>
 
     <div class="filter-group">
-      <button class="filter-btn active" onclick="filterByStatus(event,'all')">All Services</button>
-      <button class="filter-btn" onclick="filterByStatus(event,'active')"><i class="fas fa-check"></i> Active</button>
-      <button class="filter-btn" onclick="filterByStatus(event,'inactive')"><i class="fas fa-pause"></i> Inactive</button>
+      <button class="filter-btn active" onclick="filterByStatus(event,'all')">{{ filter_all_label|default:"All Services" }}</button>
+      <button class="filter-btn" onclick="filterByStatus(event,'active')"><i class="fas fa-check"></i> {{ filter_active_label|default:"Active" }}</button>
+      <button class="filter-btn" onclick="filterByStatus(event,'inactive')"><i class="fas fa-pause"></i> {{ filter_inactive_label|default:"Inactive" }}</button>
     </div>
   </div>
 

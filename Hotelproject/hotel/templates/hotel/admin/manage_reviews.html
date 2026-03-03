@@ -4,16 +4,16 @@
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
   <div>
-    <h2 style="margin:0;font-weight:900;">Manage Reviews & Ratings</h2>
-    <div style="color:var(--muted);font-weight:700;margin-top:6px;">Room & Service reviews with details.</div>
+    <h2 style="margin:0;font-weight:900;">{{ page_title|default:"Manage Reviews & Ratings" }}</h2>
+    <div style="color:var(--muted);font-weight:700;margin-top:6px;">{{ page_subtitle|default:"Room & Service reviews with details." }}</div>
   </div>
 
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
     <button class="btn btn-outline-secondary btn-sm" id="toggleRoomReviews" style="font-weight:900;">
-      <i class="fas fa-bed"></i> Room Reviews
+      <i class="fas fa-bed"></i> {{ toggle_room_reviews_label|default:"Room Reviews" }}
     </button>
     <button class="btn btn-outline-secondary btn-sm" id="toggleServiceReviews" style="font-weight:900;">
-      <i class="fas fa-concierge-bell"></i> Service Reviews
+      <i class="fas fa-concierge-bell"></i> {{ toggle_service_reviews_label|default:"Service Reviews" }}
     </button>
   </div>
 </div>

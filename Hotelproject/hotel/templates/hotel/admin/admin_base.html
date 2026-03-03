@@ -84,13 +84,16 @@
       width:260px;
       background:linear-gradient(180deg,var(--nav), var(--nav-2));
       color:#fff;
-      padding:18px;
+      padding:11px;
       display:flex;
       flex-direction:column;
       gap:14px;
       position:sticky;
       top:0;
       height:100vh;
+      overflow:auto;
+      -webkit-overflow-scrolling:touch;
+      overscroll-behavior:contain;
     }
     .sidebar .user-name,
     .sidebar .user-role,
@@ -318,11 +321,19 @@
   <!-- Sidebar -->
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-logo">GH</div>
-      <div>
-        <div class="brand-name">Grand Hotel</div>
-        <div class="brand-sub">Management System</div>
+      <div class="brand-logo">
+        {% if site_initials %}
+          {{ site_initials|slice:":1"|upper }}
+        {% elif site_name %}
+          {{ site_name|slice:":1"|upper }}
+        {% else %}
+          GH
+        {% endif %}
       </div>
+        <div>
+          <div class="brand-name">{{ site_name|default:"Grand Hotel" }}</div>
+          <div class="brand-sub">{{ site_subtitle|default:"Management System" }}</div>
+        </div>
     </div>
 
     <div class="nav-group-title">MANAGEMENT</div>
@@ -339,24 +350,24 @@
         <i class="fa-solid fa-door-open"></i> Rooms
       </a>
 
-      <a href="{% url 'manage_reservations' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_reservations' %}active{% endif %}">
-        <i class="fa-solid fa-calendar-check"></i> Reservations
-      </a>
-
-      <a href="{% url 'manage_users' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_users' %}active{% endif %}">
+       <a href="{% url 'manage_users' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_users' %}active{% endif %}">
         <i class="fa-solid fa-users"></i> Guests
       </a>
 
-      <a href="{% url 'manage_services' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_services' %}active{% endif %}">
-        <i class="fa-solid fa-concierge-bell"></i> Services
+      <a href="{% url 'manage_reservations' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_reservations' %}active{% endif %}">
+        <i class="fa-solid fa-calendar-check"></i> Reservations
       </a>
 
       <a href="{% url 'manage_bookings' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_bookings' %}active{% endif %}">
         <i class="fa-solid fa-book"></i> Booking
       </a>
-      
+
       <a href="{% url 'manage_payment' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_payment' %}active{% endif %}">
         <i class="fa-solid fa-credit-card"></i> Payment
+      </a>
+
+      <a href="{% url 'manage_services' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_services' %}active{% endif %}">
+        <i class="fa-solid fa-concierge-bell"></i> Services
       </a>
 
       <a href="{% url 'manage_reviews' %}" class="nav-item {% if request.resolver_match.url_name == 'manage_reviews' %}active{% endif %}">
@@ -383,7 +394,7 @@
         </div>
         <div>
           <div class="user-name">{{ request.user.get_full_name|default:request.user.username }}</div>
-          <div class="user-role">Manager</div>
+          <div class="user-role">{{ user_role|default:"Manager" }}</div>
         </div>
       </div>
       <a class="logout" href="{% url 'logout' %}" id="logoutBtn">

@@ -326,13 +326,13 @@
   <div class="contacts-title">
     <div class="icon"><i class="fas fa-envelope"></i></div>
     <div>
-      <h1>Contact Messages</h1>
-      <p>Manage, read, and respond to customer inquiries</p>
-    </div>
+        <h1>{{ page_title|default:"Contact Messages" }}</h1>
+        <p>{{ page_subtitle|default:"Manage, read, and respond to customer inquiries" }}</p>
+      </div>
   </div>
 
   <button class="btnx btnx-primary" data-bs-toggle="modal" data-bs-target="#addContactModal">
-    <i class="fas fa-plus"></i> New Contact
+      <i class="fas fa-plus"></i> {{ new_contact_button|default:"New Contact" }}
   </button>
 </div>
 
@@ -358,7 +358,7 @@
           class="form-control inputx"
           name="q"
           value="{{ request.GET.q|default:'' }}"
-          placeholder="Search name, email, subject..."
+          placeholder="{{ search_placeholder|default:'Search name, email, subject...' }}"
           style="min-width: 260px;"
         />
       </div>

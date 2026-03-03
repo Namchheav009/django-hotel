@@ -296,8 +296,8 @@
 
 <div class="page-head">
   <div>
-    <h2>Payment Management</h2>
-    <p class="page-sub">Monitor and manage all payment transactions</p>
+    <h2>{{ page_title|default:"Payment Management" }}</h2>
+    <p class="page-sub">{{ page_subtitle|default:"Monitor and manage all payment transactions" }}</p>
   </div>
 </div>
 
@@ -305,7 +305,7 @@
   <div class="stat-card">
     <div class="stat-icon blue"><i class="fas fa-dollar-sign"></i></div>
     <div>
-      <div class="stat-label">Total Revenue</div>
+      <div class="stat-label">{{ stat_total_revenue_label|default:"Total Revenue" }}</div>
       <div class="stat-value">$<span id="totalRevenue">0</span></div>
     </div>
   </div>
@@ -313,7 +313,7 @@
   <div class="stat-card">
     <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
     <div>
-      <div class="stat-label">Completed</div>
+      <div class="stat-label">{{ stat_completed_label|default:"Completed" }}</div>
       <div class="stat-value"><span id="completedCount">0</span></div>
     </div>
   </div>
@@ -321,7 +321,7 @@
   <div class="stat-card">
     <div class="stat-icon orange"><i class="fas fa-clock"></i></div>
     <div>
-      <div class="stat-label">Pending</div>
+      <div class="stat-label">{{ stat_pending_label|default:"Pending" }}</div>
       <div class="stat-value"><span id="pendingCount">0</span></div>
     </div>
   </div>
@@ -329,7 +329,7 @@
   <div class="stat-card">
     <div class="stat-icon purple"><i class="fas fa-undo"></i></div>
     <div>
-      <div class="stat-label">Refunded</div>
+      <div class="stat-label">{{ stat_refunded_label|default:"Refunded" }}</div>
       <div class="stat-value">$<span id="refundedAmount">0</span></div>
     </div>
   </div>
@@ -341,7 +341,7 @@
 
       <div class="search">
         <i class="fas fa-search"></i>
-        <input id="q" type="text" placeholder="Search by guest, room, or transaction ID..." oninput="applyFilters()">
+        <input id="q" type="text" placeholder="{{ search_placeholder|default:'Search by guest, room, or transaction ID...' }}" oninput="applyFilters()">
       </div>
 
       <!-- NEW: Start/End Date -->

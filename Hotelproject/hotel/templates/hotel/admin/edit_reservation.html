@@ -3,10 +3,8 @@
 
 {% block admin_content %}
 <div class="admin-content-title">
-  <h1><i class="fas fa-edit"></i> Edit Reservation</h1>
-  <p style="color:var(--muted);margin-top:6px;">
-    Update reservation details for offline / walk-in guest.
-  </p>
+  <h1><i class="fas fa-edit"></i> {{ page_title|default:"Edit Reservation" }}</h1>
+  <p style="color:var(--muted);margin-top:6px;">{{ page_subtitle|default:"Update reservation details for offline / walk-in guest." }}</p>
 </div>
 
 <div class="admin-card" style="max-width: 900px;">
@@ -77,9 +75,9 @@
     </div>
 
     <div style="display:flex; gap:10px; justify-content:flex-end;">
-      <a href="{% url 'manage_reservations' %}" class="btn btn-light">Cancel</a>
+      <a href="{% url 'manage_reservations' %}" class="btn btn-light">{{ cancel_label|default:"Cancel" }}</a>
       <button type="submit" class="btn btn-primary">
-        <i class="fas fa-save"></i> Save Changes
+        <i class="fas fa-save"></i> {{ save_changes_button|default:"Save Changes" }}
       </button>
     </div>
   </form>

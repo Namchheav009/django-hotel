@@ -469,13 +469,13 @@
 
 <div class="page-head">
   <div>
-    <h2>User Management</h2>
-    <p class="page-sub">Manage system users, roles, and permissions</p>
+    <h2>{{ page_title|default:"User Management" }}</h2>
+    <p class="page-sub">{{ page_subtitle|default:"Manage system users, roles, and permissions" }}</p>
   </div>
 
   <button class="btn-action" data-bs-toggle="modal" data-bs-target="#addUserModal">
     <i class="fas fa-user-plus"></i>
-    Add New User
+    {{ add_user_button|default:"Add New User" }}
   </button>
 </div>
 

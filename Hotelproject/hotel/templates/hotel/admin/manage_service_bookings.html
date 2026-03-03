@@ -3,8 +3,8 @@
 {% block admin_content %}
 <div class="page-head">
   <div>
-    <h2>Service Bookings</h2>
-    <p class="page-sub">Manage all service bookings</p>
+    <h2>{{ page_title|default:"Service Bookings" }}</h2>
+    <p class="page-sub">{{ page_subtitle|default:"Manage all service bookings" }}</p>
   </div>
 </div>
 
@@ -13,7 +13,7 @@
     <div class="tools">
       <div class="search">
         <i class="fas fa-search"></i>
-        <input id="q" type="text" placeholder="Search guest or service..." oninput="filterTable()">
+        <input id="q" type="text" placeholder="{{ search_placeholder|default:'Search guest or service...' }}" oninput="filterTable()">
       </div>
     </div>
   </div>
@@ -114,7 +114,7 @@
     {% else %}
       <div class="empty">
         <div class="empty-icon"><i class="fas fa-concierge-bell"></i></div>
-        <div class="empty-text">No service bookings found</div>
+          <div class="empty-text">{{ empty_service_bookings_text|default:"No service bookings found" }}</div>
       </div>
     {% endif %}
   </div>
