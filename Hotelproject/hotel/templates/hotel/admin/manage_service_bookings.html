@@ -64,7 +64,19 @@
           </td>
           <td>
             <div class="action-btns">
-              <a href="{% url 'manage_service_bookings' %}?view={{ b.id }}" class="action-btn" title="View"><i class="fas fa-eye"></i></a>
+              <button
+                type="button"
+                class="action-btn btn-view-booking"
+                title="View"
+                data-id="{{ b.id }}"
+                data-guest="{{ b.user.get_full_name|default:b.user.username }}"
+                data-service="{{ b.service.name }}"
+                data-qty="{{ b.quantity }}"
+                data-total="${{ b.total_price|floatformat:2 }}"
+                data-scheduled="{{ b.scheduled_date|date:'M d, Y H:i' }}"
+                data-status="{{ b.status }}">
+                <i class="fas fa-eye"></i>
+              </button>
 
               {% if b.status == 'Pending' %}
                 <form method="post" action="{% url 'update_service_booking_status' b.id %}" style="display:inline;">
@@ -120,7 +132,31 @@
   </div>
 </div>
 
+<div class="modal fade" id="serviceBookingDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Service Booking Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid; gap:12px;">
+          <div><strong>Booking:</strong> <span id="serviceBookingDetailId"></span></div>
+          <div><strong>Guest:</strong> <span id="serviceBookingDetailGuest"></span></div>
+          <div><strong>Service:</strong> <span id="serviceBookingDetailService"></span></div>
+          <div><strong>Quantity:</strong> <span id="serviceBookingDetailQty"></span></div>
+          <div><strong>Total:</strong> <span id="serviceBookingDetailTotal"></span></div>
+          <div><strong>Scheduled:</strong> <span id="serviceBookingDetailScheduled"></span></div>
+          <div><strong>Status:</strong> <span id="serviceBookingDetailStatus"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+let serviceBookingDetailModal = null;
+
 function filterTable() {
   const q = (document.getElementById('q')?.value || '').toLowerCase();
   const rows = document.querySelectorAll('#serviceBookingsTable tbody tr');
@@ -129,6 +165,25 @@ function filterTable() {
     r.style.display = text.includes(q) ? '' : 'none';
   });
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof bootstrap !== 'undefined') {
+    serviceBookingDetailModal = new bootstrap.Modal(document.getElementById('serviceBookingDetailModal'));
+  }
+
+  document.querySelectorAll('.btn-view-booking').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.getElementById('serviceBookingDetailId').textContent = `#${this.dataset.id}`;
+      document.getElementById('serviceBookingDetailGuest').textContent = this.dataset.guest || '-';
+      document.getElementById('serviceBookingDetailService').textContent = this.dataset.service || '-';
+      document.getElementById('serviceBookingDetailQty').textContent = this.dataset.qty || '-';
+      document.getElementById('serviceBookingDetailTotal').textContent = this.dataset.total || '$0.00';
+      document.getElementById('serviceBookingDetailScheduled').textContent = this.dataset.scheduled || '-';
+      document.getElementById('serviceBookingDetailStatus').textContent = this.dataset.status || '-';
+      serviceBookingDetailModal?.show();
+    });
+  });
+});
 </script>
 
 {% endblock %}

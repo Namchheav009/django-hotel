@@ -476,21 +476,36 @@
 
             <td>
               <div class="action-btns">
-                <button type="button" class="action-btn js-view" title="View Details"
-                        data-id="{{ p.id }}">
+                <button
+                  type="button"
+                  class="action-btn js-view"
+                  title="View Details"
+                  data-id="{{ p.id }}"
+                  data-guest="{% if p.reservation and p.reservation.guest %}{{ p.reservation.guest.user.get_full_name|default:p.reservation.guest.user.username }}{% elif p.service_booking and p.service_booking.user %}{{ p.service_booking.user.get_full_name|default:p.service_booking.user.username }}{% else %}-{% endif %}"
+                  data-item="{% if p.reservation and p.reservation.room %}Room {{ p.reservation.room.room_number }}{% elif p.service_booking and p.service_booking.service %}Service {{ p.service_booking.service.name }}{% else %}-{% endif %}"
+                  data-amount="${{ p.amount }}"
+                  data-method="{{ p.payment_method|default:'N/A' }}"
+                  data-status="{{ p.payment_status }}"
+                  data-transaction="{{ p.transaction_id|default:'-' }}"
+                  data-date="{% if p.payment_date %}{{ p.payment_date|date:'M d, Y H:i' }}{% else %}-{% endif %}">
                   <i class="fas fa-eye"></i>
                 </button>
 
                 <button type="button" class="action-btn js-receipt" title="Download Receipt"
-                        data-id="{{ p.id }}">
+                        data-id="{{ p.id }}"
+                        data-receipt-title="Payment Receipt #{{ p.id }}">
                   <i class="fas fa-receipt"></i>
                 </button>
 
                 {% if p.payment_status == 'Completed' %}
-                  <button type="button" class="action-btn danger js-refund" title="Refund"
-                          data-id="{{ p.id }}">
-                    <i class="fas fa-undo"></i>
-                  </button>
+                  <form method="post" action="{% url 'update_payment_status' p.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="payment_status" value="Refunded">
+                    <input type="hidden" name="next" value="{% url 'manage_payment' %}">
+                    <button type="submit" class="action-btn danger" title="Refund">
+                      <i class="fas fa-undo"></i>
+                    </button>
+                  </form>
                 {% endif %}
               </div>
             </td>
@@ -517,8 +532,32 @@
   {% endif %}
 </div>
 
+<div class="modal fade" id="paymentDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Payment Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid; gap:12px;">
+          <div><strong>Payment:</strong> <span id="paymentDetailId"></span></div>
+          <div><strong>Guest:</strong> <span id="paymentDetailGuest"></span></div>
+          <div><strong>Item:</strong> <span id="paymentDetailItem"></span></div>
+          <div><strong>Amount:</strong> <span id="paymentDetailAmount"></span></div>
+          <div><strong>Method:</strong> <span id="paymentDetailMethod"></span></div>
+          <div><strong>Status:</strong> <span id="paymentDetailStatus"></span></div>
+          <div><strong>Transaction:</strong> <span id="paymentDetailTransaction"></span></div>
+          <div><strong>Date:</strong> <span id="paymentDetailDate"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   let currentStatusFilter = 'all';
+  let paymentDetailModal = null;
 
   function parseISODate(iso){
     // iso = "YYYY-MM-DD"
@@ -669,27 +708,53 @@
     window.URL.revokeObjectURL(url);
   }
 
-  function viewPayment(id){ alert("View payment details for ID: " + id); }
-  function downloadReceipt(id){ alert("Download receipt for payment ID: " + id); }
-  function initiateRefund(id){
-    if(confirm("Are you sure you want to initiate a refund for this payment?")){
-      alert("Refund initiated for payment ID: " + id);
-    }
+  function viewPayment(btn){
+    document.getElementById('paymentDetailId').textContent = `#${btn.dataset.id}`;
+    document.getElementById('paymentDetailGuest').textContent = btn.dataset.guest || '-';
+    document.getElementById('paymentDetailItem').textContent = btn.dataset.item || '-';
+    document.getElementById('paymentDetailAmount').textContent = btn.dataset.amount || '$0.00';
+    document.getElementById('paymentDetailMethod').textContent = btn.dataset.method || '-';
+    document.getElementById('paymentDetailStatus').textContent = btn.dataset.status || '-';
+    document.getElementById('paymentDetailTransaction').textContent = btn.dataset.transaction || '-';
+    document.getElementById('paymentDetailDate').textContent = btn.dataset.date || '-';
+    paymentDetailModal?.show();
+  }
+
+  function downloadReceipt(btn){
+    const row = btn.closest('tr');
+    if (!row) return;
+    const title = btn.dataset.receiptTitle || `Payment Receipt #${btn.dataset.id}`;
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) return;
+    win.document.write(`
+      <html>
+        <head><title>${title}</title></head>
+        <body style="font-family: Arial, sans-serif; padding: 24px;">
+          <h2>${title}</h2>
+          <pre style="white-space: pre-wrap; font-family: Arial, sans-serif;">${row.innerText.trim()}</pre>
+        </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    win.print();
   }
   document.addEventListener("click", function(e){
   const viewBtn = e.target.closest(".js-view");
   const receiptBtn = e.target.closest(".js-receipt");
-  const refundBtn = e.target.closest(".js-refund");
 
   if(viewBtn){
-    viewPayment(viewBtn.dataset.id);
+    viewPayment(viewBtn);
   }
   if(receiptBtn){
-    downloadReceipt(receiptBtn.dataset.id);
-  }
-  if(refundBtn){
-    initiateRefund(refundBtn.dataset.id);
+    downloadReceipt(receiptBtn);
   }
 });
+
+  document.addEventListener("DOMContentLoaded", function(){
+    if (typeof bootstrap !== "undefined") {
+      paymentDetailModal = new bootstrap.Modal(document.getElementById("paymentDetailModal"));
+    }
+  });
 </script>
 {% endblock %}

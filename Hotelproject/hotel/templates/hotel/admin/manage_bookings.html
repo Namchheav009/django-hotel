@@ -371,7 +371,7 @@
     <button type="button" class="btn btn-outline" onclick="exportBookings()">
       <i class="fas fa-download"></i> Export Data
     </button>
-    <button type="button" class="btn btn-primary" onclick="window.location.href='#'">
+    <button type="button" class="btn btn-primary" onclick="window.location.href='{% url 'add_reservation_page' %}'">
       <i class="fas fa-plus"></i> New Booking
     </button>
   </div>
@@ -503,7 +503,7 @@
 
           <tbody>
           {% for b in room_bookings %}
-            <tr data-status="{{ b.booking_status }}" data-date="{{ b.booking_date|date:'Y-m-d' }}">
+            <tr data-status="{{ b.booking_status }}" data-date="{{ b.booking_date|date:'Y-m-d' }}" data-total="{% if b.reservation %}{{ b.reservation.total_price|default:0 }}{% else %}0{% endif %}">
               <td>
                 <div class="user-info">
                   <div class="user-avatar">
@@ -567,23 +567,44 @@
 
               <td>
                 <div class="action-btns">
-                  <button type="button" class="action-btn btn-view" data-type="room" data-id="{{ b.id }}" title="View Details">
+                  <button
+                    type="button"
+                    class="action-btn btn-view"
+                    data-type="room"
+                    data-id="{{ b.id }}"
+                    data-guest="{{ b.user.get_full_name|default:b.user.username }}"
+                    data-item="Room {{ b.room.room_number }}"
+                    data-status="{{ b.booking_status }}"
+                    data-date="{{ b.booking_date|date:'M d, Y' }}"
+                    data-total="{% if b.reservation %}${{ b.reservation.total_price|floatformat:2 }}{% else %}$0.00{% endif %}"
+                    data-meta="{% if b.reservation %}{{ b.reservation.check_in_date|date:'M d, Y' }} to {{ b.reservation.check_out_date|date:'M d, Y' }}{% endif %}"
+                    title="View Details">
                     <i class="fas fa-eye"></i>
                   </button>
 
                   {% if b.booking_status == 'Pending' %}
-                    <button type="button" class="action-btn success btn-confirm" data-type="room" data-id="{{ b.id }}" title="Confirm">
-                      <i class="fas fa-check"></i>
-                    </button>
+                    <form method="post" action="{% url 'update_booking_status' b.id %}" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="status" value="Confirmed">
+                      <input type="hidden" name="next" value="{% url 'manage_bookings' %}">
+                      <button type="submit" class="action-btn success" title="Confirm">
+                        <i class="fas fa-check"></i>
+                      </button>
+                    </form>
                   {% endif %}
 
                   {% if b.booking_status != 'Cancelled' and b.booking_status != 'Completed' %}
-                    <button type="button" class="action-btn danger btn-cancel" data-type="room" data-id="{{ b.id }}" title="Cancel">
-                      <i class="fas fa-times"></i>
-                    </button>
+                    <form method="post" action="{% url 'update_booking_status' b.id %}" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="status" value="Cancelled">
+                      <input type="hidden" name="next" value="{% url 'manage_bookings' %}">
+                      <button type="submit" class="action-btn danger" title="Cancel">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </form>
                   {% endif %}
 
-                  <button type="button" class="action-btn btn-print" data-type="room" data-id="{{ b.id }}" title="Print">
+                  <button type="button" class="action-btn btn-print" data-type="room" data-id="{{ b.id }}" data-print-title="Room Booking #{{ b.id }}" title="Print">
                     <i class="fas fa-print"></i>
                   </button>
                 </div>
@@ -660,7 +681,7 @@
 
           <tbody>
           {% for b in service_bookings %}
-            <tr data-status="{{ b.status }}" data-date="{{ b.booking_date|date:'Y-m-d' }}">
+            <tr data-status="{{ b.status }}" data-date="{{ b.booking_date|date:'Y-m-d' }}" data-total="{{ b.total_price|default:0 }}">
               <td>
                 <div class="user-info">
                   <div class="user-avatar">
@@ -705,23 +726,42 @@
 
               <td>
                 <div class="action-btns">
-                  <button type="button" class="action-btn btn-view" data-type="service" data-id="{{ b.id }}" title="View Details">
+                  <button
+                    type="button"
+                    class="action-btn btn-view"
+                    data-type="service"
+                    data-id="{{ b.id }}"
+                    data-guest="{{ b.user.get_full_name|default:b.user.username }}"
+                    data-item="{{ b.service.name }}"
+                    data-status="{{ b.status }}"
+                    data-date="{{ b.booking_date|date:'M d, Y' }}"
+                    data-total="${{ b.total_price|floatformat:2 }}"
+                    data-meta="Qty {{ b.quantity }}{% if b.scheduled_date %} • {{ b.scheduled_date|date:'M d, Y H:i' }}{% endif %}"
+                    title="View Details">
                     <i class="fas fa-eye"></i>
                   </button>
 
                   {% if b.status == 'Pending' %}
-                    <button type="button" class="action-btn success btn-confirm" data-type="service" data-id="{{ b.id }}" title="Confirm">
-                      <i class="fas fa-check"></i>
-                    </button>
+                    <form method="post" action="{% url 'update_service_booking_status' b.id %}" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="status" value="Confirmed">
+                      <button type="submit" class="action-btn success" title="Confirm">
+                        <i class="fas fa-check"></i>
+                      </button>
+                    </form>
                   {% endif %}
 
                   {% if b.status != 'Cancelled' and b.status != 'Completed' %}
-                    <button type="button" class="action-btn danger btn-cancel" data-type="service" data-id="{{ b.id }}" title="Cancel">
-                      <i class="fas fa-times"></i>
-                    </button>
+                    <form method="post" action="{% url 'update_service_booking_status' b.id %}" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="status" value="Cancelled">
+                      <button type="submit" class="action-btn danger" title="Cancel">
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </form>
                   {% endif %}
 
-                  <button type="button" class="action-btn btn-print" data-type="service" data-id="{{ b.id }}" title="Print">
+                  <button type="button" class="action-btn btn-print" data-type="service" data-id="{{ b.id }}" data-print-title="Service Booking #{{ b.id }}" title="Print">
                     <i class="fas fa-print"></i>
                   </button>
                 </div>
@@ -740,8 +780,30 @@
   </div>
 </div>
 
+<div class="modal fade" id="bookingDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Booking Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div style="display:grid; gap:12px;">
+          <div><strong>Booking:</strong> <span id="bookingDetailTitle"></span></div>
+          <div><strong>Guest:</strong> <span id="bookingDetailGuest"></span></div>
+          <div><strong>Status:</strong> <span id="bookingDetailStatus"></span></div>
+          <div><strong>Booked On:</strong> <span id="bookingDetailDate"></span></div>
+          <div><strong>Details:</strong> <span id="bookingDetailMeta"></span></div>
+          <div><strong>Total:</strong> <span id="bookingDetailTotal"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   let currentStatusFilter = 'all';
+  let bookingDetailModal = null;
 
   function switchTab(tabName, btnEl) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
@@ -852,8 +914,7 @@
       if (st === 'Completed') completed++;
       if (st === 'Cancelled') cancelled++;
 
-      const priceCell = row.cells[4]?.textContent || '$0';
-      const price = parseFloat(priceCell.replace('$', '').replace(/,/g, '')) || 0;
+      const price = parseFloat(row.getAttribute('data-total') || '0') || 0;
       if (st === 'Completed' || st === 'Confirmed') revenue += price;
     });
 
@@ -867,9 +928,21 @@
   }
 
   function calculateRoomRevenue() {
-    // No room price provided in your table yet → keep 0.00
+    const table = document.getElementById('roomBookTable');
+    if (!table) return;
+
+    let revenue = 0;
+    table.querySelectorAll('tbody tr').forEach(row => {
+      if (row.style.display === 'none') return;
+      const st = row.getAttribute('data-status');
+      if (st === 'Completed' || st === 'Confirmed') {
+        revenue += parseFloat(row.getAttribute('data-total') || '0') || 0;
+      }
+    });
+
     const el = document.getElementById('roomRevenue');
-    if (el) el.textContent = "0.00";
+    if (el) el.textContent =
+      revenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
   function calculateServiceRevenue() {
@@ -919,34 +992,52 @@
     window.URL.revokeObjectURL(url);
   }
 
-  function viewBooking(type, id) { alert(`View ${type} booking details for ID: ${id}`); }
-  function confirmBooking(type, id) { if(confirm(`Confirm this ${type} booking?`)) alert(`Booking ${id} confirmed!`); }
-  function cancelBooking(type, id) { if(confirm(`Cancel this ${type} booking?`)) alert(`Booking ${id} cancelled!`); }
-  function printBooking(type, id) { alert(`Print ${type} booking ID: ${id}`); }
+  function viewBooking(btn) {
+    document.getElementById('bookingDetailTitle').textContent = `${btn.dataset.type} booking #${btn.dataset.id}`;
+    document.getElementById('bookingDetailGuest').textContent = btn.dataset.guest || '-';
+    document.getElementById('bookingDetailStatus').textContent = btn.dataset.status || '-';
+    document.getElementById('bookingDetailDate').textContent = btn.dataset.date || '-';
+    document.getElementById('bookingDetailMeta').textContent = btn.dataset.meta || '-';
+    document.getElementById('bookingDetailTotal').textContent = btn.dataset.total || '$0.00';
+    bookingDetailModal?.show();
+  }
+
+  function printBooking(btn) {
+    const title = btn.dataset.printTitle || `Booking #${btn.dataset.id}`;
+    const row = btn.closest('tr');
+    if (!row) return;
+
+    const win = window.open('', '_blank', 'width=900,height=700');
+    if (!win) return;
+
+    win.document.write(`
+      <html>
+        <head><title>${title}</title></head>
+        <body style="font-family: Arial, sans-serif; padding: 24px;">
+          <h2>${title}</h2>
+          <pre style="white-space: pre-wrap; font-family: Arial, sans-serif;">${row.innerText.trim()}</pre>
+        </body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    win.print();
+  }
 
   document.addEventListener('DOMContentLoaded', function() {
-    // Event listeners for button actions
+    if (typeof bootstrap !== 'undefined') {
+      bookingDetailModal = new bootstrap.Modal(document.getElementById('bookingDetailModal'));
+    }
+
     document.querySelectorAll('.btn-view').forEach(btn => {
       btn.addEventListener('click', function() {
-        viewBooking(this.dataset.type, this.dataset.id);
-      });
-    });
-
-    document.querySelectorAll('.btn-confirm').forEach(btn => {
-      btn.addEventListener('click', function() {
-        confirmBooking(this.dataset.type, this.dataset.id);
-      });
-    });
-
-    document.querySelectorAll('.btn-cancel').forEach(btn => {
-      btn.addEventListener('click', function() {
-        cancelBooking(this.dataset.type, this.dataset.id);
+        viewBooking(this);
       });
     });
 
     document.querySelectorAll('.btn-print').forEach(btn => {
       btn.addEventListener('click', function() {
-        printBooking(this.dataset.type, this.dataset.id);
+        printBooking(this);
       });
     });
 

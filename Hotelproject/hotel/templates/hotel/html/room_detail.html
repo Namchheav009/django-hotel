@@ -4,6 +4,13 @@
 {% block title %}{{ room.room_number }} Details - MyHotel{% endblock %}
 
 {% block content %}
+<style>
+    .fs-6 {
+        font-size: 0.9rem;
+        color: #e9e3e3;
+        
+    }
+</style>
 <div class="container my-5">
     <!-- Room Gallery -->
     <div class="row mb-4">
@@ -52,9 +59,9 @@
 
                     <h2 class="mb-2">
                         {% if room.price %}
-                            ${{ room.price|floatformat:2 }}<small class="fs-6 text-muted">/night</small>
+                            ${{ room.price|floatformat:2 }}<small class="fs-6 " >/night</small>
                         {% else %}
-                            <span class="fs-6 text-muted">Price on request</span>
+                            <span class="fs-6 ">Price on request</span>
                         {% endif %}
                     </h2>
 
@@ -65,7 +72,7 @@
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-users fa-2x text-primary me-3"></i>
                                     <div>
-                                        <small class="text-muted">Max Guests</small>
+                                        <small class="fs-6">Max Guests</small>
                                         <p class="mb-0"><strong>{{ room.max_occupancy }}</strong></p>
                                     </div>
                                 </div>
@@ -74,7 +81,7 @@
                                 <div class="d-flex align-items-center">
                                     <i class="fas fa-door-open fa-2x text-info me-3"></i>
                                     <div>
-                                        <small class="text-muted">Floor</small>
+                                        <small class="fs-6">Floor</small>
                                         <p class="mb-0"><strong>{{ room.floor }}</strong></p>
                                     </div>
                                 </div>
@@ -225,5 +232,6 @@
     top: 50%;
     transform: translateY(-50%);
 }
+
 </style>
 {% endblock %}

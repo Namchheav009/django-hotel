@@ -9,6 +9,9 @@
   </div>
 
   <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addReviewModal" style="font-weight:900;">
+      <i class="fas fa-plus"></i> Add Review
+    </button>
     <button class="btn btn-outline-secondary btn-sm" id="toggleRoomReviews" style="font-weight:900;">
       <i class="fas fa-bed"></i> {{ toggle_room_reviews_label|default:"Room Reviews" }}
     </button>
@@ -75,18 +78,12 @@
 
               <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
                 <!-- EDIT (use data attributes instead of inline JS strings) -->
-                <button
-                  type="button"
-                  class="btn btn-sm btn-warning btn-edit-review"
-                  data-id="{{ r.id }}"
-                  data-rating="{{ r.rating }}"
-                  data-review="{{ r.review|default:''|escapejs }}"
-                  data-cleanliness="{{ r.cleanliness|default:'' }}"
-                  data-comfort="{{ r.comfort|default:'' }}"
-                  data-amenities="{{ r.amenities|default:'' }}"
+                <a
+                  href="{% url 'edit_review' r.id %}"
+                  class="btn btn-sm btn-warning"
                 >
                   <i class="fas fa-edit"></i>
-                </button>
+                </a>
 
                 <!-- DELETE -->
                 <form method="post" action="{% url 'delete_review' r.id %}" class="delete-form">
@@ -166,24 +163,17 @@
 
                   <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end;">
                     <!-- EDIT (use data attributes instead of inline JS strings) -->
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-warning btn-edit-review"
-                      data-id="{{ r.id }}"
-                      data-rating="{{ r.rating }}"
-                      data-review="{{ r.review|default:''|escapejs }}"
-                      data-quality="{{ r.quality|default:'' }}"
-                      data-timeliness="{{ r.timeliness|default:'' }}"
-                      data-value="{{ r.value_for_money|default:'' }}"
+                    <a
+                      href="{% url 'edit_review' r.id %}"
+                      class="btn btn-sm btn-warning"
                     >
                       <i class="fas fa-edit"></i>
-                    </button>
+                    </a>
 
                     <!-- DELETE -->
-                    <form method="post" action="{% url 'delete_review' r.id %}">
+                    <form method="post" action="{% url 'delete_review' r.id %}" class="delete-form">
                       {% csrf_token %}
-                      <button type="submit" class="btn btn-sm btn-danger"
-                              onclick="return confirm('Delete this review?');">
+                      <button type="submit" class="btn btn-sm btn-danger">
                         <i class="fas fa-trash"></i> Delete
                       </button>
                     </form>
@@ -273,60 +263,6 @@
   </div>
 </div>
 
-<!-- Edit Review Modal -->
-<div class="modal fade" id="editReviewModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" style="font-weight:900;"><i class="fas fa-edit"></i> Edit Review</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-      </div>
-
-      <form id="editReviewForm" method="post" action="">
-        {% csrf_token %}
-        <input type="hidden" id="editReviewId" name="id" value="">
-        <div class="modal-body">
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label" style="font-weight:900;">Overall Rating</label>
-              <input type="number" id="editReviewRating" name="rating" class="form-control" min="1" max="5" required>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label" style="font-weight:900;">Cleanliness</label>
-              <input type="number" id="editReviewCleanliness" name="cleanliness" class="form-control" min="1" max="5" required>
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label" style="font-weight:900;">Comfort</label>
-              <input type="number" id="editReviewComfort" name="comfort" class="form-control" min="1" max="5" required>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label" style="font-weight:900;">Amenities</label>
-              <input type="number" id="editReviewAmenities" name="amenities" class="form-control" min="1" max="5" required>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label" style="font-weight:900;">Review (optional)</label>
-            <textarea id="editReviewText" name="review" class="form-control" rows="3" placeholder="Write guest feedback..."></textarea>
-          </div>
-
-        </div>
-
-        <div class="modal-footer">
-          <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary" style="font-weight:900;">
-            <i class="fas fa-check"></i> Save Changes
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
 <script>
 // Toggle between Room and Service Reviews
 document.getElementById('toggleRoomReviews').addEventListener('click', function() {
@@ -346,32 +282,6 @@ document.getElementById('toggleServiceReviews').addEventListener('click', functi
   document.getElementById('toggleRoomReviews').classList.add('btn-outline-secondary');
   document.getElementById('toggleRoomReviews').classList.remove('btn-primary');
 });
-
-(function () {
-  const modalEl = document.getElementById('editReviewModal');
-  const modal = new bootstrap.Modal(modalEl);
-
-  const form = document.getElementById('editReviewForm');
-
-  // This creates a correct URL like /dashboard/reviews/123/edit/
-  const editUrlTemplate = "{% url 'edit_review' 0 %}";
-
-  document.querySelectorAll('.btn-edit-review').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.dataset.id;
-
-      document.getElementById('editReviewId').value = id;
-      document.getElementById('editReviewRating').value = btn.dataset.rating || 5;
-      document.getElementById('editReviewCleanliness').value = btn.dataset.cleanliness || 5;
-      document.getElementById('editReviewComfort').value = btn.dataset.comfort || 5;
-      document.getElementById('editReviewAmenities').value = btn.dataset.amenities || 5;
-      document.getElementById('editReviewText').value = btn.dataset.review || '';
-
-      form.action = editUrlTemplate.replace('/0/', '/' + id + '/');
-      modal.show();
-    });
-  });
-})();
 </script>
 
 

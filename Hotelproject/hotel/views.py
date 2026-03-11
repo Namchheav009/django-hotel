@@ -157,6 +157,114 @@ def manage_payment(request):
 
 
 @admin_login_required
+@require_http_methods(["POST"])
+def update_booking_status(request, booking_id):
+    """Admin: update a room booking and keep the linked reservation in sync."""
+    booking = get_object_or_404(
+        Booking.objects.select_related("reservation", "room"),
+        id=booking_id,
+    )
+    new_status = request.POST.get("status")
+
+    if new_status not in dict(Booking.STATUS_CHOICES):
+        messages.error(request, "Invalid booking status.")
+        return redirect(request.POST.get("next") or "manage_bookings")
+
+    booking.booking_status = new_status
+    booking.save(update_fields=["booking_status"])
+
+    reservation = booking.reservation
+    reservation_status = None
+    room_status = None
+
+    if new_status == "Pending":
+        reservation_status = "Pending"
+        room_status = "Available"
+    elif new_status == "Confirmed":
+        reservation_status = "Confirmed"
+        room_status = "Booked"
+    elif new_status == "Completed":
+        reservation_status = "Checked Out"
+        room_status = "Available"
+    elif new_status == "Cancelled":
+        reservation_status = "Cancelled"
+        room_status = "Available"
+
+    if reservation_status and reservation.status != reservation_status:
+        reservation.status = reservation_status
+        reservation.save(update_fields=["status"])
+
+    if room_status and booking.room.status != room_status:
+        booking.room.status = room_status
+        booking.room.save(update_fields=["status"])
+
+    messages.success(request, f"Booking #{booking.id} updated to {new_status}.")
+    return redirect(request.POST.get("next") or "manage_bookings")
+
+
+@admin_login_required
+@require_http_methods(["POST"])
+def update_payment_status(request, payment_id):
+    """Admin: update payment status and sync the linked booking state when possible."""
+    payment = get_object_or_404(
+        Payment.objects.select_related(
+            "reservation",
+            "reservation__room",
+            "service_booking",
+        ),
+        id=payment_id,
+    )
+    new_status = request.POST.get("payment_status")
+
+    if new_status not in dict(Payment.PAYMENT_STATUS_CHOICES):
+        messages.error(request, "Invalid payment status.")
+        return redirect(request.POST.get("next") or "manage_payment")
+
+    payment.payment_status = new_status
+    if new_status in {"Completed", "Refunded"} and not payment.payment_date:
+        payment.payment_date = timezone.now()
+        payment.save(update_fields=["payment_status", "payment_date"])
+    else:
+        payment.save(update_fields=["payment_status"])
+
+    if payment.reservation_id:
+        reservation = payment.reservation
+        if new_status == "Completed" and reservation.status == "Pending":
+            reservation.status = "Confirmed"
+            reservation.save(update_fields=["status"])
+        elif new_status == "Refunded" and reservation.status not in {"Checked Out", "Cancelled"}:
+            reservation.status = "Cancelled"
+            reservation.save(update_fields=["status"])
+
+        if hasattr(reservation, "booking"):
+            booking = reservation.booking
+            if new_status == "Completed":
+                booking.booking_status = "Confirmed"
+                booking.save(update_fields=["booking_status"])
+            elif new_status == "Refunded":
+                booking.booking_status = "Cancelled"
+                booking.save(update_fields=["booking_status"])
+
+        if payment.reservation.room_id:
+            room_status = "Available" if new_status == "Refunded" else "Booked"
+            if payment.reservation.room.status != room_status:
+                payment.reservation.room.status = room_status
+                payment.reservation.room.save(update_fields=["status"])
+
+    if payment.service_booking_id:
+        service_booking = payment.service_booking
+        if new_status == "Completed" and service_booking.status == "Pending":
+            service_booking.status = "Confirmed"
+            service_booking.save(update_fields=["status"])
+        elif new_status == "Refunded" and service_booking.status != "Cancelled":
+            service_booking.status = "Cancelled"
+            service_booking.save(update_fields=["status"])
+
+    messages.success(request, f"Payment #{payment.id} updated to {new_status}.")
+    return redirect(request.POST.get("next") or "manage_payment")
+
+
+@admin_login_required
 def edit_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     try:
