@@ -56,6 +56,9 @@ This is a simple hotel management web application built with Django. It provides
    ```bash
    python manage.py migrate
    ```
+   ```bash
+   python manage.py makemigrations
+   ```
 
 5. **Create a superuser (admin)**
    ```bash
