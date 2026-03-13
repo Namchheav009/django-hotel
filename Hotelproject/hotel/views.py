@@ -2573,7 +2573,9 @@ def add_room_to_cart(request, room_id):
         if not check_in or not check_out:
             messages.error(request, 'Please select check-in and check-out dates.')
             return redirect('room_detail', room_id=room_id)
-        
+        if check_in or check_out < datetime.now().strftime('%Y-%m-%d'):
+            messages.error(request, 'Check-in and check-out dates cannot be in the past.')
+            return redirect('room_detail', room_id=room_id)
         try:
             check_in_date = datetime.strptime(check_in, '%Y-%m-%d').date()
             check_out_date = datetime.strptime(check_out, '%Y-%m-%d').date()
